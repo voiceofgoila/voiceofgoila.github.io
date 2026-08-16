@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b6b4f">
+<meta name="description" content="গৈলা ইউনিয়নের প্রয়োজনীয় প্রতিষ্ঠান ও সেবার তথ্য এক জায়গায়।">
+<link rel="manifest" href="manifest.json">
+<title>Voice of Goila | গৈলা ইউনিয়ন</title>
+<style>
+:root{--green:#0b6b4f;--green2:#0f8a65;--bg:#f5f8f7;--card:#fff;--text:#18332a;--muted:#6b7d76;--line:#e3ebe7;--danger:#c62828}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Noto Sans Bengali","Noto Sans",sans-serif;color:var(--text)}
+.app{max-width:720px;margin:auto;min-height:100vh}
+header{background:linear-gradient(135deg,var(--green),var(--green2));color:white;padding:28px 18px 22px;border-radius:0 0 24px 24px;box-shadow:0 6px 22px #0b6b4f22}
+.brand{display:flex;gap:12px;align-items:center}.logo{width:48px;height:48px;border-radius:15px;background:#ffffff20;display:grid;place-items:center;font-size:26px}
+h1{font-size:25px;margin:0 0 3px}.subtitle{opacity:.9;font-size:14px}
+.search{margin-top:18px;background:white;border-radius:14px;padding:12px 14px;display:flex;gap:8px;align-items:center;box-shadow:0 4px 16px #00000012}
+.search input{border:0;outline:0;width:100%;font-size:16px;color:var(--text);background:transparent}
+main{padding:18px}.section-title{font-size:18px;font-weight:800;margin:8px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.cat{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:16px 12px;text-align:left;box-shadow:0 3px 12px #16382b08;cursor:pointer}.cat:active{transform:scale(.98)}
+.cat .ico{font-size:27px}.cat b{display:block;margin-top:7px;font-size:15px}.cat span{font-size:12px;color:var(--muted)}
+.panel{display:none}.panel.active{display:block}.back{border:0;background:white;border:1px solid var(--line);padding:9px 13px;border-radius:10px;font-weight:700;color:var(--green);margin-bottom:13px}
+.list{display:grid;gap:12px}.item{background:white;border:1px solid var(--line);border-radius:16px;padding:15px}.item h3{margin:0 0 5px;font-size:17px}.meta{font-size:13px;color:var(--muted);line-height:1.6}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;border:1px solid var(--line);color:var(--green);background:#f7fbf9}.actions a.call{background:var(--green);color:white;border-color:var(--green)}.actions a.emergency{background:#fff3f3;color:var(--danger);border-color:#ffd6d6}
+.notice{background:#fffdf0;border:1px solid #f0e4a6;padding:14px;border-radius:15px;font-size:13px;line-height:1.6;margin-bottom:15px}
+.empty{padding:28px 10px;text-align:center;color:var(--muted)}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 18px 40px}
+@media(min-width:600px){.grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand"><div class="logo">🎙️</div><div><h1>Voice of Goila</h1><div class="subtitle">গৈলা ইউনিয়নের তথ্য, সেবা ও স্থানীয় খবর এক জায়গায়</div></div></div>
+  <div class="search">🔎 <input id="search" type="search" placeholder="প্রতিষ্ঠান বা সেবা খুঁজুন..." oninput="searchAll()"></div>
+</header>
+
+<main>
+<section id="home" class="panel active">
+  <div class="notice">ℹ️ এটি একটি কমিউনিটি তথ্যসেবা প্ল্যাটফর্ম। প্রকাশের আগে প্রতিষ্ঠানগুলোর ফোন নম্বর, ঠিকানা ও অন্যান্য তথ্য যাচাই করে নিন।</div>
+  <div class="section-title">দরকারি সেবা</div>
+  <div id="categories" class="grid"></div>
+</section>
+
+<section id="results" class="panel">
+  <button class="back" onclick="showHome()">← সব ক্যাটাগরি</button>
+  <div class="section-title">খোঁজার ফলাফল</div>
+  <div id="resultList" class="list"></div>
+</section>
+
+<section id="category" class="panel">
+  <button class="back" onclick="showHome()">← সব ক্যাটাগরি</button>
+  <div id="catTitle" class="section-title"></div>
+  <div id="catList" class="list"></div>
+</section>
+</main>
+<footer>Voice of Goila • গৈলা ইউনিয়নের তথ্য ও সেবার ডিজিটাল প্ল্যাটফর্ম<br>তথ্য পরিবর্তন/সংশোধনের জন্য প্রশাসকের সাথে যোগাযোগ করুন।</footer>
+</div>
+
+<script>
+const categories = [
+ ["🏛️","ইউনিয়ন পরিষদ","ইউনিয়ন প্রশাসন ও জনপ্রতিনিধি","union"],
+ ["🏥","স্বাস্থ্যসেবা","হাসপাতাল, ক্লিনিক ও স্বাস্থ্যকেন্দ্র","health"],
+ ["👨‍⚕️","ডাক্তার","স্থানীয় ডাক্তার ও চিকিৎসক","doctors"],
+ ["💊","ফার্মেসি","ওষুধের দোকান","pharmacy"],
+ ["🏫","স্কুল","প্রাথমিক ও মাধ্যমিক বিদ্যালয়","school"],
+ ["🎓","কলেজ","কলেজ ও উচ্চশিক্ষা","college"],
+ ["📚","মাদ্রাসা","মাদ্রাসা ও ধর্মীয় শিক্ষা","madrasa"],
+ ["🚔","পুলিশ","থানা, পুলিশ ও আইনশৃঙ্খলা","police"],
+ ["🚒","ফায়ার সার্ভিস","অগ্নিনির্বাপণ ও উদ্ধার","fire"],
+ ["🚑","অ্যাম্বুলেন্স","অ্যাম্বুলেন্স ও জরুরি পরিবহন","ambulance"],
+ ["📞","জরুরি নম্বর","গুরুত্বপূর্ণ সরকারি/জরুরি ফোন","emergency"],
+ ["🏦","ব্যাংক","ব্যাংক শাখা ও বুথ","bank"],
+ ["💳","বিকাশ/নগদ","মোবাইল ফাইন্যান্সিয়াল সেবা","mfs"],
+ ["🏪","দোকান ও ব্যবসা","স্থানীয় দোকান ও ব্যবসা প্রতিষ্ঠান","business"],
+ ["🛠️","কারিগরি সেবা","মেকানিক, ইলেকট্রিশিয়ান ও মেরামত","service"],
+ ["🕌","মসজিদ","মসজিদ ও ইমামদের তথ্য","mosque"],
+ ["🕋","ধর্মীয় প্রতিষ্ঠান","অন্যান্য ধর্মীয়/সামাজিক প্রতিষ্ঠান","religious"],
+ ["🚌","যাতায়াত","বাস, ভ্যান, অটো ও স্ট্যান্ড","transport"],
+ ["📮","ডাক ও কুরিয়ার","ডাকঘর ও কুরিয়ার সেবা","courier"],
+ ["📱","ডিজিটাল সেবা","কম্পিউটার, ফটোকপি ও অনলাইন সেবা","digital"],
+ ["⚡","বিদ্যুৎ","বিদ্যুৎ সংক্রান্ত তথ্য","electricity"],
+ ["🚰","পানি","পানি ও স্যানিটেশন সেবা","water"],
+ ["🌾","কৃষি","কৃষি অফিস, ডিলার ও কৃষি সেবা","agriculture"],
+ ["🐄","প্রাণিসম্পদ","গবাদিপশু ও প্রাণিসেবা","livestock"],
+ ["🐟","মৎস্য","মৎস্য চাষ ও পরামর্শ","fisheries"],
+ ["🏛️","সরকারি সেবা","সরকারি অফিস ও সেবা","govt"],
+ ["⚖️","আইনি সহায়তা","আইনজীবী ও আইনি সহায়তা","legal"],
+ ["🏠","গুরুত্বপূর্ণ স্থান","বাজার, মাঠ, ঘাট ও দর্শনীয় স্থান","places"],
+ ["📢","নোটিশ","স্থানীয় ঘোষণা ও নোটিশ","notice"],
+ ["🤝","সামাজিক সংগঠন","ক্লাব, স্বেচ্ছাসেবী সংগঠন","social"],
+ ["📰","স্থানীয় খবর","গৈলার স্থানীয় খবর ও আপডেট","news"]
+];
+
+const data = [
+  // নিচের প্রতিটি তথ্য পরে তুমি নিজের তথ্য দিয়ে বদলাবে।
+  {cat:"union",name:"গৈলা ইউনিয়ন পরিষদ",address:"ঠিকানা এখানে লিখুন",phone:"",map:"",desc:"চেয়ারম্যান/সচিব/অফিসের তথ্য এখানে যোগ করুন।"},
+  {cat:"health",name:"স্বাস্থ্যকেন্দ্রের নাম",address:"ঠিকানা এখানে লিখুন",phone:"",map:"",desc:"স্বাস্থ্যকেন্দ্রের সময় ও সেবার তথ্য যোগ করুন।"},
+  {cat:"doctors",name:"ডাক্তারের নাম",address:"চেম্বারের ঠিকানা",phone:"",map:"",desc:"বিশেষত্ব ও চেম্বারের সময় লিখুন।"},
+  {cat:"pharmacy",name:"ফার্মেসির নাম",address:"ঠিকানা এখানে লিখুন",phone:"",map:"",desc:"খোলার সময় লিখুন।"},
+  {cat:"school",name:"স্কুলের নাম",address:"ঠিকানা এখানে লিখুন",phone:"",map:"",desc:"প্রধান শিক্ষক/যোগাযোগের তথ্য যোগ করুন।"},
+  {cat:"college",name:"কলেজের নাম",address:"ঠিকানা এখানে লিখুন",phone:"",map:"",desc:"অধ্যক্ষ/অফিসের তথ্য যোগ করুন।"},
+  {cat:"madrasa",name:"মাদ্রাসার নাম",address:"ঠিকানা এখানে লিখুন",phone:"",map:"",desc:"যোগাযোগের তথ্য যোগ করুন।"},
+  {cat:"police",name:"আগৈলঝাড়া থানা",address:"আগৈলঝাড়া, বরিশাল",phone:"",map:"",desc:"ফোন নম্বর ও Google Maps link যাচাই করে যোগ করুন।"},
+  {cat:"fire",name:"নিকটস্থ ফায়ার সার্ভিস",address:"ঠিকানা এখানে লিখুন",phone:"",map:"",desc:"জরুরি নম্বর ও লোকেশন যোগ করুন।"},
+  {cat:"ambulance",name:"অ্যাম্বুলেন্স সেবা",address:"এলাকা",phone:"",map:"",desc:"চালক/সেবাদাতার ফোন নম্বর যোগ করুন।"},
+  {cat:"emergency",name:"জাতীয় জরুরি সেবা",address:"বাংলাদেশ",phone:"999",map:"",desc:"জরুরি পুলিশ, ফায়ার সার্ভিস ও অ্যাম্বুলেন্স সহায়তা।"},
+  {cat:"emergency",name:"স্বাস্থ্য বাতায়ন",address:"বাংলাদেশ",phone:"16263",map:"",desc:"স্বাস্থ্য সংক্রান্ত সরকারি সহায়তা।"},
+  {cat:"bank",name:"ব্যাংকের নাম",address:"শাখার ঠিকানা",phone:"",map:"",desc:"শাখা/ATM-এর তথ্য যোগ করুন।"},
+  {cat:"mfs",name:"বিকাশ/নগদ এজেন্ট",address:"দোকানের ঠিকানা",phone:"",map:"",desc:"এজেন্ট নম্বর যোগ করুন।"},
+  {cat:"business",name:"দোকান/ব্যবসা প্রতিষ্ঠানের নাম",address:"ঠিকানা",phone:"",map:"",desc:"পণ্য/সেবার বিবরণ লিখুন।"},
+  {cat:"service",name:"কারিগরি সেবাদাতার নাম",address:"এলাকা",phone:"",map:"",desc:"কাজের ধরন লিখুন।"},
+  {cat:"mosque",name:"মসজিদের নাম",address:"ঠিকানা",phone:"",map:"",desc:"ইমাম/মুয়াজ্জিনের তথ্য প্রয়োজন হলে যোগ করুন।"},
+  {cat:"religious",name:"ধর্মীয় প্রতিষ্ঠানের নাম",address:"ঠিকানা",phone:"",map:"",desc:"যোগাযোগের তথ্য যোগ করুন।"},
+  {cat:"transport",name:"পরিবহন/স্ট্যান্ডের নাম",address:"স্থান",phone:"",map:"",desc:"সময়সূচি/ভাড়া/যোগাযোগ যোগ করুন।"},
+  {cat:"courier",name:"কুরিয়ার/ডাক সেবার নাম",address:"ঠিকানা",phone:"",map:"",desc:"শাখার ফোন ও সময় যোগ করুন।"},
+  {cat:"digital",name:"কম্পিউটার/অনলাইন সেবা",address:"ঠিকানা",phone:"",map:"",desc:"ফটোকপি, প্রিন্ট, অনলাইন আবেদন ইত্যাদি।"},
+  {cat:"electricity",name:"বিদ্যুৎ অফিস/যোগাযোগ",address:"ঠিকানা",phone:"",map:"",desc:"অভিযোগ/যোগাযোগের তথ্য যোগ করুন।"},
+  {cat:"water",name:"পানি/স্যানিটেশন সেবা",address:"এলাকা",phone:"",map:"",desc:"যোগাযোগের তথ্য যোগ করুন।"},
+  {cat:"agriculture",name:"কৃষি সেবা",address:"ঠিকানা",phone:"",map:"",desc:"কৃষি কর্মকর্তা/ডিলারের তথ্য যোগ করুন।"},
+  {cat:"livestock",name:"প্রাণিসম্পদ সেবা",address:"ঠিকানা",phone:"",map:"",desc:"ভেটেরিনারি সেবার তথ্য যোগ করুন।"},
+  {cat:"fisheries",name:"মৎস্য সেবা",address:"ঠিকানা",phone:"",map:"",desc:"মৎস্য কর্মকর্তা/পরামর্শের তথ্য যোগ করুন।"},
+  {cat:"govt",name:"সরকারি অফিসের নাম",address:"ঠিকানা",phone:"",map:"",desc:"সেবা ও যোগাযোগের তথ্য যোগ করুন।"},
+  {cat:"legal",name:"আইনি সহায়তা",address:"ঠিকানা",phone:"",map:"",desc:"আইনজীবী/লিগ্যাল এইডের তথ্য যাচাই করে যোগ করুন।"},
+  {cat:"places",name:"গুরুত্বপূর্ণ স্থানের নাম",address:"লোকেশন",phone:"",map:"",desc:"Google Maps link যোগ করুন।"},
+  {cat:"notice",name:"নোটিশ/ঘোষণার শিরোনাম",address:"তারিখ",phone:"",map:"",desc:"নোটিশের বিস্তারিত এখানে লিখুন।"},
+  {cat:"social",name:"সামাজিক সংগঠনের নাম",address:"এলাকা",phone:"",map:"",desc:"সভাপতি/সম্পাদক/যোগাযোগের তথ্য যোগ করুন।"},
+  {cat:"news",name:"স্থানীয় খবরের শিরোনাম",address:"তারিখ",phone:"",map:"",desc:"খবরের সংক্ষিপ্ত বিবরণ ও প্রয়োজনে লিংক যোগ করুন।"}
+];
+
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function itemHTML(x){
+ let buttons="";
+ if(x.phone) buttons += `<a class="call" href="tel:${esc(x.phone)}">📞 কল করুন</a>`;
+ if(x.map) buttons += `<a target="_blank" rel="noopener" href="${esc(x.map)}">🗺️ Map</a>`;
+ return `<article class="item"><h3>${esc(x.name)}</h3><div class="meta">${esc(x.address)}<br>${esc(x.desc||"")}</div><div class="actions">${buttons||'<span class="meta">ফোন/Map তথ্য শিগগির যোগ করা হবে</span>'}</div></article>`;
+}
+function renderCats(){
+ document.getElementById("categories").innerHTML=categories.map(c=>`<button class="cat" onclick="openCat('${c[3]}')"><div class="ico">${c[0]}</div><b>${c[1]}</b><span>${c[2]}</span></button>`).join("");
+}
+function openCat(id){
+ const c=categories.find(x=>x[3]===id); if(!c)return;
+ document.getElementById("home").classList.remove("active");document.getElementById("results").classList.remove("active");document.getElementById("category").classList.add("active");
+ document.getElementById("catTitle").textContent=c[0]+" "+c[1];
+ const arr=data.filter(x=>x.cat===id);
+ document.getElementById("catList").innerHTML=arr.length?arr.map(itemHTML).join(""):`<div class="empty">এই ক্যাটাগরির তথ্য এখনো যোগ করা হয়নি।</div>`;
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function showHome(){document.getElementById("results").classList.remove("active");document.getElementById("category").classList.remove("active");document.getElementById("home").classList.add("active");document.getElementById("search").value="";window.scrollTo({top:0,behavior:"smooth"})}
+function searchAll(){
+ const q=document.getElementById("search").value.trim().toLowerCase();
+ if(!q){showHome();return}
+ document.getElementById("home").classList.remove("active");document.getElementById("category").classList.remove("active");document.getElementById("results").classList.add("active");
+ const arr=data.filter(x=>(x.name+" "+x.address+" "+x.desc).toLowerCase().includes(q));
+ document.getElementById("resultList").innerHTML=arr.length?arr.map(itemHTML).join(""):`<div class="empty">“${esc(q)}” এর কোনো তথ্য পাওয়া যায়নি।</div>`;
+}
+renderCats();
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
