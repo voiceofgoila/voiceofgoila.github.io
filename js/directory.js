@@ -1,6 +1,20 @@
-// Voice of Goila - Directory Loader
+// Voice of Goila Directory Loader
 
 async function loadDirectoryItems() {
+
+    console.log("Directory loader started");
+
+    if (!window.supabaseClient) {
+        console.error("Supabase client not ready");
+        return;
+    }
+
+    const container = document.getElementById("directory");
+
+    if (!container) {
+        console.error("Directory container not found");
+        return;
+    }
 
     const { data, error } = await window.supabaseClient
         .from("directory_items")
@@ -9,7 +23,7 @@ async function loadDirectoryItems() {
 
 
     if (error) {
-        console.error("Directory error:", error);
+        console.error("Directory loading error:", error);
         return;
     }
 
@@ -17,25 +31,17 @@ async function loadDirectoryItems() {
     console.log("Directory Items Loaded:", data);
 
 
-    const container = document.getElementById("directory");
-
-
-    if (!container) {
-        console.error("directory container missing");
+    if (!data || data.length === 0) {
+        container.innerHTML = "<p>কোনো তথ্য পাওয়া যায়নি।</p>";
         return;
     }
 
 
-    container.innerHTML = "";
-
-
-    data.forEach(item => {
-
-        container.innerHTML += `
+    container.innerHTML = data.map(item => `
 
         <div class="directory-card">
 
-            <h3>${item.name || "নাম নেই"}</h3>
+            <h3>${item.name || ""}</h3>
 
             <p>
             ক্যাটাগরি: ${item.cat || ""}
@@ -53,21 +59,13 @@ async function loadDirectoryItems() {
             ঠিকানা: ${item.address || ""}
             </p>
 
-            ${
-              item.map_url 
-              ? `<a href="${item.map_url}" target="_blank">
-              Map দেখুন
-              </a>`
-              : ""
-            }
-
         </div>
 
-        `;
-
-    });
+    `).join("");
 
 }
 
 
-loadDirectoryItems();
+window.addEventListener("load", () => {
+    setTimeout(loadDirectoryItems, 500);
+});
