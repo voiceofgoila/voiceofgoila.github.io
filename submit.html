@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>তথ্য জমা দিন - Voice of Goila</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+</head>
+
+
+<body>
+
+
+<h1>তথ্য জমা দিন</h1>
+
+
+<form id="submitForm">
+
+
+<input id="cat" placeholder="ক্যাটাগরি" required>
+<br><br>
+
+
+<input id="subcat" placeholder="সাব-ক্যাটাগরি" required>
+<br><br>
+
+
+<input id="name" placeholder="প্রতিষ্ঠানের নাম" required>
+<br><br>
+
+
+<input id="phone" placeholder="ফোন নাম্বার">
+<br><br>
+
+
+<input id="map_url" placeholder="Google Map Link">
+<br><br>
+
+
+<textarea id="address" placeholder="ঠিকানা"></textarea>
+
+<br><br>
+
+
+<textarea id="description" placeholder="বিবরণ"></textarea>
+
+<br><br>
+
+
+<button type="submit">
+Submit
+</button>
+
+
+</form>
+
+
+
+<script src="js/supabase.js"></script>
+
+<script src="js/submit.js"></script>
+
+
+</body>
+
+</html>
