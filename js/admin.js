@@ -441,3 +441,678 @@ async function loadPending(){
 
 
 }
+// ===============================
+// APPROVE SUBMISSION
+// ===============================
+
+
+async function approveSubmission(id){
+
+
+const {data:item,error}=
+
+await window.supabaseClient
+
+.from("submissions")
+
+.select("*")
+
+.eq("id",id)
+
+.single();
+
+
+
+if(error){
+
+console.log(error);
+
+return;
+
+}
+
+
+
+const {error:insertError}=
+
+await window.supabaseClient
+
+.from("directory_items")
+
+.insert({
+
+name:item.name,
+
+cat:item.cat,
+
+subcat:item.subcat,
+
+phone:item.phone,
+
+address:item.address,
+
+map_url:item.map_url,
+
+description:item.description
+
+});
+
+
+
+if(insertError){
+
+alert(insertError.message);
+
+return;
+
+}
+
+
+
+await window.supabaseClient
+
+.from("submissions")
+
+.update({
+
+status:"approved",
+
+reviewed_at:new Date()
+
+})
+
+.eq("id",id);
+
+
+
+alert("Approved Successfully");
+
+
+loadAll();
+
+
+}
+
+
+
+
+
+
+// ===============================
+// REJECT
+// ===============================
+
+
+async function rejectSubmission(id){
+
+
+await window.supabaseClient
+
+.from("submissions")
+
+.update({
+
+status:"rejected",
+
+reviewed_at:new Date()
+
+})
+
+.eq("id",id);
+
+
+
+alert("Rejected");
+
+
+loadPending();
+
+
+}
+
+
+
+
+
+
+// ===============================
+// LOAD DIRECTORY
+// ===============================
+
+
+async function loadDirectory(){
+
+
+const {data,error}=
+
+await window.supabaseClient
+
+.from("directory_items")
+
+.select("*")
+
+.order("id",{ascending:false});
+
+
+
+if(error){
+
+console.log(error);
+
+return;
+
+}
+
+
+
+directoryData=data || [];
+
+
+displayDirectory(directoryData);
+
+
+}
+
+
+
+
+
+
+function displayDirectory(data){
+
+
+const box =
+document.getElementById("directory");
+
+
+
+if(!data || data.length===0){
+
+box.innerHTML="No Data";
+
+return;
+
+}
+
+
+
+box.innerHTML=data.map(item=>`
+
+
+<div class="item">
+
+
+<h3>
+${item.name}
+</h3>
+
+
+
+<p>
+Category: ${item.cat || ""}
+</p>
+
+
+
+<p>
+Sub Category: ${item.subcat || ""}
+</p>
+
+
+
+<p>
+Phone: ${item.phone || ""}
+</p>
+
+
+
+<p>
+Address: ${item.address || ""}
+</p>
+
+
+
+<button class="edit action"
+onclick="editDirectory(${item.id})">
+
+Edit
+
+</button>
+
+
+
+<button class="delete action"
+onclick="deleteDirectory(${item.id})">
+
+Delete
+
+</button>
+
+
+
+</div>
+
+
+`).join("");
+
+
+
+}
+
+
+
+
+
+
+
+// ===============================
+// SEARCH
+// ===============================
+
+
+document.addEventListener("keyup",function(e){
+
+
+const box =
+document.getElementById("searchBox");
+
+
+
+if(!box)
+return;
+
+
+
+let text =
+box.value.toLowerCase();
+
+
+
+let result =
+directoryData.filter(item=>
+
+
+(item.name || "")
+.toLowerCase()
+.includes(text)
+
+
+
+);
+
+
+
+displayDirectory(result);
+
+
+
+});
+
+
+
+
+
+
+
+// ===============================
+// DYNAMIC CATEGORY LOAD
+// ===============================
+
+
+async function loadCategories(){
+
+
+
+const {data,error}=
+
+await window.supabaseClient
+
+.from("categories")
+
+.select("*")
+
+.order("id");
+
+
+
+if(error){
+
+console.log(error);
+
+return;
+
+}
+
+
+
+const catBox =
+document.getElementById("editCat");
+
+
+
+catBox.innerHTML =
+`
+<option value="">
+Category Select
+</option>
+`;
+
+
+
+data.forEach(cat=>{
+
+
+catBox.innerHTML +=`
+
+<option value="${cat.name}">
+${cat.name}
+</option>
+
+`;
+
+
+});
+
+
+}
+
+
+
+
+
+
+
+// ===============================
+// LOAD SUB CATEGORY
+// ===============================
+
+
+async function changeSubCategory(){
+
+
+const category =
+
+document.getElementById("editCat").value;
+
+
+
+const subBox =
+
+document.getElementById("editSubcat");
+
+
+
+subBox.innerHTML =
+`
+<option>
+Sub Category Select
+</option>
+`;
+
+
+
+if(!category)
+return;
+
+
+
+const {data:catData}=
+
+await window.supabaseClient
+
+.from("categories")
+
+.select("id")
+
+.eq("name",category)
+
+.single();
+
+
+
+if(!catData)
+return;
+
+
+
+
+const {data,error}=
+
+await window.supabaseClient
+
+.from("sub_categories")
+
+.select("*")
+
+.eq("category_id",catData.id)
+
+.order("id");
+
+
+
+if(error){
+
+console.log(error);
+
+return;
+
+}
+
+
+
+
+data.forEach(item=>{
+
+
+subBox.innerHTML +=`
+
+<option value="${item.name}">
+${item.name}
+</option>
+
+`;
+
+
+});
+
+
+}
+
+
+
+
+
+
+
+// ===============================
+// EDIT DIRECTORY
+// ===============================
+
+
+async function editDirectory(id){
+
+
+const item =
+
+directoryData.find(x=>x.id===id);
+
+
+
+if(!item)
+return;
+
+
+
+await loadCategories();
+
+
+
+document.getElementById("editId").value=item.id;
+
+
+document.getElementById("editName").value=item.name || "";
+
+
+document.getElementById("editCat").value=item.cat || "";
+
+
+await changeSubCategory();
+
+
+document.getElementById("editSubcat").value=item.subcat || "";
+
+
+document.getElementById("editPhone").value=item.phone || "";
+
+
+document.getElementById("editAddress").value=item.address || "";
+
+
+document.getElementById("editMap").value=item.map_url || "";
+
+
+document.getElementById("editDescription").value=item.description || "";
+
+
+
+document.getElementById("editModal")
+.style.display="flex";
+
+
+}
+
+
+
+
+
+
+
+// ===============================
+// UPDATE DIRECTORY
+// ===============================
+
+
+async function updateDirectory(){
+
+
+
+const id =
+document.getElementById("editId").value;
+
+
+
+const {error}=
+
+await window.supabaseClient
+
+.from("directory_items")
+
+.update({
+
+name:
+document.getElementById("editName").value,
+
+
+cat:
+document.getElementById("editCat").value,
+
+
+subcat:
+document.getElementById("editSubcat").value,
+
+
+phone:
+document.getElementById("editPhone").value,
+
+
+address:
+document.getElementById("editAddress").value,
+
+
+map_url:
+document.getElementById("editMap").value,
+
+
+description:
+document.getElementById("editDescription").value
+
+
+})
+
+.eq("id",id);
+
+
+
+
+if(error){
+
+alert(error.message);
+
+return;
+
+}
+
+
+
+document.getElementById("editModal")
+.style.display="none";
+
+
+
+alert("Updated Successfully");
+
+
+loadDirectory();
+
+
+}
+
+
+
+
+
+
+
+// ===============================
+// DELETE DIRECTORY
+// ===============================
+
+
+async function deleteDirectory(id){
+
+
+if(!confirm("Delete করতে চান?"))
+
+return;
+
+
+
+const {error}=
+
+await window.supabaseClient
+
+.from("directory_items")
+
+.delete()
+
+.eq("id",id);
+
+
+
+if(error){
+
+alert(error.message);
+
+return;
+
+}
+
+
+
+alert("Deleted");
+
+
+loadDirectory();
+
+
+       }
