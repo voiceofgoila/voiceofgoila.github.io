@@ -6,8 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Voice of Goila Admin Dashboard</title>
-
+<title>Voice of Goila Admin</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -21,164 +20,265 @@ font-family:"Noto Sans Bengali",Arial,sans-serif;
 
 
 body{
+
 margin:0;
-background:#f4f5fb;
-color:#222;
+background:#f5f5fb;
+
 }
 
 
 .container{
-max-width:1100px;
+
+max-width:1200px;
 margin:auto;
 padding:20px;
+
 }
 
+
+
+/* HEADER */
 
 .header{
 
-background:linear-gradient(135deg,#6B2C91,#9b59b6);
+background:linear-gradient(135deg,#6B2C91,#a84de0);
 color:white;
-padding:25px;
+
+padding:18px 25px;
+
 border-radius:20px;
+
 display:flex;
-justify-content:space-between;
 align-items:center;
+justify-content:space-between;
 
 }
 
 
-.header h1{
+.brand{
+
+display:flex;
+align-items:center;
+gap:15px;
+
+}
+
+
+.brand img{
+
+width:55px;
+height:55px;
+border-radius:50%;
+object-fit:cover;
+
+}
+
+
+.brand h1{
+
+font-size:24px;
 margin:0;
-font-size:28px;
+
 }
 
 
-.logout{
+.menu-btn{
 
-background:white;
-color:#6B2C91;
+font-size:30px;
+background:none;
+color:white;
 border:none;
-padding:12px 20px;
-border-radius:10px;
-font-weight:bold;
 cursor:pointer;
 
 }
 
 
 
-.stats{
+/* SIDE MENU */
 
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-gap:15px;
-margin-top:20px;
+.menu{
 
-}
-
-
-.stat-card{
+display:none;
 
 background:white;
-padding:20px;
-border-radius:18px;
-box-shadow:0 5px 15px #ddd;
+
+position:absolute;
+
+right:25px;
+top:90px;
+
+width:230px;
+
+border-radius:15px;
+
+box-shadow:0 5px 20px #aaa;
+
+padding:15px;
+
+z-index:10;
 
 }
 
 
-.stat-card h3{
+.menu button{
 
-margin:0;
-color:#777;
+width:100%;
+padding:14px;
 
-}
+margin:5px 0;
 
+border:none;
 
-.stat-card p{
+border-radius:10px;
 
-font-size:30px;
-font-weight:bold;
+background:#f1e6fa;
+
 color:#6B2C91;
 
+font-weight:bold;
+
 }
 
 
 
-.section{
+
+/* LOGIN */
+
+.card{
 
 background:white;
-padding:25px;
+
 margin-top:25px;
+
+padding:25px;
+
 border-radius:20px;
+
 box-shadow:0 5px 20px #ddd;
 
 }
 
 
-.section h2{
 
-margin-top:0;
-color:#6B2C91;
-
-}
-
-
-
-.search{
+input,textarea{
 
 width:100%;
+
 padding:14px;
+
+margin-top:12px;
+
 border-radius:12px;
+
 border:1px solid #ddd;
-margin-bottom:15px;
 
 }
 
 
 
-.item{
+.btn{
 
-border:1px solid #ddd;
-border-radius:15px;
-padding:18px;
+width:100%;
+
+padding:14px;
+
 margin-top:15px;
-background:#fafafa;
 
-}
-
-
-.item h3{
-
-margin-top:0;
-
-}
-
-
-
-button{
-
-cursor:pointer;
 border:none;
-padding:12px 18px;
-border-radius:10px;
+
+border-radius:12px;
+
+background:#6B2C91;
+
+color:white;
+
 font-weight:bold;
 
 }
 
 
 
+
+/* DASHBOARD */
+
+
+.stats{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+
+gap:20px;
+
+margin-top:20px;
+
+}
+
+
+
+.stat{
+
+background:white;
+
+padding:20px;
+
+border-radius:18px;
+
+box-shadow:0 5px 15px #ddd;
+
+}
+
+
+.stat h3{
+
+color:#777;
+
+}
+
+
+.stat p{
+
+font-size:32px;
+
+font-weight:bold;
+
+color:#6B2C91;
+
+}
+
+
+
+
+.item{
+
+background:#fafafa;
+
+padding:20px;
+
+margin-top:15px;
+
+border-radius:15px;
+
+border:1px solid #ddd;
+
+}
+
+
+
+
 .approve{
 
-background:#00a651;
+background:green;
+
 color:white;
 
 }
 
 
-.reject,.delete{
+.reject{
 
-background:#e60000;
+background:red;
+
 color:white;
 
 }
@@ -187,21 +287,52 @@ color:white;
 .edit{
 
 background:#6B2C91;
+
 color:white;
 
 }
+
+
+.delete{
+
+background:#d60000;
+
+color:white;
+
+}
+
+
+.action{
+
+padding:12px;
+
+border:none;
+
+border-radius:10px;
+
+margin-top:10px;
+
+width:48%;
+
+}
+
 
 
 
 .modal{
 
 display:none;
+
 position:fixed;
+
 top:0;
 left:0;
+
 width:100%;
 height:100%;
+
 background:#0008;
+
 align-items:center;
 justify-content:center;
 
@@ -211,33 +342,14 @@ justify-content:center;
 .modal-box{
 
 background:white;
+
 padding:25px;
-border-radius:20px;
+
 width:90%;
+
 max-width:500px;
 
-}
-
-
-.modal input,
-.modal textarea,
-.modal select{
-
-width:100%;
-padding:12px;
-margin-top:10px;
-border:1px solid #ddd;
-border-radius:10px;
-
-}
-
-
-.save{
-
-background:#6B2C91;
-color:white;
-width:100%;
-margin-top:15px;
+border-radius:20px;
 
 }
 
@@ -245,15 +357,14 @@ margin-top:15px;
 
 @media(max-width:600px){
 
-.header{
+.brand h1{
 
-flex-direction:column;
-gap:15px;
-text-align:center;
+font-size:18px;
 
 }
 
 }
+
 
 
 </style>
@@ -262,20 +373,55 @@ text-align:center;
 </head>
 
 
-
 <body>
 
 
 <div class="container">
 
 
+
 <div class="header">
+
+
+<div class="brand">
+
+<img src="images/logo.png">
+
 
 <h1>
 Voice of Goila Admin
 </h1>
 
-<button class="logout" onclick="logout()">
+
+</div>
+
+
+<button class="menu-btn" onclick="toggleMenu()">
+
+☰
+
+</button>
+
+
+</div>
+
+
+
+
+<div id="menu" class="menu">
+
+
+<button onclick="showDashboard()">
+Dashboard
+</button>
+
+
+<button onclick="showDirectory()">
+Directory Management
+</button>
+
+
+<button onclick="logout()">
 Logout
 </button>
 
@@ -285,24 +431,28 @@ Logout
 
 
 
-<div id="loginBox" class="section">
+
+<div id="loginBox" class="card">
 
 
-<h2>Admin Login</h2>
+<h2>
+Admin Login
+</h2>
 
 
-<input id="email" class="search" placeholder="Email">
+<input id="email" placeholder="Email">
 
 
-<input id="password" class="search" type="password" placeholder="Password">
+<input id="password" type="password" placeholder="Password">
 
 
-<button class="save" onclick="login()">
+<button class="btn" onclick="login()">
 Login
 </button>
 
 
 </div>
+
 
 
 
@@ -315,35 +465,54 @@ Login
 <div class="stats">
 
 
-<div class="stat-card">
+<div class="stat">
+
 <h3>Total Directory</h3>
-<p id="totalDirectory">0</p>
+
+<p id="totalDirectory">
+0
+</p>
+
 </div>
 
 
-<div class="stat-card">
+
+<div class="stat">
+
 <h3>Pending</h3>
-<p id="totalPending">0</p>
+
+<p id="totalPending">
+0
+</p>
+
 </div>
 
 
-<div class="stat-card">
+
+<div class="stat">
+
 <h3>Approved</h3>
-<p id="totalApproved">0</p>
+
+<p id="totalApproved">
+0
+</p>
+
 </div>
 
 
+
 </div>
 
 
 
 
 
-<div class="section">
+
+<div class="card">
 
 
 <h2>
-Pending Submissions
+Pending Submission
 </h2>
 
 
@@ -360,8 +529,7 @@ Loading...
 
 
 
-
-<div class="section">
+<div class="card">
 
 
 <h2>
@@ -369,12 +537,9 @@ Directory Management
 </h2>
 
 
-<input 
-class="search"
-id="searchBox"
-placeholder="Search directory..."
-onkeyup="searchDirectory()"
->
+<input id="searchBox"
+placeholder="Search..."
+onkeyup="searchDirectory()">
 
 
 <div id="directoryList">
@@ -388,14 +553,13 @@ Loading...
 
 
 
-
 </div>
 
 
 
 
-</div>
 
+</div>
 
 
 
@@ -407,7 +571,9 @@ Loading...
 <div class="modal-box">
 
 
-<h2>Edit Information</h2>
+<h2>
+Edit Information
+</h2>
 
 
 <input id="editId" type="hidden">
@@ -431,14 +597,13 @@ Loading...
 <input id="editMap" placeholder="Map URL">
 
 
-
-<button class="save" onclick="updateDirectory()">
-Save Changes
+<button class="btn" onclick="updateDirectory()">
+Save
 </button>
 
 
-
 </div>
+
 
 </div>
 
@@ -453,5 +618,6 @@ Save Changes
 
 
 </body>
+
 
     </html>
