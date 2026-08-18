@@ -433,7 +433,7 @@ img.style.display="block";
 }
 
 // ===============================
-// IMAGE COMPRESS
+// IMAGE COMPRESS 1:1 FORMAT
 // ===============================
 
 
@@ -451,23 +451,18 @@ img.onload=function(){
 
 
 
+const size = 500;
+
+
+
 const canvas =
 document.createElement("canvas");
 
 
 
-let width = 800;
+canvas.width=size;
 
-
-
-let height =
-(img.height / img.width) * width;
-
-
-
-canvas.width = width;
-
-canvas.height = height;
+canvas.height=size;
 
 
 
@@ -476,34 +471,77 @@ canvas.getContext("2d");
 
 
 
-ctx.drawImage(
-img,
-0,
-0,
-width,
-height
+
+// center crop
+
+let minSize =
+Math.min(
+img.width,
+img.height
 );
+
+
+
+let startX =
+(img.width-minSize)/2;
+
+
+let startY =
+(img.height-minSize)/2;
+
+
+
+
+
+ctx.drawImage(
+
+img,
+
+startX,
+
+startY,
+
+minSize,
+
+minSize,
+
+0,
+
+0,
+
+size,
+
+size
+
+);
+
+
 
 
 
 
 canvas.toBlob(
 
-(blob)=>{
+function(blob){
+
 
 resolve(blob);
+
 
 },
 
 "image/jpeg",
 
-0.75
+0.70
+
 
 );
 
 
 
 };
+
+
 
 
 
@@ -516,7 +554,6 @@ URL.createObjectURL(file);
 
 
 }
-
 
 
 
