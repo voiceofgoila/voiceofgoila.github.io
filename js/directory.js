@@ -17,18 +17,14 @@ async function loadDirectoryItems() {
     console.log("Directory Items Loaded:", data);
 
 
-    const containers = [
-        document.getElementById("directoryCards"),
-        document.getElementById("directoryList"),
-        document.getElementById("cards")
-    ];
-
-
-    const container = containers.find(c => c !== null);
+    // Find directory section automatically
+    const container = document.querySelector(
+        "#directory, .directory, .directory-grid, .cards, .grid"
+    );
 
 
     if (!container) {
-        console.warn("Directory container not found");
+        console.error("Directory container not found");
         return;
     }
 
@@ -44,8 +40,9 @@ async function loadDirectoryItems() {
 
 
         card.innerHTML = `
-            <h3>${item.name || "নাম নেই"}</h3>
+            <h3>${item.name || ""}</h3>
             <p>${item.cat || ""}</p>
+            <p>${item.subcat || ""}</p>
             <p>${item.phone || ""}</p>
             <p>${item.address || ""}</p>
         `;
