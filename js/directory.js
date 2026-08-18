@@ -2,7 +2,7 @@
 
 async function loadDirectoryItems() {
 
-    const { data, error } = await supabaseClient
+    const { data, error } = await window.supabaseClient
         .from("directory_items")
         .select("*")
         .order("id", { ascending: true });
@@ -19,5 +19,4 @@ async function loadDirectoryItems() {
 }
 
 
-// Run loader
 loadDirectoryItems();
