@@ -156,4 +156,8 @@ function renderInlineAd(cfg){const ad=cfg.inline||{},section=$("inlineAdSection"
 async function initAds(){const cfg=await loadAdsConfig();renderInlineAd(cfg);setTimeout(()=>showAdPopupFromConfig(cfg),350)}
 $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();renderEmergency();renderAnnouncements();renderCards(homeRecentData);renderReview();setupContactLinks();$("menuBtn").addEventListener("click",toggleSideMenu);$("search").addEventListener("input",e=>renderLiveResults(e.target.value));$("search").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();doSearch()}});document.querySelectorAll("#starPicker button").forEach(b=>b.addEventListener("click",()=>{selectedRating=Number(b.dataset.rating);paintStarPicker()}));document.addEventListener("click",e=>{if(!e.target.closest(".search-wrap"))$("searchPanel").hidden=true});$("adClose").addEventListener("click",closeAdPopup);$("adOverlay").addEventListener("click",e=>{if(e.target===e.currentTarget)closeAdPopup()});document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeAdPopup();closeSideMenu();closeModal("categoryModal");closeModal("submissionModal")}});$("inlineAdClose").addEventListener("click",()=>{$("inlineAdSection").hidden=true});window.addEventListener("load",initAds);if("serviceWorker" in navigator&&location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
 </script>
+ 
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+ 
 </body></html>
