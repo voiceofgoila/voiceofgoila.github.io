@@ -1,13 +1,6 @@
-// Voice of Goila - Directory Loader
+// Voice of Goila - Directory Items Loader
 
 async function loadDirectoryItems() {
-
-    const container = document.getElementById("directoryList");
-
-    if (!container) {
-        console.error("directoryList not found");
-        return;
-    }
 
     const { data, error } = await window.supabaseClient
         .from("directory_items")
@@ -24,6 +17,22 @@ async function loadDirectoryItems() {
     console.log("Directory Items Loaded:", data);
 
 
+    const containers = [
+        document.getElementById("directoryCards"),
+        document.getElementById("directoryList"),
+        document.getElementById("cards")
+    ];
+
+
+    const container = containers.find(c => c !== null);
+
+
+    if (!container) {
+        console.warn("Directory container not found");
+        return;
+    }
+
+
     container.innerHTML = "";
 
 
@@ -35,10 +44,10 @@ async function loadDirectoryItems() {
 
 
         card.innerHTML = `
-            <h3>${item.name || ""}</h3>
-            <p>${item.category || ""}</p>
-            <p>${item.description || ""}</p>
+            <h3>${item.name || "নাম নেই"}</h3>
+            <p>${item.cat || ""}</p>
             <p>${item.phone || ""}</p>
+            <p>${item.address || ""}</p>
         `;
 
 
