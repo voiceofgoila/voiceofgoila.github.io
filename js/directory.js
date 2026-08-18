@@ -16,6 +16,7 @@ async function loadDirectoryItems() {
         return;
     }
 
+
     const { data, error } = await window.supabaseClient
         .from("directory_items")
         .select("*")
@@ -32,34 +33,42 @@ async function loadDirectoryItems() {
 
 
     if (!data || data.length === 0) {
-        container.innerHTML = "<p>কোনো তথ্য পাওয়া যায়নি।</p>";
+        container.innerHTML = `
+            <div class="notice-card">
+                কোনো তথ্য পাওয়া যায়নি।
+            </div>
+        `;
         return;
     }
 
 
     container.innerHTML = data.map(item => `
 
-        <div class="directory-card">
+        <article class="card">
 
-            <h3>${item.name || ""}</h3>
+            <div class="card-inner">
 
-            <p>
-            ক্যাটাগরি: ${item.cat || ""}
-            </p>
+                <h3>${item.name || ""}</h3>
 
-            <p>
-            সাব-ক্যাটাগরি: ${item.subcat || ""}
-            </p>
+                <div class="meta">
+                    <b>ক্যাটাগরি:</b> ${item.cat || ""}
+                </div>
 
-            <p>
-            ফোন: ${item.phone || "নেই"}
-            </p>
+                <div class="meta">
+                    <b>সাব-ক্যাটাগরি:</b> ${item.subcat || ""}
+                </div>
 
-            <p>
-            ঠিকানা: ${item.address || ""}
-            </p>
+                <div class="meta">
+                    <b>ফোন:</b> ${item.phone || "নেই"}
+                </div>
 
-        </div>
+                <div class="meta">
+                    <b>ঠিকানা:</b> ${item.address || ""}
+                </div>
+
+            </div>
+
+        </article>
 
     `).join("");
 
