@@ -605,7 +605,7 @@ await window.supabaseClient
 
 .storage
 
-.from("IMAGE")
+.from("image")
 
 .upload(
 
