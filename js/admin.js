@@ -44,17 +44,15 @@ window.onload = async function(){
 
 
 
-
 // ===============================
 // LOGIN
 // ===============================
-
 
 async function login(){
 
 
 const email =
-document.getElementById("email").value;
+document.getElementById("email").value.trim();
 
 
 const password =
@@ -62,15 +60,26 @@ document.getElementById("password").value;
 
 
 
+if(!email || !password){
+
+alert("Email and Password required");
+
+return;
+
+}
+
+
 
 
 const {data,error}=
 
 await window.supabaseClient.auth
+
 .signInWithPassword({
 
-email,
-password
+email:email,
+
+password:password
 
 });
 
@@ -80,9 +89,9 @@ password
 
 if(error){
 
-alert("Login Failed");
-
 console.log(error);
+
+alert(error.message);
 
 return;
 
@@ -104,14 +113,15 @@ checkAdmin(data.user);
 
 
 
-
-
 // ===============================
 // CHECK ADMIN
 // ===============================
 
-
 async function checkAdmin(user){
+
+
+
+console.log("Logged User ID:", user.id);
 
 
 
@@ -121,23 +131,23 @@ await window.supabaseClient
 
 .from("admin_users")
 
-.select("*")
+.select("user_id")
 
-.eq("user_id",user.id)
+.eq("user_id", user.id)
 
-.single();
-
-
+.maybeSingle();
 
 
 
-if(error || !data){
 
 
-alert("Admin Access Denied");
+if(error){
+
+console.log("Admin Check Error:", error);
+
+alert("Admin verification error");
 
 return;
-
 
 }
 
@@ -145,11 +155,27 @@ return;
 
 
 
+if(!data){
+
+alert("This account is not an admin");
+
+return;
+
+}
+
+
+
+
+
+// hide login
+
 document
 .getElementById("loginBox")
 .style.display="none";
 
 
+
+// show dashboard
 
 document
 .getElementById("dashboard")
@@ -162,14 +188,6 @@ loadAll();
 
 
 }
-
-
-
-
-
-
-
-
 
 // ===============================
 // LOGOUT
