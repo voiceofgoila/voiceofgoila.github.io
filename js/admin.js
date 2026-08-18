@@ -630,13 +630,11 @@ upsert:false
 
 if(error){
 
+console.log("SUPABASE UPLOAD ERROR:", error);
 
-console.log(error);
-
-alert("Image upload failed");
+alert(error.message);
 
 return null;
-
 
 }
 
@@ -668,11 +666,11 @@ return data.publicUrl;
 
 catch(e){
 
+console.log("UPLOAD CATCH ERROR:", e);
 
-console.log(e);
+alert(e.message);
 
 return null;
-
 
 }
 
