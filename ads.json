@@ -1,0 +1,17 @@
+{
+  "enabled": false,
+  "popup": {
+    "enabled": true,
+    "image": "ad-popup.webp",
+    "link": "",
+    "alt": "Sponsored advertisement",
+    "frequency": "daily",
+    "autoClose": 8
+  },
+  "inline": {
+    "enabled": true,
+    "image": "ad-banner.webp",
+    "link": "",
+    "alt": "Sponsored advertisement"
+  }
+}
