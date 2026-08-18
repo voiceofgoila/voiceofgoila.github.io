@@ -1,19 +1,59 @@
-// Voice of Goila Admin System
+// Voice of Goila Admin Dashboard System
+
+
+let directoryData = [];
+
+
+// ===============================
+// PAGE LOAD - CHECK SESSION
+// ===============================
+
+
+window.addEventListener("load", async ()=>{
+
+
+    const {data} =
+    await window.supabaseClient.auth.getSession();
+
+
+    if(data.session){
+
+        checkAdmin(data.session.user);
+
+    }
+
+
+});
+
+
+
+
+// ===============================
+// LOGIN
+// ===============================
 
 
 async function login(){
 
 
-const email=document.getElementById("email").value;
-const password=document.getElementById("password").value;
+const email =
+document.getElementById("email").value;
 
 
-const {data,error}=await window.supabaseClient.auth.signInWithPassword({
+const password =
+document.getElementById("password").value;
+
+
+
+const {data,error} =
+await window.supabaseClient.auth
+.signInWithPassword({
 
 email,
 password
 
 });
+
 
 
 if(error){
@@ -24,12 +64,27 @@ return;
 }
 
 
-
-const user=data.user;
-
+checkAdmin(data.user);
 
 
-const {data:admin}=await window.supabaseClient
+}
+
+
+
+
+// ===============================
+// ADMIN CHECK
+// ===============================
+
+
+async function checkAdmin(user){
+
+
+
+const {data:admin,error}
+
+=
+await window.supabaseClient
 .from("admin_users")
 .select("*")
 .eq("user_id",user.id)
@@ -37,23 +92,29 @@ const {data:admin}=await window.supabaseClient
 
 
 
-if(!admin){
+if(error || !admin){
 
-alert("Admin access denied");
+alert("Admin Access Denied");
+
 return;
 
 }
 
 
 
-document.getElementById("loginBox").style.display="none";
+document
+.getElementById("loginBox")
+.style.display="none";
 
-document.getElementById("dashboard").style.display="block";
 
 
-loadPending();
+document
+.getElementById("dashboard")
+.style.display="block";
 
-loadDirectory();
+
+
+loadAll();
 
 
 }
@@ -61,13 +122,60 @@ loadDirectory();
 
 
 
-// Pending Submission
+// ===============================
+// LOGOUT
+// ===============================
+
+
+async function logout(){
+
+
+await window.supabaseClient.auth.signOut();
+
+
+location.reload();
+
+
+}
+
+
+
+
+
+// ===============================
+// LOAD EVERYTHING
+// ===============================
+
+
+async function loadAll(){
+
+
+loadPending();
+
+loadDirectory();
+
+updateStats();
+
+
+}
+
+
+
+
+
+// ===============================
+// PENDING SUBMISSION
+// ===============================
 
 
 async function loadPending(){
 
 
-const {data,error}=await window.supabaseClient
+
+const {data,error}
+
+=
+await window.supabaseClient
 .from("submissions")
 .select("*")
 .eq("status","pending")
@@ -75,46 +183,59 @@ const {data,error}=await window.supabaseClient
 
 
 
-const box=document.getElementById("pending");
+const box =
+document.getElementById("pending");
+
+
+
+document.getElementById("totalPending")
+.innerText =
+data ? data.length : 0;
 
 
 
 if(!data || data.length===0){
 
-box.innerHTML="কোনো Pending Submission নেই";
+
+box.innerHTML=
+"<p>কোনো Pending Submission নেই</p>";
+
 return;
 
 }
 
 
 
-box.innerHTML=data.map(item=>`
+box.innerHTML =
+data.map(item=>`
 
 
 <div class="item">
 
+
 <h3>${item.name}</h3>
 
-<p>ক্যাটাগরি: ${item.cat}</p>
 
-<p>ফোন: ${item.phone}</p>
+<p>Category: ${item.cat}</p>
 
-<p>ঠিকানা: ${item.address}</p>
+<p>Sub Category: ${item.subcat}</p>
+
+<p>Phone: ${item.phone}</p>
+
+<p>Address: ${item.address}</p>
+
 
 
 <button class="approve"
 onclick="approveSubmission(${item.id})">
-
 Approve
-
 </button>
+
 
 
 <button class="reject"
 onclick="rejectSubmission(${item.id})">
-
 Reject
-
 </button>
 
 
@@ -131,10 +252,19 @@ Reject
 
 
 
+// ===============================
+// APPROVE
+// ===============================
+
+
 async function approveSubmission(id){
 
 
-const {data:item}=await window.supabaseClient
+
+const {data:item}
+
+=
+await window.supabaseClient
 .from("submissions")
 .select("*")
 .eq("id",id)
@@ -142,7 +272,7 @@ const {data:item}=await window.supabaseClient
 
 
 
-const {error}=await window.supabaseClient
+await window.supabaseClient
 .from("directory_items")
 .insert({
 
@@ -151,19 +281,9 @@ subcat:item.subcat,
 name:item.name,
 phone:item.phone,
 map_url:item.map_url,
-address:item.address,
-description:item.description
+address:item.address
 
 });
-
-
-
-if(error){
-
-alert(error.message);
-return;
-
-}
 
 
 
@@ -179,16 +299,22 @@ reviewed_at:new Date()
 
 
 
-alert("Approved");
+alert("Approved Successfully");
 
 
-loadPending();
-loadDirectory();
+loadAll();
 
 
 }
 
 
+
+
+
+
+// ===============================
+// REJECT
+// ===============================
 
 
 async function rejectSubmission(id){
@@ -205,10 +331,11 @@ reviewed_at:new Date()
 .eq("id",id);
 
 
+
 alert("Rejected");
 
 
-loadPending();
+loadAll();
 
 
 }
@@ -217,35 +344,67 @@ loadPending();
 
 
 
-
-
-// Directory Management
+// ===============================
+// LOAD DIRECTORY
+// ===============================
 
 
 async function loadDirectory(){
 
 
-const {data,error}=await window.supabaseClient
+
+const {data,error}
+
+=
+await window.supabaseClient
 .from("directory_items")
 .select("*")
 .order("id",{ascending:false});
 
 
 
-const box=document.getElementById("directoryList");
+directoryData=data || [];
 
 
 
-if(!data || data.length===0){
+showDirectory(directoryData);
 
-box.innerHTML="কোনো Directory Data নেই";
+
+
+document.getElementById("totalDirectory")
+.innerText=
+directoryData.length;
+
+
+
+}
+
+
+
+
+
+function showDirectory(data){
+
+
+const box =
+document.getElementById("directoryList");
+
+
+
+if(data.length===0){
+
+box.innerHTML=
+"No Data";
+
 return;
 
 }
 
 
 
-box.innerHTML=data.map(item=>`
+box.innerHTML =
+
+data.map(item=>`
 
 
 <div class="item">
@@ -253,19 +412,25 @@ box.innerHTML=data.map(item=>`
 
 <h3>${item.name}</h3>
 
-<p>${item.cat}</p>
 
-<p>${item.phone}</p>
+<p>${item.cat}</p>
 
 <p>${item.address}</p>
 
 
+
+<button class="edit"
+onclick="editDirectory(${item.id})">
+Edit
+</button>
+
+
+
 <button class="delete"
 onclick="deleteDirectory(${item.id})">
-
 Delete
-
 </button>
+
 
 
 </div>
@@ -281,30 +446,161 @@ Delete
 
 
 
-async function deleteDirectory(id){
+// ===============================
+// SEARCH
+// ===============================
 
 
-const confirmDelete=confirm("আপনি কি Delete করতে চান?");
-
-
-if(!confirmDelete)
-return;
+function searchDirectory(){
 
 
 
-const {error}=await window.supabaseClient
+let text =
+document.getElementById("searchBox")
+.value
+.toLowerCase();
+
+
+
+let result =
+directoryData.filter(item=>
+
+(item.name || "")
+.toLowerCase()
+.includes(text)
+
+);
+
+
+
+showDirectory(result);
+
+
+}
+
+
+
+
+
+// ===============================
+// EDIT
+// ===============================
+
+
+function editDirectory(id){
+
+
+
+let item =
+directoryData.find(x=>x.id===id);
+
+
+
+document.getElementById("editId").value=item.id;
+
+document.getElementById("editName").value=item.name;
+
+document.getElementById("editCat").value=item.cat;
+
+document.getElementById("editSubcat").value=item.subcat;
+
+document.getElementById("editPhone").value=item.phone;
+
+document.getElementById("editAddress").value=item.address;
+
+document.getElementById("editMap").value=item.map_url;
+
+
+
+document.getElementById("editModal")
+.style.display="flex";
+
+
+}
+
+
+
+
+// ===============================
+// UPDATE
+// ===============================
+
+
+async function updateDirectory(){
+
+
+
+let id =
+document.getElementById("editId").value;
+
+
+
+await window.supabaseClient
 .from("directory_items")
-.delete()
+.update({
+
+name:
+document.getElementById("editName").value,
+
+cat:
+document.getElementById("editCat").value,
+
+subcat:
+document.getElementById("editSubcat").value,
+
+phone:
+document.getElementById("editPhone").value,
+
+address:
+document.getElementById("editAddress").value,
+
+map_url:
+document.getElementById("editMap").value
+
+
+})
 .eq("id",id);
 
 
 
-if(error){
+document.getElementById("editModal")
+.style.display="none";
 
-alert(error.message);
+
+
+alert("Updated Successfully");
+
+
+loadDirectory();
+
+
+}
+
+
+
+
+
+// ===============================
+// DELETE
+// ===============================
+
+
+async function deleteDirectory(id){
+
+
+
+if(!confirm("Delete this information?")){
+
 return;
 
 }
+
+
+
+await window.supabaseClient
+.from("directory_items")
+.delete()
+.eq("id",id);
 
 
 
@@ -312,6 +608,36 @@ alert("Deleted");
 
 
 loadDirectory();
+
+
+}
+
+
+
+
+
+// ===============================
+// STATS
+// ===============================
+
+
+async function updateStats(){
+
+
+
+const {data}
+
+=
+await window.supabaseClient
+.from("submissions")
+.select("*")
+.eq("status","approved");
+
+
+
+document.getElementById("totalApproved")
+.innerText =
+data ? data.length : 0;
 
 
 }
