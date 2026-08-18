@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Admin Panel - Voice of Goila</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+</head>
+
+<body>
+
+<h1>Voice of Goila Admin Panel</h1>
+
+<div id="loginBox">
+
+<input id="email" placeholder="Email">
+<br><br>
+
+<input id="password" type="password" placeholder="Password">
+
+<br><br>
+
+<button onclick="login()">Login</button>
+
+</div>
+
+
+<div id="dashboard" style="display:none">
+
+<h2>Pending Submissions</h2>
+
+<div id="pending"></div>
+
+</div>
+
+
+<script src="js/supabase.js"></script>
+<script src="js/admin.js"></script>
+
+</body>
+</html>
