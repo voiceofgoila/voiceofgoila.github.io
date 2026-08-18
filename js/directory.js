@@ -1,4 +1,4 @@
-// Voice of Goila - Directory Items Loader
+// Voice of Goila - Directory Loader
 
 async function loadDirectoryItems() {
 
@@ -17,14 +17,11 @@ async function loadDirectoryItems() {
     console.log("Directory Items Loaded:", data);
 
 
-    // Find directory section automatically
-    const container = document.querySelector(
-        "#directory, .directory, .directory-grid, .cards, .grid"
-    );
+    const container = document.getElementById("directory");
 
 
     if (!container) {
-        console.error("Directory container not found");
+        console.error("directory container not found");
         return;
     }
 
@@ -34,21 +31,21 @@ async function loadDirectoryItems() {
 
     data.forEach(item => {
 
-        const card = document.createElement("div");
+        container.innerHTML += `
+        <div class="directory-card">
 
-        card.className = "directory-card";
-
-
-        card.innerHTML = `
             <h3>${item.name || ""}</h3>
+
             <p>${item.cat || ""}</p>
+
             <p>${item.subcat || ""}</p>
+
             <p>${item.phone || ""}</p>
+
             <p>${item.address || ""}</p>
+
+        </div>
         `;
-
-
-        container.appendChild(card);
 
     });
 
