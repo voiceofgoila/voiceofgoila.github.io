@@ -1,145 +1,159 @@
-// Voice of Goila Admin Panel
+// Voice of Goila Admin System
+
 
 async function login(){
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+
+    const email =
+    document.getElementById("email").value;
 
 
-    const {data, error} = await window.supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: password
+    const password =
+    document.getElementById("password").value;
+
+
+
+    const {data,error} =
+    await window.supabaseClient.auth
+    .signInWithPassword({
+
+        email,
+        password
+
     });
 
 
+
     if(error){
-        alert("Login Failed: " + error.message);
+
+        alert("Login Failed");
+        console.log(error);
         return;
+
     }
+
 
 
     const user = data.user;
 
 
-    // Check admin permission
 
-    const {data: admin, error: adminError} = await window.supabaseClient
+    const {data:admin,error:adminError}
+    =
+    await window.supabaseClient
     .from("admin_users")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("user_id",user.id)
     .single();
+
 
 
     if(adminError || !admin){
 
-        alert("You are not an admin");
+        alert("Admin access denied");
         return;
 
     }
 
 
-    document.getElementById("loginBox").style.display="none";
 
-    document.getElementById("dashboard").style.display="block";
+    document
+    .getElementById("loginBox")
+    .style.display="none";
+
+
+    document
+    .getElementById("dashboard")
+    .style.display="block";
 
 
     loadPending();
 
+
 }
+
+
 
 
 
 async function loadPending(){
 
-const {data,error}= await window.supabaseClient
-.from("submissions")
-.select("*")
-.eq("status","pending");
 
-
-if(error){
-
-console.log(error);
-return;
-
-}
-
-
-let box=document.getElementById("pending");
-
-
-if(!data || data.length===0){
-
-box.innerHTML="<p>No Pending Submission</p>";
-return;
-
-}
-
-
-box.innerHTML=data.map(item=>`
-
-<div>
-
-<h3>${item.name}</h3>
-
-<p>${item.cat}</p>
-
-<p>${item.phone}</p>
-
-<p>${item.address}</p>
-
-
-<button onclick="approve(${item.id})">
-Approve
-</button>
-
-
-<button onclick="reject(${item.id})">
-Reject
-</button>
-
-
-</div>
-
-<hr>
-
-
-`).join("");
-
-}
+    const {data,error}
+    =
+    await window.supabaseClient
+    .from("submissions")
+    .select("*")
+    .eq("status","pending")
+    .order("id",{ascending:false});
 
 
 
+    if(error){
 
-async function approve(id){
+        console.log(error);
+        return;
 
-
-const {data:item}=await window.supabaseClient
-.from("submissions")
-.select("*")
-.eq("id",id)
-.single();
+    }
 
 
 
-await window.supabaseClient
-.from("directory_items")
-.insert(item);
+    const box =
+    document.getElementById("pending");
 
 
 
-await window.supabaseClient
-.from("submissions")
-.update({
-status:"approved"
-})
-.eq("id",id);
+    if(!data || data.length===0){
+
+        box.innerHTML=
+        "<p>কোনো Pending Submission নেই</p>";
+
+        return;
+
+    }
 
 
 
-alert("Approved");
+    box.innerHTML =
+    data.map(item=>`
 
-loadPending();
+    <div class="item">
+
+        <h3>${item.name}</h3>
+
+        <p>
+        ক্যাটাগরি: ${item.cat}
+        </p>
+
+        <p>
+        সাব-ক্যাটাগরি: ${item.subcat}
+        </p>
+
+        <p>
+        ফোন: ${item.phone}
+        </p>
+
+        <p>
+        ঠিকানা: ${item.address}
+        </p>
+
+
+        <button class="approve"
+        onclick="approveSubmission(${item.id})">
+        Approve
+        </button>
+
+
+        <button class="reject"
+        onclick="rejectSubmission(${item.id})">
+        Reject
+        </button>
+
+
+    </div>
+
+    `).join("");
+
 
 
 }
@@ -147,20 +161,87 @@ loadPending();
 
 
 
-async function reject(id){
+async function approveSubmission(id){
 
 
-await window.supabaseClient
-.from("submissions")
-.update({
-status:"rejected"
-})
-.eq("id",id);
+    const {data:item,error}
+    =
+    await window.supabaseClient
+    .from("submissions")
+    .select("*")
+    .eq("id",id)
+    .single();
 
 
-alert("Rejected");
 
-loadPending();
+    if(error){
+
+        console.log(error);
+        return;
+
+    }
 
 
-       }
+
+    await window.supabaseClient
+    .from("directory_items")
+    .insert({
+
+        cat:item.cat,
+        subcat:item.subcat,
+        name:item.name,
+        phone:item.phone,
+        map_url:item.map_url,
+        address:item.address
+
+    });
+
+
+
+    await window.supabaseClient
+    .from("submissions")
+    .update({
+
+        status:"approved",
+        reviewed_at:new Date()
+
+    })
+    .eq("id",id);
+
+
+
+    alert("Approved Successfully");
+
+
+    loadPending();
+
+
+}
+
+
+
+
+
+async function rejectSubmission(id){
+
+
+
+    await window.supabaseClient
+    .from("submissions")
+    .update({
+
+        status:"rejected",
+        reviewed_at:new Date()
+
+    })
+    .eq("id",id);
+
+
+
+    alert("Rejected");
+
+
+    loadPending();
+
+
+        }
