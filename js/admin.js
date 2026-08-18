@@ -69,7 +69,6 @@ async function login(){
 
     loadPending();
 
-
 }
 
 
@@ -137,6 +136,10 @@ async function loadPending(){
         ঠিকানা: ${item.address}
         </p>
 
+        <p>
+        বিস্তারিত: ${item.description || ""}
+        </p>
+
 
         <button class="approve"
         onclick="approveSubmission(${item.id})">
@@ -161,6 +164,7 @@ async function loadPending(){
 
 
 
+
 async function approveSubmission(id){
 
 
@@ -177,12 +181,15 @@ async function approveSubmission(id){
     if(error){
 
         console.log(error);
+        alert("Submission পাওয়া যায়নি");
         return;
 
     }
 
 
 
+    const {error:insertError}
+    =
     await window.supabaseClient
     .from("directory_items")
     .insert({
@@ -192,12 +199,27 @@ async function approveSubmission(id){
         name:item.name,
         phone:item.phone,
         map_url:item.map_url,
-        address:item.address
+        address:item.address,
+        description:item.description
 
     });
 
 
 
+    if(insertError){
+
+        console.log(insertError);
+        alert("Directory এ publish হয়নি");
+        return;
+
+    }
+
+
+
+
+
+    const {error:updateError}
+    =
     await window.supabaseClient
     .from("submissions")
     .update({
@@ -207,6 +229,16 @@ async function approveSubmission(id){
 
     })
     .eq("id",id);
+
+
+
+    if(updateError){
+
+        console.log(updateError);
+        alert("Status update হয়নি");
+        return;
+
+    }
 
 
 
@@ -222,10 +254,14 @@ async function approveSubmission(id){
 
 
 
+
+
 async function rejectSubmission(id){
 
 
 
+    const {error}
+    =
     await window.supabaseClient
     .from("submissions")
     .update({
@@ -238,10 +274,20 @@ async function rejectSubmission(id){
 
 
 
+    if(error){
+
+        console.log(error);
+        alert("Reject failed");
+        return;
+
+    }
+
+
+
     alert("Rejected");
 
 
     loadPending();
 
 
-        }
+}
