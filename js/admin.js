@@ -4,158 +4,124 @@
 async function login(){
 
 
-    const email =
-    document.getElementById("email").value;
+const email=document.getElementById("email").value;
+const password=document.getElementById("password").value;
 
 
-    const password =
-    document.getElementById("password").value;
+const {data,error}=await window.supabaseClient.auth.signInWithPassword({
+
+email,
+password
+
+});
 
 
+if(error){
 
-    const {data,error} =
-    await window.supabaseClient.auth
-    .signInWithPassword({
+alert("Login Failed");
+return;
 
-        email,
-        password
-
-    });
-
-
-
-    if(error){
-
-        alert("Login Failed");
-        console.log(error);
-        return;
-
-    }
+}
 
 
 
-    const user = data.user;
+const user=data.user;
 
 
 
-    const {data:admin,error:adminError}
-    =
-    await window.supabaseClient
-    .from("admin_users")
-    .select("*")
-    .eq("user_id",user.id)
-    .single();
+const {data:admin}=await window.supabaseClient
+.from("admin_users")
+.select("*")
+.eq("user_id",user.id)
+.single();
 
 
 
-    if(adminError || !admin){
+if(!admin){
 
-        alert("Admin access denied");
-        return;
+alert("Admin access denied");
+return;
 
-    }
-
-
-
-    document
-    .getElementById("loginBox")
-    .style.display="none";
+}
 
 
-    document
-    .getElementById("dashboard")
-    .style.display="block";
+
+document.getElementById("loginBox").style.display="none";
+
+document.getElementById("dashboard").style.display="block";
 
 
-    loadPending();
+loadPending();
+
+loadDirectory();
+
 
 }
 
 
 
 
+// Pending Submission
+
 
 async function loadPending(){
 
 
-    const {data,error}
-    =
-    await window.supabaseClient
-    .from("submissions")
-    .select("*")
-    .eq("status","pending")
-    .order("id",{ascending:false});
+const {data,error}=await window.supabaseClient
+.from("submissions")
+.select("*")
+.eq("status","pending")
+.order("id",{ascending:false});
 
 
 
-    if(error){
-
-        console.log(error);
-        return;
-
-    }
+const box=document.getElementById("pending");
 
 
 
-    const box =
-    document.getElementById("pending");
+if(!data || data.length===0){
+
+box.innerHTML="কোনো Pending Submission নেই";
+return;
+
+}
 
 
 
-    if(!data || data.length===0){
-
-        box.innerHTML=
-        "<p>কোনো Pending Submission নেই</p>";
-
-        return;
-
-    }
+box.innerHTML=data.map(item=>`
 
 
+<div class="item">
 
-    box.innerHTML =
-    data.map(item=>`
+<h3>${item.name}</h3>
 
-    <div class="item">
+<p>ক্যাটাগরি: ${item.cat}</p>
 
-        <h3>${item.name}</h3>
+<p>ফোন: ${item.phone}</p>
 
-        <p>
-        ক্যাটাগরি: ${item.cat}
-        </p>
-
-        <p>
-        সাব-ক্যাটাগরি: ${item.subcat}
-        </p>
-
-        <p>
-        ফোন: ${item.phone}
-        </p>
-
-        <p>
-        ঠিকানা: ${item.address}
-        </p>
-
-        <p>
-        বিস্তারিত: ${item.description || ""}
-        </p>
+<p>ঠিকানা: ${item.address}</p>
 
 
-        <button class="approve"
-        onclick="approveSubmission(${item.id})">
-        Approve
-        </button>
+<button class="approve"
+onclick="approveSubmission(${item.id})">
+
+Approve
+
+</button>
 
 
-        <button class="reject"
-        onclick="rejectSubmission(${item.id})">
-        Reject
-        </button>
+<button class="reject"
+onclick="rejectSubmission(${item.id})">
+
+Reject
+
+</button>
 
 
-    </div>
+</div>
 
-    `).join("");
+
+`).join("");
 
 
 
@@ -168,84 +134,81 @@ async function loadPending(){
 async function approveSubmission(id){
 
 
-    const {data:item,error}
-    =
-    await window.supabaseClient
-    .from("submissions")
-    .select("*")
-    .eq("id",id)
-    .single();
+const {data:item}=await window.supabaseClient
+.from("submissions")
+.select("*")
+.eq("id",id)
+.single();
 
 
 
-    if(error){
+const {error}=await window.supabaseClient
+.from("directory_items")
+.insert({
 
-        console.log(error);
-        alert("Submission পাওয়া যায়নি");
-        return;
+cat:item.cat,
+subcat:item.subcat,
+name:item.name,
+phone:item.phone,
+map_url:item.map_url,
+address:item.address,
+description:item.description
 
-    }
-
-
-
-    const {error:insertError}
-    =
-    await window.supabaseClient
-    .from("directory_items")
-    .insert({
-
-        cat:item.cat,
-        subcat:item.subcat,
-        name:item.name,
-        phone:item.phone,
-        map_url:item.map_url,
-        address:item.address,
-        description:item.description
-
-    });
+});
 
 
 
-    if(insertError){
+if(error){
 
-        console.log(insertError);
-        alert("Directory এ publish হয়নি");
-        return;
+alert(error.message);
+return;
 
-    }
-
+}
 
 
 
+await window.supabaseClient
+.from("submissions")
+.update({
 
-    const {error:updateError}
-    =
-    await window.supabaseClient
-    .from("submissions")
-    .update({
+status:"approved",
+reviewed_at:new Date()
 
-        status:"approved",
-        reviewed_at:new Date()
-
-    })
-    .eq("id",id);
+})
+.eq("id",id);
 
 
 
-    if(updateError){
-
-        console.log(updateError);
-        alert("Status update হয়নি");
-        return;
-
-    }
+alert("Approved");
 
 
+loadPending();
+loadDirectory();
 
-    alert("Approved Successfully");
+
+}
 
 
-    loadPending();
+
+
+async function rejectSubmission(id){
+
+
+await window.supabaseClient
+.from("submissions")
+.update({
+
+status:"rejected",
+reviewed_at:new Date()
+
+})
+.eq("id",id);
+
+
+alert("Rejected");
+
+
+loadPending();
 
 
 }
@@ -256,38 +219,99 @@ async function approveSubmission(id){
 
 
 
-async function rejectSubmission(id){
+// Directory Management
+
+
+async function loadDirectory(){
+
+
+const {data,error}=await window.supabaseClient
+.from("directory_items")
+.select("*")
+.order("id",{ascending:false});
 
 
 
-    const {error}
-    =
-    await window.supabaseClient
-    .from("submissions")
-    .update({
-
-        status:"rejected",
-        reviewed_at:new Date()
-
-    })
-    .eq("id",id);
+const box=document.getElementById("directoryList");
 
 
 
-    if(error){
+if(!data || data.length===0){
 
-        console.log(error);
-        alert("Reject failed");
-        return;
+box.innerHTML="কোনো Directory Data নেই";
+return;
 
-    }
-
+}
 
 
-    alert("Rejected");
+
+box.innerHTML=data.map(item=>`
 
 
-    loadPending();
+<div class="item">
+
+
+<h3>${item.name}</h3>
+
+<p>${item.cat}</p>
+
+<p>${item.phone}</p>
+
+<p>${item.address}</p>
+
+
+<button class="delete"
+onclick="deleteDirectory(${item.id})">
+
+Delete
+
+</button>
+
+
+</div>
+
+
+`).join("");
+
+
+
+}
+
+
+
+
+
+async function deleteDirectory(id){
+
+
+const confirmDelete=confirm("আপনি কি Delete করতে চান?");
+
+
+if(!confirmDelete)
+return;
+
+
+
+const {error}=await window.supabaseClient
+.from("directory_items")
+.delete()
+.eq("id",id);
+
+
+
+if(error){
+
+alert(error.message);
+return;
+
+}
+
+
+
+alert("Deleted");
+
+
+loadDirectory();
 
 
 }
