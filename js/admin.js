@@ -55,37 +55,25 @@ checkAdmin(data.session.user);
 // LOGIN
 // ===============================
 
-
 async function login(){
 
 
-
 const email =
-
 document.getElementById("email").value.trim();
 
 
-
 const password =
-
 document.getElementById("password").value;
-
-
 
 
 
 if(!email || !password){
 
-
 alert("Email and Password required");
 
 return;
 
-
 }
-
-
-
 
 
 
@@ -95,9 +83,9 @@ await window.supabaseClient.auth
 
 .signInWithPassword({
 
-email,
+email: email,
 
-password
+password: password
 
 });
 
@@ -105,21 +93,15 @@ password
 
 
 
-
-
 if(error){
-
-
-alert(error.message);
 
 console.log(error);
 
+alert(error.message);
+
 return;
 
-
 }
-
-
 
 
 
@@ -127,10 +109,7 @@ return;
 checkAdmin(data.user);
 
 
-
 }
-
-
 
 
 
@@ -142,8 +121,11 @@ checkAdmin(data.user);
 // CHECK ADMIN
 // ===============================
 
-
 async function checkAdmin(user){
+
+
+
+console.log("Current User:", user.id);
 
 
 
@@ -155,7 +137,7 @@ await window.supabaseClient
 
 .select("user_id")
 
-.eq("user_id",user.id)
+.eq("user_id", user.id)
 
 .maybeSingle();
 
@@ -165,16 +147,13 @@ await window.supabaseClient
 
 if(error){
 
-
 console.log(error);
 
-alert("Admin verification error");
+alert("Admin checking error");
 
 return;
 
-
 }
-
 
 
 
@@ -182,11 +161,9 @@ return;
 
 if(!data){
 
-
 alert("Admin Access Denied");
 
 return;
-
 
 }
 
@@ -194,34 +171,22 @@ return;
 
 
 
-
 document
-
 .getElementById("loginBox")
-
 .style.display="none";
 
 
 
-
-
-
 document
-
 .getElementById("dashboard")
-
 .style.display="block";
-
-
 
 
 
 loadAll();
 
 
-
 }
-
 
 
 
