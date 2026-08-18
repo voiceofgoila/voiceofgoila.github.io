@@ -1,51 +1,97 @@
-// Voice of Goila Admin Dashboard System
+// Voice of Goila Admin Dashboard
 
 
 let directoryData = [];
 
 
-// ===============================
-// PAGE LOAD - CHECK SESSION
-// ===============================
-
+// =====================
+// PAGE LOAD SESSION CHECK
+// =====================
 
 window.addEventListener("load", async ()=>{
 
 
-    const {data} =
-    await window.supabaseClient.auth.getSession();
+const {data} =
+await window.supabaseClient.auth.getSession();
 
 
-    if(data.session){
+if(data.session){
 
-        checkAdmin(data.session.user);
+checkAdmin(data.session.user);
 
-    }
+}
 
 
 });
 
 
 
+// =====================
+// MENU
+// =====================
 
-// ===============================
+
+function toggleMenu(){
+
+let menu=document.getElementById("menu");
+
+
+if(menu.style.display==="block"){
+
+menu.style.display="none";
+
+}
+else{
+
+menu.style.display="block";
+
+}
+
+}
+
+
+
+function showDashboard(){
+
+document.getElementById("menu").style.display="none";
+
+}
+
+
+
+function showDirectory(){
+
+document.getElementById("menu").style.display="none";
+
+document
+.getElementById("directoryList")
+.scrollIntoView();
+
+}
+
+
+
+
+
+// =====================
 // LOGIN
-// ===============================
+// =====================
 
 
 async function login(){
 
 
-const email =
+let email =
 document.getElementById("email").value;
 
 
-const password =
+let password =
 document.getElementById("password").value;
 
 
 
-const {data,error} =
+const {data,error}
+=
 await window.supabaseClient.auth
 .signInWithPassword({
 
@@ -64,6 +110,7 @@ return;
 }
 
 
+
 checkAdmin(data.user);
 
 
@@ -72,13 +119,13 @@ checkAdmin(data.user);
 
 
 
-// ===============================
+
+// =====================
 // ADMIN CHECK
-// ===============================
+// =====================
 
 
 async function checkAdmin(user){
-
 
 
 const {data:admin,error}
@@ -107,11 +154,9 @@ document
 .style.display="none";
 
 
-
 document
 .getElementById("dashboard")
 .style.display="block";
-
 
 
 loadAll();
@@ -122,9 +167,9 @@ loadAll();
 
 
 
-// ===============================
+// =====================
 // LOGOUT
-// ===============================
+// =====================
 
 
 async function logout(){
@@ -141,20 +186,19 @@ location.reload();
 
 
 
+// =====================
+// LOAD ALL
+// =====================
 
-// ===============================
-// LOAD EVERYTHING
-// ===============================
 
-
-async function loadAll(){
+function loadAll(){
 
 
 loadPending();
 
 loadDirectory();
 
-updateStats();
+loadStats();
 
 
 }
@@ -163,9 +207,10 @@ updateStats();
 
 
 
-// ===============================
-// PENDING SUBMISSION
-// ===============================
+
+// =====================
+// PENDING
+// =====================
 
 
 async function loadPending(){
@@ -183,7 +228,7 @@ await window.supabaseClient
 
 
 
-const box =
+let box =
 document.getElementById("pending");
 
 
@@ -196,9 +241,8 @@ data ? data.length : 0;
 
 if(!data || data.length===0){
 
-
 box.innerHTML=
-"<p>কোনো Pending Submission নেই</p>";
+"কোনো Pending Submission নেই";
 
 return;
 
@@ -216,26 +260,36 @@ data.map(item=>`
 <h3>${item.name}</h3>
 
 
-<p>Category: ${item.cat}</p>
-
-<p>Sub Category: ${item.subcat}</p>
-
-<p>Phone: ${item.phone}</p>
-
-<p>Address: ${item.address}</p>
+<p>
+${item.cat}
+</p>
 
 
+<p>
+${item.phone}
+</p>
 
-<button class="approve"
+
+<p>
+${item.address}
+</p>
+
+
+
+<button class="action approve"
 onclick="approveSubmission(${item.id})">
+
 Approve
+
 </button>
 
 
 
-<button class="reject"
+<button class="action reject"
 onclick="rejectSubmission(${item.id})">
+
 Reject
+
 </button>
 
 
@@ -252,13 +306,12 @@ Reject
 
 
 
-// ===============================
+// =====================
 // APPROVE
-// ===============================
+// =====================
 
 
 async function approveSubmission(id){
-
 
 
 const {data:item}
@@ -272,6 +325,9 @@ await window.supabaseClient
 
 
 
+const {error}
+
+=
 await window.supabaseClient
 .from("directory_items")
 .insert({
@@ -281,9 +337,19 @@ subcat:item.subcat,
 name:item.name,
 phone:item.phone,
 map_url:item.map_url,
-address:item.address
+address:item.address,
+description:item.description
 
 });
+
+
+
+if(error){
+
+alert(error.message);
+return;
+
+}
 
 
 
@@ -299,7 +365,7 @@ reviewed_at:new Date()
 
 
 
-alert("Approved Successfully");
+alert("Approved");
 
 
 loadAll();
@@ -311,10 +377,9 @@ loadAll();
 
 
 
-
-// ===============================
+// =====================
 // REJECT
-// ===============================
+// =====================
 
 
 async function rejectSubmission(id){
@@ -335,7 +400,7 @@ reviewed_at:new Date()
 alert("Rejected");
 
 
-loadAll();
+loadPending();
 
 
 }
@@ -344,13 +409,12 @@ loadAll();
 
 
 
-// ===============================
-// LOAD DIRECTORY
-// ===============================
+// =====================
+// DIRECTORY LOAD
+// =====================
 
 
 async function loadDirectory(){
-
 
 
 const {data,error}
@@ -366,14 +430,7 @@ await window.supabaseClient
 directoryData=data || [];
 
 
-
-showDirectory(directoryData);
-
-
-
-document.getElementById("totalDirectory")
-.innerText=
-directoryData.length;
+showDirectoryList(directoryData);
 
 
 
@@ -382,19 +439,22 @@ directoryData.length;
 
 
 
+function showDirectoryList(data){
 
-function showDirectory(data){
 
-
-const box =
+let box =
 document.getElementById("directoryList");
+
+
+
+document.getElementById("totalDirectory")
+.innerText=data.length;
 
 
 
 if(data.length===0){
 
-box.innerHTML=
-"No Data";
+box.innerHTML="No Data";
 
 return;
 
@@ -403,7 +463,6 @@ return;
 
 
 box.innerHTML =
-
 data.map(item=>`
 
 
@@ -413,22 +472,36 @@ data.map(item=>`
 <h3>${item.name}</h3>
 
 
-<p>${item.cat}</p>
+<p>
+${item.cat}
+</p>
 
-<p>${item.address}</p>
+
+<p>
+${item.phone}
+</p>
+
+
+<p>
+${item.address}
+</p>
 
 
 
-<button class="edit"
+<button class="action edit"
 onclick="editDirectory(${item.id})">
+
 Edit
+
 </button>
 
 
 
-<button class="delete"
+<button class="action delete"
 onclick="deleteDirectory(${item.id})">
+
 Delete
+
 </button>
 
 
@@ -446,13 +519,12 @@ Delete
 
 
 
-// ===============================
+// =====================
 // SEARCH
-// ===============================
+// =====================
 
 
 function searchDirectory(){
-
 
 
 let text =
@@ -473,7 +545,7 @@ directoryData.filter(item=>
 
 
 
-showDirectory(result);
+showDirectoryList(result);
 
 
 }
@@ -482,9 +554,10 @@ showDirectory(result);
 
 
 
-// ===============================
+
+// =====================
 // EDIT
-// ===============================
+// =====================
 
 
 function editDirectory(id){
@@ -521,13 +594,13 @@ document.getElementById("editModal")
 
 
 
-// ===============================
+
+// =====================
 // UPDATE
-// ===============================
+// =====================
 
 
 async function updateDirectory(){
-
 
 
 let id =
@@ -557,7 +630,6 @@ document.getElementById("editAddress").value,
 map_url:
 document.getElementById("editMap").value
 
-
 })
 .eq("id",id);
 
@@ -567,8 +639,7 @@ document.getElementById("editModal")
 .style.display="none";
 
 
-
-alert("Updated Successfully");
+alert("Updated");
 
 
 loadDirectory();
@@ -580,16 +651,15 @@ loadDirectory();
 
 
 
-// ===============================
+// =====================
 // DELETE
-// ===============================
+// =====================
 
 
 async function deleteDirectory(id){
 
 
-
-if(!confirm("Delete this information?")){
+if(!confirm("Delete this item?")){
 
 return;
 
@@ -616,13 +686,12 @@ loadDirectory();
 
 
 
-// ===============================
+// =====================
 // STATS
-// ===============================
+// =====================
 
 
-async function updateStats(){
-
+async function loadStats(){
 
 
 const {data}
