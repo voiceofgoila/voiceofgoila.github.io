@@ -1,4 +1,4 @@
-// Voice of Goila - Directory Loader
+// Voice of Goila - Directory Items Loader (Fixed)
 
 async function loadDirectoryItems() {
 
@@ -7,49 +7,46 @@ async function loadDirectoryItems() {
         .select("*")
         .order("id", { ascending: true });
 
-
     if (error) {
         console.error("Directory loading error:", error);
         return;
     }
 
-
     console.log("Directory Items Loaded:", data);
-
 
     const container = document.getElementById("directory");
 
-
     if (!container) {
-        console.error("directory container not found");
+        console.error("Directory container not found");
         return;
     }
 
+    if (!data || data.length === 0) {
+        container.innerHTML = "<p>কোনো তথ্য পাওয়া যায়নি।</p>";
+        return;
+    }
 
     container.innerHTML = "";
 
-
     data.forEach(item => {
 
-        container.innerHTML += `
-        <div class="directory-card">
+        const card = document.createElement("div");
 
-            <h3>${item.name || ""}</h3>
+        card.className = "directory-card";
 
-            <p>${item.cat || ""}</p>
-
-            <p>${item.subcat || ""}</p>
-
-            <p>${item.phone || ""}</p>
-
-            <p>${item.address || ""}</p>
-
-        </div>
+        card.innerHTML = `
+            <div class="card-inner">
+                <h3>${item.name || ""}</h3>
+                <p>ক্যাটাগরি: ${item.cat || ""}</p>
+                <p>সাব-ক্যাটাগরি: ${item.subcat || ""}</p>
+                <p>ফোন: ${item.phone || ""}</p>
+                <p>ঠিকানা: ${item.address || ""}</p>
+            </div>
         `;
 
+        container.appendChild(card);
+
     });
-
 }
-
 
 loadDirectoryItems();
