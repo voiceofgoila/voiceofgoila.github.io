@@ -1,4 +1,4 @@
-// Voice of Goila Submission
+// Voice of Goila - Submit System
 
 
 document
@@ -10,7 +10,11 @@ e.preventDefault();
 
 
 
-const data = {
+const submission = {
+
+
+name:
+document.getElementById("name").value,
 
 
 cat:
@@ -19,10 +23,6 @@ document.getElementById("cat").value,
 
 subcat:
 document.getElementById("subcat").value,
-
-
-name:
-document.getElementById("name").value,
 
 
 phone:
@@ -41,24 +41,26 @@ description:
 document.getElementById("description").value,
 
 
-status:"pending"
+status:
+"pending"
 
 
 };
 
 
 
-const {error}=await window.supabaseClient
+const {error} =
+await window.supabaseClient
 .from("submissions")
-.insert(data);
+.insert(submission);
 
 
 
 if(error){
 
-alert("তথ্য জমা হয়নি");
-
 console.log(error);
+
+alert("তথ্য জমা দিতে সমস্যা হয়েছে");
 
 return;
 
@@ -66,7 +68,10 @@ return;
 
 
 
-alert("তথ্য সফলভাবে জমা হয়েছে। Admin approval এর পর প্রকাশ হবে।");
+alert(
+"আপনার তথ্য সফলভাবে জমা হয়েছে। Admin যাচাই করার পর প্রকাশ করা হবে।"
+);
+
 
 
 document
