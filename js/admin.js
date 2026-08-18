@@ -51,51 +51,23 @@ checkAdmin(data.session.user);
 
 
 
-// ===============================
-// LOGIN
-// ===============================
-
 async function login(){
 
+const email=document.getElementById("email").value.trim();
 
-const email =
-document.getElementById("email").value.trim();
-
-
-const password =
-document.getElementById("password").value;
+const password=document.getElementById("password").value;
 
 
+const {data,error}=await window.supabaseClient.auth.signInWithPassword({
 
-if(!email || !password){
+email:email,
 
-alert("Email and Password required");
-
-return;
-
-}
-
-
-
-const {data,error}=
-
-await window.supabaseClient.auth
-
-.signInWithPassword({
-
-email: email,
-
-password: password
+password:password
 
 });
 
 
-
-
-
 if(error){
-
-console.log(error);
 
 alert(error.message);
 
@@ -104,9 +76,11 @@ return;
 }
 
 
+document.getElementById("loginBox").style.display="none";
 
+document.getElementById("dashboard").style.display="block";
 
-checkAdmin(data.user);
+loadAll();
 
 
 }
