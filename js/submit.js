@@ -14,31 +14,31 @@ const submission = {
 
 
 name:
-document.getElementById("name").value,
+document.getElementById("name").value.trim(),
 
 
 cat:
-document.getElementById("cat").value,
+document.getElementById("cat").value.trim(),
 
 
 subcat:
-document.getElementById("subcat").value,
+document.getElementById("subcat").value.trim(),
 
 
 phone:
-document.getElementById("phone").value,
+document.getElementById("phone").value.trim(),
 
 
 map_url:
-document.getElementById("map_url").value,
+document.getElementById("map_url").value.trim(),
 
 
 address:
-document.getElementById("address").value,
+document.getElementById("address").value.trim(),
 
 
 description:
-document.getElementById("description").value,
+document.getElementById("description").value.trim(),
 
 
 status:

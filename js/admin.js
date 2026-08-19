@@ -650,7 +650,7 @@ window.supabaseClient
 
 .storage
 
-.from("images")
+.from("image")
 
 .getPublicUrl(fileName);
 
@@ -1423,6 +1423,12 @@ ${cat.name}
 
 if(selected){
 
+const exists = Array.from(box.options).some(option => option.value === selected);
+
+if(!exists){
+box.innerHTML += `<option value="${selected}">${selected}</option>`;
+}
+
 box.value = selected;
 
 }
@@ -1500,9 +1506,15 @@ await window.supabaseClient
 
 
 
-if(error || !cat)
+if(error || !cat){
+
+if(selected){
+box.innerHTML += `<option value="${selected}">${selected}</option>`;
+box.value=selected;
+}
 
 return;
+}
 
 
 
@@ -1562,6 +1574,12 @@ ${sub.name}
 
 
 if(selected){
+
+const exists = Array.from(box.options).some(option => option.value === selected);
+
+if(!exists){
+box.innerHTML += `<option value="${selected}">${selected}</option>`;
+}
 
 box.value=selected;
 
@@ -1965,3 +1983,41 @@ loadAll();
 
 
              }
+
+
+// ===============================
+// DIRECTORY SEARCH
+// ===============================
+
+document.addEventListener("input", function(e){
+
+    if(e.target.id !== "searchBox") return;
+
+    const q = String(e.target.value || "")
+        .toLowerCase()
+        .trim();
+
+    if(!q){
+        displayDirectory(directoryData);
+        return;
+    }
+
+    const filtered = directoryData.filter(item => {
+        const text = [
+            item.name,
+            item.cat,
+            item.subcat,
+            item.phone,
+            item.address,
+            item.description
+        ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+        return text.includes(q);
+    });
+
+    displayDirectory(filtered);
+});
+

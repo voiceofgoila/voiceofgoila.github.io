@@ -1,444 +1,127 @@
-// Voice of Goila Directory System
-// Final Version With Image Support
+// Voice of Goila - Public Directory Bridge
+// Uses Supabase as the primary source and keeps index.html data as a safe fallback.
 
+(function(){
 
-let allDirectory = [];
+    const CATEGORY_ALIASES = {
+        "সরকারি সেবা":"government",
+        "সরকারি ও ইউনিয়ন সেবা":"government",
+        "শিক্ষা":"education",
+        "শিক্ষা প্রতিষ্ঠান":"education",
+        "স্বাস্থ্য":"health",
+        "স্বাস্থ্যসেবা":"health",
+        "ব্যবসা":"business",
+        "ব্যবসা ও দোকান":"business",
+        "ব্যাংক":"banking",
+        "ধর্মীয় প্রতিষ্ঠান":"religion",
+        "জরুরি নম্বর":"emergency",
+        "ব্লাড ডোনার্স":"blood",
+        "পুলিশ":"police",
+        "ফায়ার সার্ভিস":"fire",
+        "অ্যাম্বুলেন্স":"ambulance",
+        "ডাক্তার":"doctor",
+        "বিদ্যুৎ":"electricity",
+        "গুরুত্বপূর্ণ স্থান":"places",
+        "গুরুত্বপূর্ণ ব্যক্তিবর্গ":"people",
+        "ডাকঘর":"post",
+        "যাতায়াত ও যোগাযোগ":"transport",
+        "কৃষি ও স্থানীয় সেবা":"agriculture",
+        "সামাজিক সংগঠন":"social"
+    };
 
-
-// ==============================
-// LOAD DIRECTORY
-// ==============================
-
-async function loadDirectory(){
-
-
-    const {data,error}=
-
-    await window.supabaseClient
-
-    .from("directory_items")
-
-    .select("*")
-
-    .order("id",{ascending:false});
-
-
-
-    if(error){
-
-        console.log(error);
-
-        return;
-
+    function normalizeCategory(value){
+        const raw=String(value || "").trim();
+        if(!raw) return "";
+        return CATEGORY_ALIASES[raw] || raw;
     }
 
-
-    allDirectory = data || [];
-
-
-    loadCategoryFilter();
-
-
-    displayDirectory(allDirectory);
-
-
-}
-
-
-
-
-
-
-// ==============================
-// CATEGORY FILTER
-// ==============================
-
-
-function loadCategoryFilter(){
-
-
-    const categoryBox =
-    document.getElementById("categoryFilter");
-
-
-    if(!categoryBox)
-    return;
-
-
-
-    let categories =
-
-    [...new Set(
-
-        allDirectory.map(
-            item=>item.cat
-        )
-
-    )];
-
-
-
-    categoryBox.innerHTML = `
-
-    <option value="">
-    সব ক্যাটাগরি
-    </option>
-
-    `;
-
-
-
-    categories.forEach(cat=>{
-
-
-        categoryBox.innerHTML +=`
-
-        <option value="${cat}">
-        ${cat}
-        </option>
-
-        `;
-
-
-    });
-
-
-}
-
-
-
-
-
-
-// ==============================
-// SEARCH + FILTER
-// ==============================
-
-
-function filterDirectory(){
-
-
-    let search =
-
-    document.getElementById("searchBox")
-    ?.value
-    .toLowerCase() || "";
-
-
-
-    let cat =
-
-    document.getElementById("categoryFilter")
-    ?.value || "";
-
-
-
-    let sub =
-
-    document.getElementById("subCategoryFilter")
-    ?.value || "";
-
-
-
-
-    let result =
-
-    allDirectory.filter(item=>{
-
-
-        return (
-
-            item.name
-            ?.toLowerCase()
-            .includes(search)
-
-            ||
-
-            item.address
-            ?.toLowerCase()
-            .includes(search)
-
-        )
-
-        &&
-
-        (
-
-            !cat ||
-
-            item.cat===cat
-
-        )
-
-        &&
-
-        (
-
-            !sub ||
-
-            item.subcat===sub
-
-        );
-
-
-    });
-
-
-
-    displayDirectory(result);
-
-
-}
-
-
-
-
-
-
-
-
-// ==============================
-// SHOW DIRECTORY
-// ==============================
-
-
-function displayDirectory(data){
-
-
-    const box =
-
-    document.getElementById("directory");
-
-
-    if(!box)
-    return;
-
-
-
-    if(!data || data.length===0){
-
-
-        box.innerHTML=
-
-        `
-        <div class="empty">
-        কোনো তথ্য পাওয়া যায়নি
-        </div>
-        `;
-
-
-        return;
-
+    function normalizeSubcategory(category, value){
+        const raw=String(value || "").trim();
+        if(!raw) return "";
+
+        try{
+            if(typeof subcategories !== "undefined"){
+                const list=subcategories[category] || [];
+                const match=list.find(item => item[0]===raw || item[1]===raw);
+                if(match) return match[0];
+            }
+        }catch(error){}
+
+        return raw;
     }
 
+    function toSiteItem(row){
+        const category=normalizeCategory(row.cat);
+        return {
+            id:row.id,
+            cat:category,
+            subcat:normalizeSubcategory(category,row.subcat),
+            name:row.name || "",
+            phone:row.phone || "",
+            map:row.map_url || "",
+            address:row.address || "",
+            desc:row.description || "",
+            image_url:row.image_url || ""
+        };
+    }
 
-
-
-
-    box.innerHTML = data.map(item=>{
-
-
-    return `
-
-
-    <div class="directory-card">
-
-
-
-        ${
-        item.image_url ?
-
-        `
-
-        <div class="directory-image">
-
-        <img 
-
-        src="${item.image_url}"
-
-        alt="${item.name || ''}"
-
-        loading="lazy"
-
-        >
-
-        </div>
-
-        `
-
-        :
-
-        ""
-
+    function refreshExistingUI(){
+        if(typeof homeRecentData !== "undefined"){
+            homeRecentData = data.filter(x =>
+                ["government:union","health:hospital","education:secondary","health:pharmacy"]
+                .includes(`${x.cat}:${x.subcat}`)
+            );
         }
 
+        if(typeof renderCats === "function") renderCats();
+        if(typeof renderMenu === "function") renderMenu();
+        if(typeof renderCards === "function") renderCards(homeRecentData);
 
+        const searchInput=document.getElementById("search");
+        if(searchInput && searchInput.value.trim() && typeof renderLiveResults === "function"){
+            renderLiveResults(searchInput.value);
+        }
+    }
 
-
-        <h3>
-        ${item.name || ""}
-        </h3>
-
-
-
-        <p>
-        📂 ${item.cat || ""}
-        </p>
-
-
-
-        <p>
-        📌 ${item.subcat || ""}
-        </p>
-
-
-
-        <p>
-        📍 ${item.address || ""}
-        </p>
-
-
-
-
-        ${
-        item.phone ?
-
-        `
-
-        <a href="tel:${item.phone}"
-
-        class="call-btn">
-
-        📞 কল করুন
-
-        </a>
-
-        `
-
-        :
-
-        ""
-
+    async function loadDirectoryFromSupabase(){
+        if(!window.supabaseClient){
+            console.warn("Directory: Supabase client not ready; using built-in fallback data.");
+            return;
         }
 
+        try{
+            const {data:rows,error}=await window.supabaseClient
+                .from("directory_items")
+                .select("*")
+                .eq("active",true)
+                .order("sort_order",{ascending:true})
+                .order("id",{ascending:true});
 
+            if(error) throw error;
 
+            // Keep the original built-in records only when the database has no published records.
+            if(!rows || rows.length===0){
+                console.info("Directory: no active Supabase rows; built-in fallback remains visible.");
+                return;
+            }
 
-        ${
-        item.map_url ?
-
-        `
-
-        <a href="${item.map_url}"
-
-        target="_blank"
-
-        class="map-btn">
-
-        🗺️ ম্যাপ দেখুন
-
-        </a>
-
-        `
-
-        :
-
-        ""
-
+            data = rows.map(toSiteItem);
+            refreshExistingUI();
+            console.log("Directory loaded from Supabase:", data.length);
+        }catch(error){
+            console.error("Directory loading error:", error);
+            // Do not blank the website if Supabase is temporarily unavailable.
         }
+    }
 
+    window.VoiceOfGoilaDirectory={
+        reload:loadDirectoryFromSupabase
+    };
 
+    if(document.readyState === "loading"){
+        document.addEventListener("DOMContentLoaded", loadDirectoryFromSupabase);
+    }else{
+        loadDirectoryFromSupabase();
+    }
 
-    </div>
-
-
-    `;
-
-
-    }).join("");
-
-
-}
-
-
-
-
-
-
-
-
-// ==============================
-// INIT
-// ==============================
-
-
-window.addEventListener(
-
-"load",
-
-()=>{
-
-
-    setTimeout(
-
-        loadDirectory,
-
-        500
-
-    );
-
-
-});
-
-
-
-
-
-
-// Search listener
-
-document.addEventListener(
-
-"input",
-
-function(e){
-
-
-    if(
-        e.target.id==="searchBox"
-    )
-
-    filterDirectory();
-
-
-});
-
-
-
-
-
-
-
-// Category change
-
-document.addEventListener(
-
-"change",
-
-function(e){
-
-
-    if(
-
-        e.target.id==="categoryFilter"
-
-        ||
-
-        e.target.id==="subCategoryFilter"
-
-    )
-
-    filterDirectory();
-
-
-});
+})();
