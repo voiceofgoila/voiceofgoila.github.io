@@ -6,6 +6,9 @@ let directoryData = [];
 
 let selectedImageFile = null;
 
+let managedCategories = [];
+let managedSubCategories = [];
+
 
 
 
@@ -260,6 +263,14 @@ document
 }
 
 
+function showCategories(){
+
+const section=document.getElementById("categoryManagement");
+if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
+
+}
+
+
 
 
 
@@ -281,6 +292,8 @@ loadPending();
 
 loadDirectory();
 
+loadCategoryManager();
+
 
 }
 
@@ -299,91 +312,26 @@ loadDirectory();
 
 async function loadStats(){
 
+const [total,pending,approved,categoriesCount,subCategoriesCount] = await Promise.all([
+    window.supabaseClient.from("directory_items").select("*",{count:"exact",head:true}),
+    window.supabaseClient.from("submissions").select("*",{count:"exact",head:true}).eq("status","pending"),
+    window.supabaseClient.from("submissions").select("*",{count:"exact",head:true}).eq("status","approved"),
+    window.supabaseClient.from("categories").select("*",{count:"exact",head:true}),
+    window.supabaseClient.from("sub_categories").select("*",{count:"exact",head:true})
+]);
 
+const setCount=(id,result)=>{
+    const el=document.getElementById(id);
+    if(el) el.innerText = result && !result.error ? (result.count || 0) : 0;
+};
 
-const total =
-
-await window.supabaseClient
-
-.from("directory_items")
-
-.select("*",
-
-{
-count:"exact",
-head:true
-});
-
-
-
-
-
-
-const pending =
-
-await window.supabaseClient
-
-.from("submissions")
-
-.select("*",
-
-{
-count:"exact",
-head:true
-})
-
-.eq("status","pending");
-
-
-
-
-
-
-const approved =
-
-await window.supabaseClient
-
-.from("directory_items")
-
-.select("*",
-
-{
-count:"exact",
-head:true
-});
-
-
-
-
-
-
-
-document.getElementById("total").innerText =
-
-total.count || 0;
-
-
-
-
-document.getElementById("pendingCount").innerText =
-
-pending.count || 0;
-
-
-
-
-document.getElementById("approvedCount").innerText =
-
-approved.count || 0;
-
-
+setCount("total",total);
+setCount("pendingCount",pending);
+setCount("approvedCount",approved);
+setCount("categoryCount",categoriesCount);
+setCount("subCategoryCount",subCategoriesCount);
 
 }
-
-
-
-
-
 
 
 
@@ -1983,6 +1931,379 @@ loadAll();
 
 
              }
+
+
+
+// ===============================
+// CATEGORY / SUBCATEGORY MANAGER
+// ===============================
+
+function cmsEscape(value){
+    return String(value ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+}
+
+function normalizeCmsName(value){
+    return String(value || "").trim().replace(/\s+/g," ");
+}
+
+async function loadCategoryManager(){
+    const categoryList=document.getElementById("categoryList");
+    const subList=document.getElementById("subCategoryList");
+
+    if(categoryList) categoryList.innerHTML="Loading...";
+    if(subList) subList.innerHTML="Loading...";
+
+    const [catRes,subRes]=await Promise.all([
+        window.supabaseClient.from("categories").select("*").order("id",{ascending:true}),
+        window.supabaseClient.from("sub_categories").select("*").order("id",{ascending:true})
+    ]);
+
+    if(catRes.error){
+        console.error(catRes.error);
+        if(categoryList) categoryList.innerHTML="<p>Category load failed</p>";
+        return;
+    }
+
+    if(subRes.error){
+        console.error(subRes.error);
+        if(subList) subList.innerHTML="<p>Subcategory load failed</p>";
+        return;
+    }
+
+    managedCategories=catRes.data || [];
+    managedSubCategories=subRes.data || [];
+
+    renderManagedCategories();
+    renderManagedSubcategories();
+    fillManagedCategorySelects();
+}
+
+function renderManagedCategories(){
+    const box=document.getElementById("categoryList");
+    if(!box) return;
+
+    if(!managedCategories.length){
+        box.innerHTML="<p>কোনো Category নেই</p>";
+        return;
+    }
+
+    box.innerHTML=managedCategories.map(cat=>{
+        const childCount=managedSubCategories.filter(sub=>String(sub.category_id)===String(cat.id)).length;
+        return `
+        <div class="cms-row">
+            <div>
+                <strong>${cmsEscape(cat.name)}</strong>
+                <span class="cms-parent">${childCount} subcategory</span>
+            </div>
+            <button class="edit" onclick="openCategoryManagerEdit('category',${Number(cat.id)})">Edit</button>
+            <button class="delete" onclick="deleteManagedCategory(${Number(cat.id)})">Delete</button>
+        </div>`;
+    }).join("");
+}
+
+function renderManagedSubcategories(){
+    const box=document.getElementById("subCategoryList");
+    if(!box) return;
+
+    if(!managedSubCategories.length){
+        box.innerHTML="<p>কোনো Subcategory নেই</p>";
+        return;
+    }
+
+    const categoryMap=new Map(managedCategories.map(cat=>[String(cat.id),cat.name]));
+
+    box.innerHTML=managedSubCategories.map(sub=>`
+        <div class="cms-row">
+            <div>
+                <strong>${cmsEscape(sub.name)}</strong>
+                <span class="cms-parent">${cmsEscape(categoryMap.get(String(sub.category_id)) || "Unknown Category")}</span>
+            </div>
+            <button class="edit" onclick="openCategoryManagerEdit('subcategory',${Number(sub.id)})">Edit</button>
+            <button class="delete" onclick="deleteManagedSubcategory(${Number(sub.id)})">Delete</button>
+        </div>
+    `).join("");
+}
+
+function fillManagedCategorySelects(selectedId=""){
+    const optionHtml=[
+        '<option value="">Parent Category নির্বাচন করুন</option>',
+        ...managedCategories.map(cat=>`<option value="${Number(cat.id)}">${cmsEscape(cat.name)}</option>`)
+    ].join("");
+
+    const addSelect=document.getElementById("subCategoryParent");
+    if(addSelect){
+        const current=addSelect.value;
+        addSelect.innerHTML=optionHtml;
+        if(current && managedCategories.some(cat=>String(cat.id)===String(current))) addSelect.value=current;
+    }
+
+    const editSelect=document.getElementById("categoryManagerParent");
+    if(editSelect){
+        editSelect.innerHTML=optionHtml;
+        if(selectedId) editSelect.value=String(selectedId);
+    }
+}
+
+async function addManagedCategory(){
+    const input=document.getElementById("newCategoryName");
+    const name=normalizeCmsName(input ? input.value : "");
+
+    if(!name){
+        alert("Category নাম লিখুন");
+        return;
+    }
+
+    if(managedCategories.some(cat=>String(cat.name).trim().toLowerCase()===name.toLowerCase())){
+        alert("এই Category আগে থেকেই আছে");
+        return;
+    }
+
+    const {error}=await window.supabaseClient.from("categories").insert({name});
+    if(error){
+        console.error(error);
+        alert("Category যোগ করা যায়নি: "+error.message);
+        return;
+    }
+
+    if(input) input.value="";
+    await loadCategoryManager();
+    await loadStats();
+    alert("Category যোগ হয়েছে");
+}
+
+async function addManagedSubcategory(){
+    const parent=document.getElementById("subCategoryParent");
+    const input=document.getElementById("newSubCategoryName");
+    const categoryId=parent ? parent.value : "";
+    const name=normalizeCmsName(input ? input.value : "");
+
+    if(!categoryId){
+        alert("Parent Category নির্বাচন করুন");
+        return;
+    }
+
+    if(!name){
+        alert("Subcategory নাম লিখুন");
+        return;
+    }
+
+    if(managedSubCategories.some(sub=>String(sub.category_id)===String(categoryId) && String(sub.name).trim().toLowerCase()===name.toLowerCase())){
+        alert("এই Category-তে Subcategory-টি আগে থেকেই আছে");
+        return;
+    }
+
+    const {error}=await window.supabaseClient.from("sub_categories").insert({
+        category_id:Number(categoryId),
+        name
+    });
+
+    if(error){
+        console.error(error);
+        alert("Subcategory যোগ করা যায়নি: "+error.message);
+        return;
+    }
+
+    if(input) input.value="";
+    await loadCategoryManager();
+    await loadStats();
+    alert("Subcategory যোগ হয়েছে");
+}
+
+function openCategoryManagerEdit(type,id){
+    const modal=document.getElementById("categoryManagerModal");
+    const typeInput=document.getElementById("categoryManagerType");
+    const idInput=document.getElementById("categoryManagerId");
+    const nameInput=document.getElementById("categoryManagerName");
+    const title=document.getElementById("categoryManagerTitle");
+    const parentWrap=document.getElementById("categoryManagerParentWrap");
+
+    if(!modal || !typeInput || !idInput || !nameInput) return;
+
+    typeInput.value=type;
+    idInput.value=String(id);
+
+    if(type==="category"){
+        const item=managedCategories.find(cat=>String(cat.id)===String(id));
+        if(!item) return;
+        if(title) title.innerText="Edit Category";
+        if(parentWrap) parentWrap.style.display="none";
+        nameInput.value=item.name || "";
+    }else{
+        const item=managedSubCategories.find(sub=>String(sub.id)===String(id));
+        if(!item) return;
+        if(title) title.innerText="Edit Subcategory";
+        if(parentWrap) parentWrap.style.display="block";
+        fillManagedCategorySelects(item.category_id);
+        nameInput.value=item.name || "";
+    }
+
+    modal.style.display="flex";
+}
+
+function closeCategoryManagerEdit(){
+    const modal=document.getElementById("categoryManagerModal");
+    if(modal) modal.style.display="none";
+}
+
+async function countExact(table,column,value){
+    const {count,error}=await window.supabaseClient
+        .from(table)
+        .select("*",{count:"exact",head:true})
+        .eq(column,value);
+    if(error) throw error;
+    return count || 0;
+}
+
+async function categoryIsUsed(name){
+    const [directoryCount,submissionCount]=await Promise.all([
+        countExact("directory_items","cat",name),
+        countExact("submissions","cat",name)
+    ]);
+    return directoryCount + submissionCount;
+}
+
+async function subcategoryIsUsed(name){
+    const [directoryCount,submissionCount]=await Promise.all([
+        countExact("directory_items","subcat",name),
+        countExact("submissions","subcat",name)
+    ]);
+    return directoryCount + submissionCount;
+}
+
+async function saveCategoryManagerEdit(){
+    const type=document.getElementById("categoryManagerType").value;
+    const id=document.getElementById("categoryManagerId").value;
+    const name=normalizeCmsName(document.getElementById("categoryManagerName").value);
+
+    if(!name){
+        alert("নাম লিখুন");
+        return;
+    }
+
+    try{
+        if(type==="category"){
+            const item=managedCategories.find(cat=>String(cat.id)===String(id));
+            if(!item) return;
+
+            const duplicate=managedCategories.some(cat=>String(cat.id)!==String(id) && String(cat.name).trim().toLowerCase()===name.toLowerCase());
+            if(duplicate){
+                alert("এই Category নাম আগে থেকেই আছে");
+                return;
+            }
+
+            if(name!==item.name){
+                const used=await categoryIsUsed(item.name);
+                if(used>0){
+                    alert(`এই Category ${used}টি Directory/Submission-এ ব্যবহৃত হচ্ছে। Data mismatch এড়াতে Rename block করা হয়েছে।`);
+                    return;
+                }
+            }
+
+            const {error}=await window.supabaseClient.from("categories").update({name}).eq("id",Number(id));
+            if(error) throw error;
+        }else{
+            const item=managedSubCategories.find(sub=>String(sub.id)===String(id));
+            if(!item) return;
+
+            const categoryId=document.getElementById("categoryManagerParent").value;
+            if(!categoryId){
+                alert("Parent Category নির্বাচন করুন");
+                return;
+            }
+
+            const duplicate=managedSubCategories.some(sub=>
+                String(sub.id)!==String(id) &&
+                String(sub.category_id)===String(categoryId) &&
+                String(sub.name).trim().toLowerCase()===name.toLowerCase()
+            );
+            if(duplicate){
+                alert("এই Parent Category-তে একই Subcategory আগে থেকেই আছে");
+                return;
+            }
+
+            if(name!==item.name || String(categoryId)!==String(item.category_id)){
+                const used=await subcategoryIsUsed(item.name);
+                if(used>0){
+                    alert(`এই Subcategory ${used}টি Directory/Submission-এ ব্যবহৃত হচ্ছে। Data mismatch এড়াতে Edit block করা হয়েছে।`);
+                    return;
+                }
+            }
+
+            const {error}=await window.supabaseClient.from("sub_categories").update({
+                name,
+                category_id:Number(categoryId)
+            }).eq("id",Number(id));
+            if(error) throw error;
+        }
+
+        closeCategoryManagerEdit();
+        await loadCategoryManager();
+        await loadStats();
+        alert("Update হয়েছে");
+    }catch(error){
+        console.error(error);
+        alert("Update করা যায়নি: "+error.message);
+    }
+}
+
+async function deleteManagedCategory(id){
+    const item=managedCategories.find(cat=>String(cat.id)===String(id));
+    if(!item) return;
+
+    try{
+        const childCount=managedSubCategories.filter(sub=>String(sub.category_id)===String(id)).length;
+        if(childCount>0){
+            alert(`এই Category-এর ${childCount}টি Subcategory আছে। আগে সেগুলো সরান/ডিলিট করুন।`);
+            return;
+        }
+
+        const used=await categoryIsUsed(item.name);
+        if(used>0){
+            alert(`এই Category ${used}টি Directory/Submission-এ ব্যবহৃত হচ্ছে। Data নিরাপদ রাখতে Delete block করা হয়েছে।`);
+            return;
+        }
+
+        if(!confirm(`"${item.name}" Category delete করবেন?`)) return;
+
+        const {error}=await window.supabaseClient.from("categories").delete().eq("id",Number(id));
+        if(error) throw error;
+
+        await loadCategoryManager();
+        await loadStats();
+    }catch(error){
+        console.error(error);
+        alert("Category delete করা যায়নি: "+error.message);
+    }
+}
+
+async function deleteManagedSubcategory(id){
+    const item=managedSubCategories.find(sub=>String(sub.id)===String(id));
+    if(!item) return;
+
+    try{
+        const used=await subcategoryIsUsed(item.name);
+        if(used>0){
+            alert(`এই Subcategory ${used}টি Directory/Submission-এ ব্যবহৃত হচ্ছে। Data নিরাপদ রাখতে Delete block করা হয়েছে।`);
+            return;
+        }
+
+        if(!confirm(`"${item.name}" Subcategory delete করবেন?`)) return;
+
+        const {error}=await window.supabaseClient.from("sub_categories").delete().eq("id",Number(id));
+        if(error) throw error;
+
+        await loadCategoryManager();
+        await loadStats();
+    }catch(error){
+        console.error(error);
+        alert("Subcategory delete করা যায়নি: "+error.message);
+    }
+}
 
 
 // ===============================
