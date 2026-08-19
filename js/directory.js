@@ -1,16 +1,13 @@
 // Voice of Goila Directory System
-// Final Version
+// Final Version With Image Support
 
 
 let allDirectory = [];
 
 
-
-
 // ==============================
 // LOAD DIRECTORY
 // ==============================
-
 
 async function loadDirectory(){
 
@@ -36,21 +33,16 @@ async function loadDirectory(){
     }
 
 
-
     allDirectory = data || [];
-
 
 
     loadCategoryFilter();
 
 
-
     displayDirectory(allDirectory);
 
 
-
 }
-
 
 
 
@@ -65,10 +57,8 @@ async function loadDirectory(){
 function loadCategoryFilter(){
 
 
-
     const categoryBox =
     document.getElementById("categoryFilter");
-
 
 
     if(!categoryBox)
@@ -77,10 +67,13 @@ function loadCategoryFilter(){
 
 
     let categories =
+
     [...new Set(
+
         allDirectory.map(
             item=>item.cat
         )
+
     )];
 
 
@@ -110,10 +103,7 @@ function loadCategoryFilter(){
     });
 
 
-
 }
-
-
 
 
 
@@ -128,8 +118,8 @@ function loadCategoryFilter(){
 function filterDirectory(){
 
 
-
     let search =
+
     document.getElementById("searchBox")
     ?.value
     .toLowerCase() || "";
@@ -137,12 +127,14 @@ function filterDirectory(){
 
 
     let cat =
+
     document.getElementById("categoryFilter")
     ?.value || "";
 
 
 
     let sub =
+
     document.getElementById("subCategoryFilter")
     ?.value || "";
 
@@ -150,6 +142,7 @@ function filterDirectory(){
 
 
     let result =
+
     allDirectory.filter(item=>{
 
 
@@ -171,8 +164,8 @@ function filterDirectory(){
 
         (
 
-            !cat
-            ||
+            !cat ||
+
             item.cat===cat
 
         )
@@ -181,8 +174,8 @@ function filterDirectory(){
 
         (
 
-            !sub
-            ||
+            !sub ||
+
             item.subcat===sub
 
         );
@@ -212,10 +205,9 @@ function filterDirectory(){
 function displayDirectory(data){
 
 
-
     const box =
-    document.getElementById("directory");
 
+    document.getElementById("directory");
 
 
     if(!box)
@@ -223,8 +215,7 @@ function displayDirectory(data){
 
 
 
-
-    if(data.length===0){
+    if(!data || data.length===0){
 
 
         box.innerHTML=
@@ -243,6 +234,7 @@ function displayDirectory(data){
 
 
 
+
     box.innerHTML = data.map(item=>{
 
 
@@ -250,6 +242,37 @@ function displayDirectory(data){
 
 
     <div class="directory-card">
+
+
+
+        ${
+        item.image_url ?
+
+        `
+
+        <div class="directory-image">
+
+        <img 
+
+        src="${item.image_url}"
+
+        alt="${item.name || ''}"
+
+        loading="lazy"
+
+        >
+
+        </div>
+
+        `
+
+        :
+
+        ""
+
+        }
+
+
 
 
         <h3>
@@ -276,12 +299,14 @@ function displayDirectory(data){
 
 
 
+
         ${
         item.phone ?
 
         `
 
         <a href="tel:${item.phone}"
+
         class="call-btn">
 
         📞 কল করুন
@@ -289,11 +314,13 @@ function displayDirectory(data){
         </a>
 
         `
+
         :
 
         ""
 
         }
+
 
 
 
@@ -303,7 +330,9 @@ function displayDirectory(data){
         `
 
         <a href="${item.map_url}"
+
         target="_blank"
+
         class="map-btn">
 
         🗺️ ম্যাপ দেখুন
@@ -311,6 +340,7 @@ function displayDirectory(data){
         </a>
 
         `
+
         :
 
         ""
@@ -328,7 +358,6 @@ function displayDirectory(data){
     }).join("");
 
 
-
 }
 
 
@@ -344,13 +373,18 @@ function displayDirectory(data){
 
 
 window.addEventListener(
+
 "load",
+
 ()=>{
 
 
     setTimeout(
+
         loadDirectory,
+
         500
+
     );
 
 
@@ -359,15 +393,19 @@ window.addEventListener(
 
 
 
+
+
 // Search listener
 
 document.addEventListener(
+
 "input",
+
 function(e){
 
 
     if(
-    e.target.id==="searchBox"
+        e.target.id==="searchBox"
     )
 
     filterDirectory();
@@ -378,17 +416,26 @@ function(e){
 
 
 
+
+
+
 // Category change
 
 document.addEventListener(
+
 "change",
+
 function(e){
 
 
     if(
-    e.target.id==="categoryFilter"
-    ||
-    e.target.id==="subCategoryFilter"
+
+        e.target.id==="categoryFilter"
+
+        ||
+
+        e.target.id==="subCategoryFilter"
+
     )
 
     filterDirectory();
