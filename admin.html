@@ -376,6 +376,30 @@ display:none;
 
 }
 
+.edit-image-actions{
+display:flex;
+justify-content:center;
+gap:10px;
+flex-wrap:wrap;
+margin-top:8px;
+}
+
+.edit-image-remove{
+display:none;
+border:0;
+background:#fff0f0;
+color:#b42318;
+padding:10px 14px;
+border-radius:10px;
+font-weight:700;
+cursor:pointer;
+}
+
+.edit-image-remove:hover{
+background:#ffe2e2;
+}
+
+
 
 
 /* ==========================
@@ -1569,7 +1593,9 @@ No image selected
 
 </p>
 
-
+<div class="edit-image-actions">
+<button type="button" id="removeEditImageBtn" class="edit-image-remove" onclick="removeDirectoryEditImage()">🗑️ Remove Image</button>
+</div>
 
 
 <img
@@ -1612,86 +1638,15 @@ Save Changes
 
 <script src="js/supabase.js"></script>
 
-<script src="js/admin.js?v=20260819-1730"></script>
+<script src="js/admin.js?v=20260819-final-audit-1"></script>
 
 
 
 <script>
-
-
 function togglePassword(){
-
-
-let pass =
-document.getElementById("password");
-
-
-
-if(pass.type==="password"){
-
-
-pass.type="text";
-
-
+  const pass=document.getElementById("password");
+  if(pass) pass.type=pass.type==="password"?"text":"password";
 }
-
-else{
-
-
-pass.type="password";
-
-
-}
-
-
-}
-
-
-
-
-function showEditImage(event){
-
-
-const file =
-event.target.files[0];
-
-
-
-const name =
-document.getElementById("editImageName");
-
-
-
-const preview =
-document.getElementById("editImagePreview");
-
-
-
-if(file){
-
-
-name.innerHTML =
-"Selected Image: " + file.name;
-
-
-
-preview.src =
-URL.createObjectURL(file);
-
-
-
-preview.style.display="block";
-
-
-
-}
-
-
-
-}
-
-
-
 </script>
 
 
