@@ -306,6 +306,12 @@ function showReviewsCMS(){
     if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
+function showAnalytics(){
+    const section=document.getElementById("analyticsManagement");
+    if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
+    loadAnalytics();
+}
+
 
 
 
@@ -336,6 +342,7 @@ loadAnnouncementsAdmin();
 loadAdsAdmin();
 loadEmergencyAdmin();
 loadReviewsAdmin();
+loadAnalytics();
 
 
 }
@@ -3102,4 +3109,86 @@ document.addEventListener("input", function(e){
 
     displayDirectory(filtered);
 });
+
+// ===============================
+// PHASE 2 PART 6 - ANALYTICS
+// ===============================
+
+function p6Number(v){
+    const n=Number(v||0);
+    return Number.isFinite(n)?n:0;
+}
+
+function p6Format(v){
+    try{return p6Number(v).toLocaleString("en-US");}catch(e){return String(p6Number(v));}
+}
+
+function p6Esc(v){
+    return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+
+function p6SetText(id,value){
+    const el=document.getElementById(id);if(el)el.textContent=value;
+}
+
+function p6AnalyticsError(message){
+    p6SetText("analyticsStatus",message||"");
+}
+
+function p6SummaryRow(data){
+    if(Array.isArray(data))return data[0]||{};
+    return data||{};
+}
+
+function renderAnalyticsDaily(rows){
+    const box=document.getElementById("analyticsDaily");if(!box)return;
+    rows=Array.isArray(rows)?rows:[];
+    if(!rows.length){box.innerHTML='<div class="cms-note">এখনও tracking data নেই।</div>';return;}
+    const max=Math.max(1,...rows.map(r=>p6Number(r.page_views)));
+    box.innerHTML=rows.map(r=>{
+        const views=p6Number(r.page_views), visitors=p6Number(r.unique_visitors);
+        let label=String(r.day||"");
+        try{label=new Date(label+"T00:00:00").toLocaleDateString("bn-BD",{day:"numeric",month:"short"});}catch(e){}
+        const width=Math.max(2,Math.round((views/max)*100));
+        return `<div class="p6-day"><div class="p6-day-label">${p6Esc(label)}</div><div class="p6-bar-track"><div class="p6-bar" style="width:${width}%"></div></div><div class="p6-day-count">${p6Format(visitors)} / ${p6Format(views)}</div></div>`;
+    }).join("");
+}
+
+function renderPopularPages(rows){
+    const box=document.getElementById("analyticsPopularPages");if(!box)return;
+    rows=Array.isArray(rows)?rows:[];
+    if(!rows.length){box.innerHTML='<div class="cms-note">এখনও page-view data নেই।</div>';return;}
+    box.innerHTML=rows.map(r=>`<div class="p6-page"><div class="p6-page-name" title="${p6Esc(r.page_name||'')}">${p6Esc(r.page_name||"Unknown")}</div><div class="p6-page-views">${p6Format(r.views)} views</div></div>`).join("");
+}
+
+async function loadAnalytics(){
+    const section=document.getElementById("analyticsManagement");
+    if(!section || !window.supabaseClient)return;
+    p6AnalyticsError("Loading analytics...");
+    try{
+        const [summaryRes,dailyRes,pagesRes]=await Promise.all([
+            window.supabaseClient.rpc("get_analytics_summary"),
+            window.supabaseClient.rpc("get_analytics_daily",{p_days:7}),
+            window.supabaseClient.rpc("get_popular_pages",{p_limit:10})
+        ]);
+        const firstError=summaryRes.error||dailyRes.error||pagesRes.error;
+        if(firstError)throw firstError;
+        const x=p6SummaryRow(summaryRes.data);
+        p6SetText("analyticsTotalVisitors",p6Format(x.total_visitors));
+        p6SetText("analyticsTodayVisitors",p6Format(x.today_visitors));
+        p6SetText("analyticsTotalViews",p6Format(x.total_page_views));
+        p6SetText("analytics7dVisitors",p6Format(x.last7_visitors));
+        p6SetText("analyticsMobile",p6Format(x.mobile_visitors));
+        p6SetText("analyticsDesktop",p6Format(x.desktop_visitors));
+        p6SetText("analyticsTablet",p6Format(x.tablet_visitors));
+        p6SetText("analyticsOther",p6Format(x.other_visitors));
+        renderAnalyticsDaily(dailyRes.data||[]);
+        renderPopularPages(pagesRes.data||[]);
+        p6AnalyticsError("Updated: "+new Date().toLocaleTimeString("bn-BD",{hour:"2-digit",minute:"2-digit"}));
+    }catch(error){
+        console.error("Analytics load error",error);
+        p6AnalyticsError("Analytics load হয়নি: "+(error?.message||error));
+        renderAnalyticsDaily([]);renderPopularPages([]);
+    }
+}
 
