@@ -965,7 +965,7 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
 <!-- ADS MANAGEMENT -->
 <div class="card" id="adsManagement">
   <h2>Ads Management</h2>
-  <p class="cms-note">Popup ও Inline advertisement Supabase থেকে নিয়ন্ত্রণ করুন। একই position-এ একসাথে একটি Active ad রাখা হবে। Image public <b>image</b> bucket-এ upload হবে।</p>
+  <p class="cms-note">Popup ও Inline advertisement Supabase থেকে নিয়ন্ত্রণ করুন। একই position-এ একসাথে একটি Active ad রাখা হবে। ২৪ ঘণ্টার show limit ও display seconds প্রতিটি ad-এর জন্য আলাদা সেট করা যাবে। Image public <b>image</b> bucket-এ upload হবে।</p>
 
   <div class="adm-ad-form">
     <div class="adm-ad-field">
@@ -978,6 +978,16 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
         <option value="popup">Popup</option>
         <option value="inline">Inline Banner</option>
       </select>
+    </div>
+    <div class="adm-ad-field">
+      <label>24h Show Limit</label>
+      <input id="adViews24h" type="number" min="1" max="100" value="1" inputmode="numeric">
+      <div class="settings-help">প্রতি browser/device-এ ২৪ ঘণ্টায় সর্বোচ্চ কতবার দেখাবে।</div>
+    </div>
+    <div class="adm-ad-field">
+      <label>Display Seconds</label>
+      <input id="adDuration" type="number" min="3" max="300" value="8" inputmode="numeric">
+      <div class="settings-help">কত সেকেন্ড পর Popup/Inline নিজে থেকে বন্ধ হবে।</div>
     </div>
     <div class="adm-ad-field wide">
       <label>Click Link (optional)</label>
@@ -1150,6 +1160,8 @@ Loading...
     <input id="adEditId" type="hidden">
     <div class="adm-ad-field"><label>Title</label><input id="adEditTitle"></div>
     <div class="adm-ad-field"><label>Position</label><select id="adEditPosition"><option value="popup">Popup</option><option value="inline">Inline Banner</option></select></div>
+    <div class="adm-ad-field"><label>24h Show Limit</label><input id="adEditViews24h" type="number" min="1" max="100" value="1" inputmode="numeric"><div class="settings-help">প্রতি browser/device-এ ২৪ ঘণ্টায় সর্বোচ্চ কতবার।</div></div>
+    <div class="adm-ad-field"><label>Display Seconds</label><input id="adEditDuration" type="number" min="3" max="300" value="8" inputmode="numeric"><div class="settings-help">Auto-close/hide সময়।</div></div>
     <div class="adm-ad-field"><label>Click Link</label><input id="adEditLink" placeholder="https://..."></div>
     <div class="adm-ad-upload">
       <label class="file-label" for="adEditImageFile">📷 Change Image
@@ -1381,7 +1393,7 @@ Save Changes
 
 <script src="js/supabase.js"></script>
 
-<script src="js/admin.js?v=20260819-1625"></script>
+<script src="js/admin.js?v=20260819-1655"></script>
 
 
 
