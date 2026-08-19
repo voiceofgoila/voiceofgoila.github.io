@@ -11,6 +11,7 @@ let managedSubCategories = [];
 let websiteSettingsRecord = null;
 let adminAnnouncements = [];
 let homepageSettingsRecord = null;
+let adminAds = [];
 
 
 
@@ -288,6 +289,11 @@ function showAnnouncements(){
     if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
+function showAds(){
+    const section=document.getElementById("adsManagement");
+    if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
 
 
 
@@ -315,6 +321,7 @@ loadCategoryManager();
 loadWebsiteSettings();
 loadHomepageContent();
 loadAnnouncementsAdmin();
+loadAdsAdmin();
 
 
 }
@@ -334,13 +341,14 @@ loadAnnouncementsAdmin();
 
 async function loadStats(){
 
-const [total,pending,approved,categoriesCount,subCategoriesCount,announcementCount] = await Promise.all([
+const [total,pending,approved,categoriesCount,subCategoriesCount,announcementCount,adsCount] = await Promise.all([
     window.supabaseClient.from("directory_items").select("*",{count:"exact",head:true}),
     window.supabaseClient.from("submissions").select("*",{count:"exact",head:true}).eq("status","pending"),
     window.supabaseClient.from("submissions").select("*",{count:"exact",head:true}).eq("status","approved"),
     window.supabaseClient.from("categories").select("*",{count:"exact",head:true}),
     window.supabaseClient.from("sub_categories").select("*",{count:"exact",head:true}),
-    window.supabaseClient.from("announcements").select("*",{count:"exact",head:true})
+    window.supabaseClient.from("announcements").select("*",{count:"exact",head:true}),
+    window.supabaseClient.from("ads").select("*",{count:"exact",head:true})
 ]);
 
 const setCount=(id,result)=>{
@@ -354,6 +362,7 @@ setCount("approvedCount",approved);
 setCount("categoryCount",categoriesCount);
 setCount("subCategoryCount",subCategoriesCount);
 setCount("announcementCount",announcementCount);
+setCount("adsCount",adsCount);
 
 }
 
@@ -2727,6 +2736,160 @@ async function deleteAnnouncement(id){
     if(error){alert("Delete হয়নি: "+error.message);return;}
     await loadAnnouncementsAdmin(); await loadStats();
 }
+
+
+
+// ===============================
+// PHASE 2 PART 4 - ADS MANAGEMENT
+// ===============================
+
+function adsEscape(v){
+    return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+
+function setAdsStatus(text,isError=false){
+    const el=document.getElementById("adsStatus");
+    if(!el) return;
+    el.textContent=text||"";
+    el.style.color=isError ? "#b42318" : "#5d247c";
+}
+
+function previewAdminAdImage(event,previewId){
+    const file=event.target.files && event.target.files[0];
+    if(!file) return;
+    if(!file.type.startsWith("image/")){alert("শুধু image file দিন");event.target.value="";return;}
+    if(file.size>5*1024*1024){alert("Image 5 MB-এর মধ্যে রাখুন");event.target.value="";return;}
+    const img=document.getElementById(previewId);
+    if(img){img.src=URL.createObjectURL(file);img.style.display="block";}
+}
+
+function normalizeAdLink(v){
+    const x=String(v||"").trim();
+    if(!x) return "";
+    if(/^https?:\/\//i.test(x)) return x;
+    return "https://"+x.replace(/^\/+/,"");
+}
+
+async function uploadAdImage(file){
+    if(!file) return "";
+    const ext=(file.name.split(".").pop()||"jpg").replace(/[^a-zA-Z0-9]/g,"").toLowerCase()||"jpg";
+    const path=`ad_${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+    const {error}=await window.supabaseClient.storage.from("image").upload(path,file,{cacheControl:"3600",upsert:false});
+    if(error) throw error;
+    const {data}=window.supabaseClient.storage.from("image").getPublicUrl(path);
+    return data?.publicUrl||"";
+}
+
+async function loadAdsAdmin(){
+    const box=document.getElementById("adsAdminList");
+    if(!box) return;
+    box.textContent="Loading...";
+    const {data,error}=await window.supabaseClient.from("ads").select("*").order("created_at",{ascending:false}).order("id",{ascending:false});
+    if(error){box.textContent="Load হয়নি: "+error.message;setAdsStatus("Ads load হয়নি",true);return;}
+    adminAds=data||[];
+    renderAdsAdmin();
+    setAdsStatus(adminAds.length?`${adminAds.length} ad loaded`:"এখনও কোনো ad নেই");
+}
+
+function renderAdsAdmin(){
+    const box=document.getElementById("adsAdminList");if(!box)return;
+    if(!adminAds.length){box.innerHTML='<div class="cms-note">এখনও কোনো Advertisement নেই।</div>';return;}
+    box.innerHTML=adminAds.map(a=>`<div class="adm-ad-row ${a.status?'':'inactive'}">
+      <img class="adm-ad-thumb" src="${adsEscape(a.image_url||'')}" alt="${adsEscape(a.title||'Ad')}" onerror="this.style.visibility='hidden'">
+      <div class="adm-ad-info">
+        <h4>${adsEscape(a.title||'Untitled Ad')}</h4>
+        <div class="adm-ad-meta">Position: <b>${adsEscape(a.position||'')}</b> • ${a.status?'Active':'Inactive'}</div>
+        ${a.link?`<div class="adm-ad-meta">Link: ${adsEscape(a.link)}</div>`:''}
+        <div class="adm-ad-actions">
+          <button class="edit" onclick="openAdEdit(${Number(a.id)})">Edit</button>
+          <button class="btn-warning" onclick="toggleAdStatus(${Number(a.id)},${a.status?'false':'true'})">${a.status?'Deactivate':'Activate'}</button>
+          <button class="delete" onclick="deleteAd(${Number(a.id)})">Delete</button>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+async function deactivateOtherAds(position,exceptId=null){
+    let q=window.supabaseClient.from("ads").update({status:false}).eq("position",position).eq("status",true);
+    if(exceptId!=null) q=q.neq("id",Number(exceptId));
+    const {error}=await q;
+    if(error) throw error;
+}
+
+async function addAd(){
+    const title=String(document.getElementById("adTitle")?.value||"").trim();
+    const position=String(document.getElementById("adPosition")?.value||"popup");
+    const link=normalizeAdLink(document.getElementById("adLink")?.value||"");
+    const status=!!document.getElementById("adStatus")?.checked;
+    const input=document.getElementById("adImageFile");
+    const file=input?.files?.[0]||null;
+    if(!title){alert("Ad Title লিখুন");return;}
+    if(!file){alert("Ad Image নির্বাচন করুন");return;}
+    setAdsStatus("Uploading...");
+    try{
+        const image_url=await uploadAdImage(file);
+        if(status) await deactivateOtherAds(position);
+        const {error}=await window.supabaseClient.from("ads").insert({title,image_url,link,position,status});
+        if(error) throw error;
+        document.getElementById("adTitle").value="";document.getElementById("adLink").value="";document.getElementById("adPosition").value="popup";document.getElementById("adStatus").checked=true;
+        if(input)input.value="";const prev=document.getElementById("adImagePreview");if(prev){prev.removeAttribute("src");prev.style.display="none";}
+        await loadAdsAdmin();await loadStats();
+        alert("Ad add হয়েছে");
+    }catch(error){console.error("Ad add error",error);setAdsStatus("Add হয়নি: "+error.message,true);alert("Ad add করা যায়নি: "+error.message);}
+}
+
+function openAdEdit(id){
+    const a=adminAds.find(x=>Number(x.id)===Number(id));if(!a)return;
+    document.getElementById("adEditId").value=a.id;
+    document.getElementById("adEditTitle").value=a.title||"";
+    document.getElementById("adEditPosition").value=a.position||"popup";
+    document.getElementById("adEditLink").value=a.link||"";
+    document.getElementById("adEditStatus").checked=!!a.status;
+    const input=document.getElementById("adEditImageFile");if(input)input.value="";
+    const img=document.getElementById("adEditImagePreview");if(img){img.src=a.image_url||"";img.style.display=a.image_url?"block":"none";}
+    document.getElementById("adEditModal").style.display="flex";
+}
+
+function closeAdEdit(){const m=document.getElementById("adEditModal");if(m)m.style.display="none";}
+
+async function saveAdEdit(){
+    const id=Number(document.getElementById("adEditId")?.value);
+    const a=adminAds.find(x=>Number(x.id)===id);if(!a)return;
+    const title=String(document.getElementById("adEditTitle")?.value||"").trim();
+    const position=String(document.getElementById("adEditPosition")?.value||"popup");
+    const link=normalizeAdLink(document.getElementById("adEditLink")?.value||"");
+    const status=!!document.getElementById("adEditStatus")?.checked;
+    const file=document.getElementById("adEditImageFile")?.files?.[0]||null;
+    if(!title){alert("Ad Title লিখুন");return;}
+    try{
+        let image_url=a.image_url||"";
+        if(file) image_url=await uploadAdImage(file);
+        if(!image_url){alert("Ad Image দরকার");return;}
+        if(status) await deactivateOtherAds(position,id);
+        const {error}=await window.supabaseClient.from("ads").update({title,image_url,link,position,status}).eq("id",id);
+        if(error) throw error;
+        closeAdEdit();await loadAdsAdmin();await loadStats();alert("Ad update হয়েছে");
+    }catch(error){console.error(error);alert("Ad update হয়নি: "+error.message);}
+}
+
+async function toggleAdStatus(id,status){
+    const a=adminAds.find(x=>Number(x.id)===Number(id));if(!a)return;
+    try{
+        if(status) await deactivateOtherAds(a.position,id);
+        const {error}=await window.supabaseClient.from("ads").update({status:!!status}).eq("id",Number(id));
+        if(error) throw error;
+        await loadAdsAdmin();await loadStats();
+    }catch(error){alert("Status change হয়নি: "+error.message);}
+}
+
+async function deleteAd(id){
+    const a=adminAds.find(x=>Number(x.id)===Number(id));
+    if(!confirm(`Delete করবেন?\n${a?.title||'Advertisement'}`))return;
+    const {error}=await window.supabaseClient.from("ads").delete().eq("id",Number(id));
+    if(error){alert("Delete হয়নি: "+error.message);return;}
+    await loadAdsAdmin();await loadStats();
+}
+
 
 // ===============================
 // DIRECTORY SEARCH
