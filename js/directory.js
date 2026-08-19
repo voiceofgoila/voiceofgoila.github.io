@@ -1,7 +1,29 @@
 // Voice of Goila - Complete public directory + dynamic category bridge
 // Loads Supabase directory/category data into the existing homepage UI while preserving legacy slugs.
 (function(){
-  const knownCatNameMap={"শিক্ষা":"education","কোচিং / হোম টিউটর":"coaching"};
+  const knownCatNameMap={
+    "শিক্ষা":"education",
+    "শিক্ষা প্রতিষ্ঠান":"education",
+    "coaching":"coaching",
+    "কোচিং / হোম টিউটর":"coaching",
+    "কোচিং সেন্টার / হোম টিউটর":"coaching",
+    "সামাজিক সংগঠন":"social",
+    "স্বাস্থ্য":"health",
+    "স্বাস্থ্যসেবা":"health",
+    "সরকারি সেবা":"government",
+    "সরকারি ও ইউনিয়ন সেবা":"government",
+    "আইন-শৃঙ্খলা":"police",
+    "আইন-শৃংখলা":"police",
+    "ব্যবসা ও বাণিজ্য":"business",
+    "ব্যবসা ও দোকান":"business",
+    "কৃষি":"agriculture",
+    "ধর্মীয় প্রতিষ্ঠান":"religion",
+    "ধর্মীয় প্রতিষ্ঠান":"religion",
+    "পরিবহন":"transport",
+    "যাতায়াত ও যোগাযোগ":"transport",
+    "আবাসন ও নির্মাণ":"business",
+    "অন্যান্য":"places"
+  };
   const knownSubNameMap={"কোচিং সেন্টার":"coaching-center","হোম টিউটর":"home-tutor","বিষয়ভিত্তিক শিক্ষক":"subject-tutor","ভর্তি / এডমিশন কোচিং":"admission"};
   const clean=v=>String(v??"").trim();
   const lower=v=>clean(v).toLowerCase();
