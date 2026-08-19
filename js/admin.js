@@ -794,37 +794,23 @@ const box =
 
 document.getElementById("pending");
 
-
-
-
+const pendingCard = document.getElementById("pendingSubmissionCard");
 
 if(!box)
-
 return;
-
-
-
-
-
-
 
 if(!data || data.length===0){
-
-
-box.innerHTML=
-
-"<p>কোনো Pending Submission নেই</p>";
-
+box.innerHTML="";
+if(pendingCard) pendingCard.style.display="none";
+selectedImageFile=null;
+const submissionImage=document.getElementById("submissionImage");
+if(submissionImage) submissionImage.value="";
+const imagePreview=document.getElementById("imagePreview");
+if(imagePreview) imagePreview.style.display="none";
 return;
-
-
 }
 
-
-
-
-
-
+if(pendingCard) pendingCard.style.display="block";
 
 box.innerHTML = data.map(item=>`
 
@@ -1068,10 +1054,10 @@ selectedImageFile=null;
 
 
 
-document.getElementById("submissionImage").value="";
-
-
-document.getElementById("imagePreview").style.display="none";
+const submissionImage=document.getElementById("submissionImage");
+if(submissionImage) submissionImage.value="";
+const imagePreview=document.getElementById("imagePreview");
+if(imagePreview) imagePreview.style.display="none";
 
 
 
