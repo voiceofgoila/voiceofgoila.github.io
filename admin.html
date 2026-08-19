@@ -560,6 +560,27 @@ font-size:20px;
 }
 
 
+
+/* Phase 2 Part 2 - Website Settings */
+.settings-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+  margin-top:16px;
+}
+.settings-field{display:flex;flex-direction:column;gap:7px;}
+.settings-field label{font-weight:700;color:#3c2351;}
+.settings-field input{width:100%;box-sizing:border-box;}
+.settings-wide{grid-column:1/-1;}
+.settings-assets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px;}
+.settings-asset{border:1px solid #eadff0;border-radius:14px;padding:14px;background:#fcf9fd;}
+.settings-asset label{font-weight:700;display:block;margin-bottom:8px;}
+.settings-preview{width:88px;height:88px;object-fit:contain;border-radius:14px;border:1px solid #e4d7ea;background:white;padding:6px;display:none;margin-top:10px;}
+.settings-help{font-size:13px;color:#75677d;margin-top:6px;line-height:1.5;}
+.settings-actions{margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.settings-status{font-size:14px;font-weight:700;color:#5d247c;}
+@media(max-width:700px){.settings-grid,.settings-assets{grid-template-columns:1fr}.settings-wide{grid-column:auto}}
+
 </style>
 
 
@@ -608,6 +629,10 @@ Directory
 
 <button onclick="showCategories()">
 Categories
+</button>
+
+<button onclick="showWebsiteSettings()">
+Website Settings
 </button>
 
 
@@ -759,6 +784,64 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
 
 
 
+
+
+<!-- WEBSITE SETTINGS MANAGEMENT -->
+<div class="card" id="websiteSettingsManagement">
+  <h2>Website Settings</h2>
+  <p class="cms-note">এখান থেকে Save করলে Public Website-এর নাম, logo, favicon এবং contact/social তথ্য Supabase থেকে automatic update হবে।</p>
+
+  <div class="settings-grid">
+    <div class="settings-field settings-wide">
+      <label for="settingSiteName">Website Name</label>
+      <input id="settingSiteName" placeholder="Voice of Goila">
+    </div>
+    <div class="settings-field">
+      <label for="settingPhone">Phone</label>
+      <input id="settingPhone" placeholder="01XXXXXXXXX">
+    </div>
+    <div class="settings-field">
+      <label for="settingEmail">Email</label>
+      <input id="settingEmail" type="email" placeholder="email@example.com">
+    </div>
+    <div class="settings-field settings-wide">
+      <label for="settingAddress">Address</label>
+      <input id="settingAddress" placeholder="গৈলা, আগৈলঝাড়া, বরিশাল">
+    </div>
+    <div class="settings-field">
+      <label for="settingFacebook">Facebook</label>
+      <input id="settingFacebook" placeholder="https://facebook.com/...">
+    </div>
+    <div class="settings-field">
+      <label for="settingYoutube">YouTube</label>
+      <input id="settingYoutube" placeholder="https://youtube.com/...">
+    </div>
+    <div class="settings-field settings-wide">
+      <label for="settingWhatsapp">WhatsApp</label>
+      <input id="settingWhatsapp" placeholder="8801XXXXXXXXX অথবা https://wa.me/...">
+    </div>
+  </div>
+
+  <div class="settings-assets">
+    <div class="settings-asset">
+      <label for="settingLogoFile">Website Logo</label>
+      <input id="settingLogoFile" type="file" accept="image/*" onchange="previewWebsiteAsset(event,'websiteLogoPreview')">
+      <img id="websiteLogoPreview" class="settings-preview" alt="Current website logo preview">
+      <div class="settings-help">নতুন file না দিলে বর্তমান logo অপরিবর্তিত থাকবে।</div>
+    </div>
+    <div class="settings-asset">
+      <label for="settingFaviconFile">Favicon</label>
+      <input id="settingFaviconFile" type="file" accept="image/*" onchange="previewWebsiteAsset(event,'websiteFaviconPreview')">
+      <img id="websiteFaviconPreview" class="settings-preview" alt="Current favicon preview">
+      <div class="settings-help">Square PNG/WebP image ব্যবহার করলে ভালো দেখাবে।</div>
+    </div>
+  </div>
+
+  <div class="settings-actions">
+    <button onclick="saveWebsiteSettings()">Save Website Settings</button>
+    <span id="websiteSettingsStatus" class="settings-status"></span>
+  </div>
+</div>
 
 <!-- PENDING -->
 
@@ -1102,7 +1185,7 @@ Save Changes
 
 <script src="js/supabase.js"></script>
 
-<script src="js/admin.js"></script>
+<script src="js/admin.js?v=20260819-1535"></script>
 
 
 
