@@ -9,6 +9,8 @@ let selectedImageFile = null;
 let managedCategories = [];
 let managedSubCategories = [];
 let websiteSettingsRecord = null;
+let adminAnnouncements = [];
+let homepageSettingsRecord = null;
 
 
 
@@ -276,6 +278,16 @@ function showWebsiteSettings(){
     if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
+function showHomepageCMS(){
+    const section=document.getElementById("homepageCmsManagement");
+    if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function showAnnouncements(){
+    const section=document.getElementById("announcementManagement");
+    if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
 
 
 
@@ -301,6 +313,8 @@ loadDirectory();
 
 loadCategoryManager();
 loadWebsiteSettings();
+loadHomepageContent();
+loadAnnouncementsAdmin();
 
 
 }
@@ -320,12 +334,13 @@ loadWebsiteSettings();
 
 async function loadStats(){
 
-const [total,pending,approved,categoriesCount,subCategoriesCount] = await Promise.all([
+const [total,pending,approved,categoriesCount,subCategoriesCount,announcementCount] = await Promise.all([
     window.supabaseClient.from("directory_items").select("*",{count:"exact",head:true}),
     window.supabaseClient.from("submissions").select("*",{count:"exact",head:true}).eq("status","pending"),
     window.supabaseClient.from("submissions").select("*",{count:"exact",head:true}).eq("status","approved"),
     window.supabaseClient.from("categories").select("*",{count:"exact",head:true}),
-    window.supabaseClient.from("sub_categories").select("*",{count:"exact",head:true})
+    window.supabaseClient.from("sub_categories").select("*",{count:"exact",head:true}),
+    window.supabaseClient.from("announcements").select("*",{count:"exact",head:true})
 ]);
 
 const setCount=(id,result)=>{
@@ -338,6 +353,7 @@ setCount("pendingCount",pending);
 setCount("approvedCount",approved);
 setCount("categoryCount",categoriesCount);
 setCount("subCategoryCount",subCategoriesCount);
+setCount("announcementCount",announcementCount);
 
 }
 
@@ -2503,6 +2519,214 @@ async function saveWebsiteSettings(){
     }
 }
 
+
+
+// ===============================
+// PHASE 2 PART 3 - HOMEPAGE CMS
+// ===============================
+
+const HOMEPAGE_DEFAULTS={
+    badge:"গৈলা ইউনিয়ন • ডিজিটাল তথ্য প্ল্যাটফর্ম",
+    hero_lead:"গৈলার প্রয়োজনীয়",
+    hero_highlight:"তথ্য ও সেবা",
+    hero_tail:"এখন এক জায়গায়",
+    hero_description:"স্থানীয় প্রতিষ্ঠান, জরুরি সেবা, শিক্ষা, স্বাস্থ্য, ব্যবসা, সরকারি সেবা ও গুরুত্বপূর্ণ স্থান সহজে খুঁজে নিন।",
+    search_placeholder:"প্রতিষ্ঠান, সেবা বা জায়গার নাম লিখুন...",
+    category_title:"সেবার বিভাগ",
+    category_subtitle:"প্রয়োজনীয় বিভাগ বেছে নিন",
+    emergency_title:"🚨 জরুরি সেবা",
+    emergency_subtitle:"দ্রুত যোগাযোগ",
+    announcement_title:"📢 গুরুত্বপূর্ণ ঘোষণা",
+    announcement_subtitle:"প্রয়োজনীয় তথ্য ও জনসচেতনতা",
+    submit_title:"➕ তথ্য যোগ করুন",
+    submit_subtitle:"এলাকার তথ্য সমৃদ্ধ করতে সাহায্য করুন",
+    submit_body:"প্রতিষ্ঠান, দোকান, ব্যক্তি, ব্লাড ডোনার বা গুরুত্বপূর্ণ স্থানের প্রয়োজনীয় তথ্য খসড়া হিসেবে যোগ করুন।",
+    submit_button:"তথ্য যোগ করুন"
+};
+
+function homepageStatus(text,isError=false){
+    const el=document.getElementById("homepageCmsStatus");
+    if(!el) return;
+    el.textContent=text || "";
+    el.style.color=isError ? "#b42318" : "#5d247c";
+}
+
+function setHomepageForm(value){
+    const v={...HOMEPAGE_DEFAULTS,...(value||{})};
+    const map={
+        homeBadgeInput:"badge",homeHeroLeadInput:"hero_lead",homeHeroHighlightInput:"hero_highlight",
+        homeHeroTailInput:"hero_tail",homeHeroDescriptionInput:"hero_description",homeSearchPlaceholderInput:"search_placeholder",
+        homeCategoryTitleInput:"category_title",homeCategorySubtitleInput:"category_subtitle",
+        homeEmergencyTitleInput:"emergency_title",homeEmergencySubtitleInput:"emergency_subtitle",
+        homeAnnouncementTitleInput:"announcement_title",homeAnnouncementSubtitleInput:"announcement_subtitle",
+        homeSubmitTitleInput:"submit_title",homeSubmitSubtitleInput:"submit_subtitle",
+        homeSubmitBodyInput:"submit_body",homeSubmitButtonInput:"submit_button"
+    };
+    Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id); if(el) el.value=v[key] ?? "";});
+}
+
+function resetHomepageFormToDefaults(){
+    setHomepageForm(HOMEPAGE_DEFAULTS);
+    homepageStatus("Default text loaded — Save করলে Public Website-এ যাবে");
+}
+
+async function loadHomepageContent(){
+    if(!document.getElementById("homepageCmsManagement")) return;
+    homepageStatus("Loading...");
+    const {data,error}=await window.supabaseClient
+        .from("site_settings")
+        .select("key,value")
+        .eq("key","homepage_content")
+        .maybeSingle();
+    if(error){
+        console.error("Homepage CMS load error:",error);
+        setHomepageForm(HOMEPAGE_DEFAULTS);
+        homepageStatus("Database value load হয়নি; default দেখানো হচ্ছে",true);
+        return;
+    }
+    homepageSettingsRecord=data || null;
+    setHomepageForm(data && data.value ? data.value : HOMEPAGE_DEFAULTS);
+    homepageStatus(data ? "Current homepage content loaded" : "Default content loaded — এখনও save করা হয়নি");
+}
+
+function homepagePayloadFromForm(){
+    const get=id=>String(document.getElementById(id)?.value || "").trim();
+    return {
+        badge:get("homeBadgeInput"),hero_lead:get("homeHeroLeadInput"),hero_highlight:get("homeHeroHighlightInput"),
+        hero_tail:get("homeHeroTailInput"),hero_description:get("homeHeroDescriptionInput"),search_placeholder:get("homeSearchPlaceholderInput"),
+        category_title:get("homeCategoryTitleInput"),category_subtitle:get("homeCategorySubtitleInput"),
+        emergency_title:get("homeEmergencyTitleInput"),emergency_subtitle:get("homeEmergencySubtitleInput"),
+        announcement_title:get("homeAnnouncementTitleInput"),announcement_subtitle:get("homeAnnouncementSubtitleInput"),
+        submit_title:get("homeSubmitTitleInput"),submit_subtitle:get("homeSubmitSubtitleInput"),
+        submit_body:get("homeSubmitBodyInput"),submit_button:get("homeSubmitButtonInput")
+    };
+}
+
+async function saveHomepageContent(){
+    const value=homepagePayloadFromForm();
+    if(!value.hero_lead || !value.hero_highlight || !value.hero_tail){
+        alert("Hero Lead, Highlight এবং Second Line লিখুন"); return;
+    }
+    homepageStatus("Saving...");
+    try{
+        let result;
+        if(homepageSettingsRecord){
+            result=await window.supabaseClient.from("site_settings")
+                .update({value,updated_at:new Date().toISOString()})
+                .eq("key","homepage_content").select("key,value").single();
+        }else{
+            result=await window.supabaseClient.from("site_settings")
+                .insert({key:"homepage_content",value})
+                .select("key,value").single();
+        }
+        if(result.error) throw result.error;
+        homepageSettingsRecord=result.data;
+        homepageStatus("Saved successfully ✓");
+        alert("Homepage content save হয়েছে");
+    }catch(error){
+        console.error("Homepage save error:",error);
+        homepageStatus("Save হয়নি: "+error.message,true);
+        alert("Homepage save করা যায়নি: "+error.message);
+    }
+}
+
+// ===============================
+// PHASE 2 PART 3 - ANNOUNCEMENTS
+// ===============================
+
+function announcementEscape(v){
+    return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+
+async function loadAnnouncementsAdmin(){
+    const box=document.getElementById("announcementAdminList");
+    if(!box) return;
+    box.textContent="Loading...";
+    const {data,error}=await window.supabaseClient.from("announcements")
+        .select("*")
+        .order("sort_order",{ascending:true})
+        .order("created_at",{ascending:false});
+    if(error){box.textContent="Load হয়নি: "+error.message; return;}
+    adminAnnouncements=data || [];
+    renderAnnouncementsAdmin();
+}
+
+function renderAnnouncementsAdmin(){
+    const box=document.getElementById("announcementAdminList"); if(!box) return;
+    if(!adminAnnouncements.length){box.innerHTML='<div class="cms-note">এখনও কোনো Announcement নেই।</div>';return;}
+    box.innerHTML=adminAnnouncements.map(a=>`<div class="announcement-row ${a.active?'':'inactive'}">
+        <div class="announcement-row-head"><div><h4>${announcementEscape(a.title||"")}</h4><div class="announcement-meta">${announcementEscape(a.date_label||"No date")} • Order ${Number(a.sort_order??100)} • ${a.active?'Active':'Hidden'}</div></div></div>
+        ${a.body?`<div class="announcement-body">${announcementEscape(a.body)}</div>`:''}
+        ${a.link_url?`<div class="announcement-meta">Link: ${announcementEscape(a.link_url)}</div>`:''}
+        <div class="announcement-actions">
+          <button class="edit" onclick="openAnnouncementEdit(${Number(a.id)})">Edit</button>
+          <button class="btn-warning" onclick="toggleAnnouncementActive(${Number(a.id)},${a.active?'false':'true'})">${a.active?'Hide':'Show'}</button>
+          <button class="delete" onclick="deleteAnnouncement(${Number(a.id)})">Delete</button>
+        </div></div>`).join("");
+}
+
+function announcementFormPayload(prefix="announcement"){
+    const get=id=>String(document.getElementById(id)?.value || "").trim();
+    const active=document.getElementById(prefix+"Active")?.checked ?? true;
+    return {
+        date_label:get(prefix+"Date"),title:get(prefix+"Title"),body:get(prefix+"Body"),
+        link_url:get(prefix+"Link"),sort_order:Number(get(prefix+"Sort") || 100),active
+    };
+}
+
+async function addAnnouncement(){
+    const payload=announcementFormPayload("announcement");
+    if(!payload.title){alert("Announcement title লিখুন");return;}
+    const {error}=await window.supabaseClient.from("announcements").insert(payload);
+    if(error){alert("Add হয়নি: "+error.message);return;}
+    ["announcementDate","announcementTitle","announcementBody","announcementLink"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+    document.getElementById("announcementSort").value="100";
+    document.getElementById("announcementActive").checked=true;
+    await loadAnnouncementsAdmin(); await loadStats();
+    alert("Announcement add হয়েছে");
+}
+
+function openAnnouncementEdit(id){
+    const a=adminAnnouncements.find(x=>Number(x.id)===Number(id)); if(!a) return;
+    document.getElementById("announcementEditId").value=a.id;
+    document.getElementById("announcementEditDate").value=a.date_label||"";
+    document.getElementById("announcementEditTitle").value=a.title||"";
+    document.getElementById("announcementEditBody").value=a.body||"";
+    document.getElementById("announcementEditLink").value=a.link_url||"";
+    document.getElementById("announcementEditSort").value=Number(a.sort_order??100);
+    document.getElementById("announcementEditActive").checked=!!a.active;
+    document.getElementById("announcementEditModal").style.display="flex";
+}
+
+function closeAnnouncementEdit(){
+    const m=document.getElementById("announcementEditModal"); if(m)m.style.display="none";
+}
+
+async function saveAnnouncementEdit(){
+    const id=Number(document.getElementById("announcementEditId").value);
+    const payload=announcementFormPayload("announcementEdit");
+    if(!payload.title){alert("Announcement title লিখুন");return;}
+    const {error}=await window.supabaseClient.from("announcements")
+        .update({...payload,updated_at:new Date().toISOString()}).eq("id",id);
+    if(error){alert("Update হয়নি: "+error.message);return;}
+    closeAnnouncementEdit(); await loadAnnouncementsAdmin();
+    alert("Announcement update হয়েছে");
+}
+
+async function toggleAnnouncementActive(id,active){
+    const {error}=await window.supabaseClient.from("announcements")
+        .update({active:!!active,updated_at:new Date().toISOString()}).eq("id",id);
+    if(error){alert("Status change হয়নি: "+error.message);return;}
+    await loadAnnouncementsAdmin();
+}
+
+async function deleteAnnouncement(id){
+    const a=adminAnnouncements.find(x=>Number(x.id)===Number(id));
+    if(!confirm(`Delete করবেন?\n${a?.title||"Announcement"}`)) return;
+    const {error}=await window.supabaseClient.from("announcements").delete().eq("id",id);
+    if(error){alert("Delete হয়নি: "+error.message);return;}
+    await loadAnnouncementsAdmin(); await loadStats();
+}
 
 // ===============================
 // DIRECTORY SEARCH
