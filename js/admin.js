@@ -2799,6 +2799,7 @@ function renderAdsAdmin(){
       <div class="adm-ad-info">
         <h4>${adsEscape(a.title||'Untitled Ad')}</h4>
         <div class="adm-ad-meta">Position: <b>${adsEscape(a.position||'')}</b> • ${a.status?'Active':'Inactive'}</div>
+        <div class="adm-ad-meta">24h: <b>${Number(a.views_per_24h||1)} বার</b> • Duration: <b>${Number(a.duration_seconds||8)}s</b></div>
         ${a.link?`<div class="adm-ad-meta">Link: ${adsEscape(a.link)}</div>`:''}
         <div class="adm-ad-actions">
           <button class="edit" onclick="openAdEdit(${Number(a.id)})">Edit</button>
@@ -2816,10 +2817,18 @@ async function deactivateOtherAds(position,exceptId=null){
     if(error) throw error;
 }
 
+function clampAdInt(value,min,max,fallback){
+    const n=Math.round(Number(value));
+    if(!Number.isFinite(n)) return fallback;
+    return Math.max(min,Math.min(max,n));
+}
+
 async function addAd(){
     const title=String(document.getElementById("adTitle")?.value||"").trim();
     const position=String(document.getElementById("adPosition")?.value||"popup");
     const link=normalizeAdLink(document.getElementById("adLink")?.value||"");
+    const views_per_24h=clampAdInt(document.getElementById("adViews24h")?.value,1,100,1);
+    const duration_seconds=clampAdInt(document.getElementById("adDuration")?.value,3,300,8);
     const status=!!document.getElementById("adStatus")?.checked;
     const input=document.getElementById("adImageFile");
     const file=input?.files?.[0]||null;
@@ -2829,9 +2838,9 @@ async function addAd(){
     try{
         const image_url=await uploadAdImage(file);
         if(status) await deactivateOtherAds(position);
-        const {error}=await window.supabaseClient.from("ads").insert({title,image_url,link,position,status});
+        const {error}=await window.supabaseClient.from("ads").insert({title,image_url,link,position,status,views_per_24h,duration_seconds});
         if(error) throw error;
-        document.getElementById("adTitle").value="";document.getElementById("adLink").value="";document.getElementById("adPosition").value="popup";document.getElementById("adStatus").checked=true;
+        document.getElementById("adTitle").value="";document.getElementById("adLink").value="";document.getElementById("adPosition").value="popup";document.getElementById("adViews24h").value="1";document.getElementById("adDuration").value="8";document.getElementById("adStatus").checked=true;
         if(input)input.value="";const prev=document.getElementById("adImagePreview");if(prev){prev.removeAttribute("src");prev.style.display="none";}
         await loadAdsAdmin();await loadStats();
         alert("Ad add হয়েছে");
@@ -2844,6 +2853,8 @@ function openAdEdit(id){
     document.getElementById("adEditTitle").value=a.title||"";
     document.getElementById("adEditPosition").value=a.position||"popup";
     document.getElementById("adEditLink").value=a.link||"";
+    document.getElementById("adEditViews24h").value=Number(a.views_per_24h||1);
+    document.getElementById("adEditDuration").value=Number(a.duration_seconds||8);
     document.getElementById("adEditStatus").checked=!!a.status;
     const input=document.getElementById("adEditImageFile");if(input)input.value="";
     const img=document.getElementById("adEditImagePreview");if(img){img.src=a.image_url||"";img.style.display=a.image_url?"block":"none";}
@@ -2858,6 +2869,8 @@ async function saveAdEdit(){
     const title=String(document.getElementById("adEditTitle")?.value||"").trim();
     const position=String(document.getElementById("adEditPosition")?.value||"popup");
     const link=normalizeAdLink(document.getElementById("adEditLink")?.value||"");
+    const views_per_24h=clampAdInt(document.getElementById("adEditViews24h")?.value,1,100,1);
+    const duration_seconds=clampAdInt(document.getElementById("adEditDuration")?.value,3,300,8);
     const status=!!document.getElementById("adEditStatus")?.checked;
     const file=document.getElementById("adEditImageFile")?.files?.[0]||null;
     if(!title){alert("Ad Title লিখুন");return;}
@@ -2866,7 +2879,7 @@ async function saveAdEdit(){
         if(file) image_url=await uploadAdImage(file);
         if(!image_url){alert("Ad Image দরকার");return;}
         if(status) await deactivateOtherAds(position,id);
-        const {error}=await window.supabaseClient.from("ads").update({title,image_url,link,position,status}).eq("id",id);
+        const {error}=await window.supabaseClient.from("ads").update({title,image_url,link,position,status,views_per_24h,duration_seconds}).eq("id",id);
         if(error) throw error;
         closeAdEdit();await loadAdsAdmin();await loadStats();alert("Ad update হয়েছে");
     }catch(error){console.error(error);alert("Ad update হয়নি: "+error.message);}
