@@ -312,6 +312,12 @@ function showAnalytics(){
     loadAnalytics();
 }
 
+function showMediaLibrary(){
+    const section=document.getElementById("mediaLibraryManagement");
+    if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
+    loadMediaLibrary();
+}
+
 
 
 
@@ -343,6 +349,7 @@ loadAdsAdmin();
 loadEmergencyAdmin();
 loadReviewsAdmin();
 loadAnalytics();
+loadMediaLibrary();
 
 
 }
@@ -3192,3 +3199,178 @@ async function loadAnalytics(){
     }
 }
 
+
+
+// ===============================
+// PHASE 2 PART 7 - MEDIA LIBRARY
+// ===============================
+
+let mediaLibraryItems=[];
+const MEDIA_BUCKET="image";
+
+function mediaSetStatus(text,isError=false){
+    const el=document.getElementById("mediaLibraryStatus");
+    if(!el) return;
+    el.textContent=text||"";
+    el.style.color=isError?"#b42318":"#5d247c";
+}
+
+function mediaEscape(value){
+    return String(value??"").replace(/[&<>'"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[ch]));
+}
+
+function mediaFormatBytes(bytes){
+    const n=Number(bytes||0);
+    if(!n) return "";
+    if(n<1024) return n+" B";
+    if(n<1024*1024) return (n/1024).toFixed(1)+" KB";
+    return (n/(1024*1024)).toFixed(1)+" MB";
+}
+
+async function mediaListFolder(prefix="",depth=0){
+    if(depth>5) return [];
+    const collected=[];
+    let offset=0;
+    while(offset<1000){
+        const {data,error}=await window.supabaseClient.storage.from(MEDIA_BUCKET).list(prefix,{
+            limit:100,offset,sortBy:{column:"created_at",order:"desc"}
+        });
+        if(error) throw error;
+        const rows=data||[];
+        for(const item of rows){
+            if(!item || !item.name || item.name===".emptyFolderPlaceholder") continue;
+            const path=prefix?`${prefix}/${item.name}`:item.name;
+            const looksLikeFolder=!item.id && (!item.metadata || Object.keys(item.metadata).length===0);
+            if(looksLikeFolder){
+                const nested=await mediaListFolder(path,depth+1);
+                collected.push(...nested);
+            }else{
+                const {data:urlData}=window.supabaseClient.storage.from(MEDIA_BUCKET).getPublicUrl(path);
+                collected.push({
+                    name:item.name,
+                    path,
+                    url:urlData?.publicUrl||"",
+                    created_at:item.created_at||item.updated_at||"",
+                    size:item.metadata?.size||0,
+                    mimetype:item.metadata?.mimetype||item.metadata?.contentType||""
+                });
+            }
+        }
+        if(rows.length<100) break;
+        offset+=100;
+    }
+    return collected;
+}
+
+async function loadMediaLibrary(){
+    const grid=document.getElementById("mediaLibraryGrid");
+    if(!grid) return;
+    grid.innerHTML='<div class="p7-empty">Loading media...</div>';
+    mediaSetStatus("Loading...");
+    try{
+        mediaLibraryItems=await mediaListFolder("",0);
+        mediaLibraryItems.sort((a,b)=>String(b.created_at||"").localeCompare(String(a.created_at||"")));
+        renderMediaLibrary();
+        mediaSetStatus(`${mediaLibraryItems.length} image/file loaded`);
+    }catch(error){
+        console.error("Media Library load error",error);
+        mediaLibraryItems=[];
+        grid.innerHTML='<div class="p7-empty">Media load হয়নি। Storage policy/check প্রয়োজন।</div>';
+        mediaSetStatus("Media load হয়নি: "+(error?.message||error),true);
+    }
+}
+
+function renderMediaLibrary(){
+    const grid=document.getElementById("mediaLibraryGrid");
+    if(!grid) return;
+    const q=String(document.getElementById("mediaSearchInput")?.value||"").trim().toLowerCase();
+    const rows=mediaLibraryItems.filter(x=>!q || x.name.toLowerCase().includes(q) || x.path.toLowerCase().includes(q));
+    if(!rows.length){
+        grid.innerHTML='<div class="p7-empty">কোনো image পাওয়া যায়নি।</div>';
+        return;
+    }
+    grid.innerHTML=rows.map((x,i)=>`<div class="p7-item">
+      <a class="p7-thumb" href="${mediaEscape(x.url)}" target="_blank" rel="noopener"><img src="${mediaEscape(x.url)}" alt="${mediaEscape(x.name)}" loading="lazy" onerror="this.style.display='none'"></a>
+      <div class="p7-body">
+        <div class="p7-name" title="${mediaEscape(x.name)}">${mediaEscape(x.name)}</div>
+        <div class="p7-path">${mediaEscape(x.path)}</div>
+        <div class="p7-meta">${mediaEscape(mediaFormatBytes(x.size))}${x.created_at?` • ${mediaEscape(new Date(x.created_at).toLocaleDateString("bn-BD"))}`:""}</div>
+        <div class="p7-actions">
+          <button onclick="copyMediaUrl(${i})">Copy URL</button>
+          <button class="danger" onclick="deleteMediaItem(${i})">Delete</button>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+async function uploadMediaImage(event){
+    const input=event.target;
+    const file=input.files&&input.files[0];
+    if(!file) return;
+    if(!file.type.startsWith("image/")){alert("শুধু image file দিন");input.value="";return;}
+    if(file.size>5*1024*1024){alert("Image 5 MB-এর মধ্যে রাখুন");input.value="";return;}
+    try{
+        mediaSetStatus("Uploading...");
+        const ext=(file.name.split(".").pop()||"jpg").replace(/[^a-zA-Z0-9]/g,"").toLowerCase()||"jpg";
+        const path=`media_${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+        const {error}=await window.supabaseClient.storage.from(MEDIA_BUCKET).upload(path,file,{cacheControl:"3600",upsert:false});
+        if(error) throw error;
+        input.value="";
+        await loadMediaLibrary();
+        mediaSetStatus("Image uploaded successfully");
+    }catch(error){
+        console.error("Media upload error",error);
+        mediaSetStatus("Upload হয়নি: "+(error?.message||error),true);
+        alert("Upload হয়নি: "+(error?.message||error));
+    }
+}
+
+async function mediaUsageLabels(url){
+    if(!url) return [];
+    const checks=[
+      ["Directory",window.supabaseClient.from("directory_items").select("id",{count:"exact",head:true}).eq("image_url",url)],
+      ["Ads",window.supabaseClient.from("ads").select("id",{count:"exact",head:true}).eq("image_url",url)],
+      ["Notice",window.supabaseClient.from("notices").select("id",{count:"exact",head:true}).eq("image_url",url)],
+      ["Website Logo",window.supabaseClient.from("website_settings").select("id",{count:"exact",head:true}).eq("logo_url",url)],
+      ["Website Favicon",window.supabaseClient.from("website_settings").select("id",{count:"exact",head:true}).eq("favicon_url",url)]
+    ];
+    const results=await Promise.all(checks.map(async ([label,promise])=>{
+        try{const r=await promise;return (!r.error && Number(r.count||0)>0)?label:null;}catch(e){return null;}
+    }));
+    return results.filter(Boolean);
+}
+
+async function deleteMediaItem(index){
+    const item=mediaLibraryItems[index];
+    if(!item) return;
+    try{
+        mediaSetStatus("Checking image usage...");
+        const used=await mediaUsageLabels(item.url);
+        if(used.length){
+            alert(`এই image বর্তমানে ${used.join(", ")}-এ ব্যবহার হচ্ছে। আগে ওই জায়গা থেকে image পরিবর্তন/সরান, তারপর delete করুন।`);
+            mediaSetStatus("Delete blocked: image is in use",true);
+            return;
+        }
+        if(!confirm(`Delete করবেন?\n${item.path}`)){mediaSetStatus("");return;}
+        const {error}=await window.supabaseClient.storage.from(MEDIA_BUCKET).remove([item.path]);
+        if(error) throw error;
+        mediaLibraryItems=mediaLibraryItems.filter((_,i)=>i!==index);
+        renderMediaLibrary();
+        mediaSetStatus("Image deleted");
+    }catch(error){
+        console.error("Media delete error",error);
+        mediaSetStatus("Delete হয়নি: "+(error?.message||error),true);
+        alert("Delete হয়নি: "+(error?.message||error));
+    }
+}
+
+async function copyMediaUrl(index){
+    const item=mediaLibraryItems[index];
+    if(!item?.url) return;
+    try{
+        await navigator.clipboard.writeText(item.url);
+        mediaSetStatus("Image URL copied");
+    }catch(e){
+        window.prompt("এই URL copy করুন:",item.url);
+    }
+}
