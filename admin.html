@@ -581,6 +581,31 @@ font-size:20px;
 .settings-status{font-size:14px;font-weight:700;color:#5d247c;}
 @media(max-width:700px){.settings-grid,.settings-assets{grid-template-columns:1fr}.settings-wide{grid-column:auto}}
 
+
+
+/* Phase 2 Part 3 - Homepage CMS + Announcements */
+.p3-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.p3-field{display:flex;flex-direction:column;gap:6px}
+.p3-field label{font-weight:700;color:#3c2351}
+.p3-wide{grid-column:1/-1}
+.p3-field textarea{min-height:88px;resize:vertical}
+.p3-status{font-size:14px;font-weight:700;color:#5d247c;margin-left:8px}
+.announcement-form{background:#fafafa;border:1px solid #e4e4e8;border-radius:15px;padding:16px;margin-top:14px}
+.announcement-options{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.announcement-options label{display:flex;gap:7px;align-items:center;font-weight:700;color:#4e1f6d}
+.announcement-options input[type=checkbox]{width:auto;margin:0}
+.announcement-list{display:grid;gap:12px;margin-top:18px}
+.announcement-row{border:1px solid #e5ddea;background:#fcf9fd;border-radius:14px;padding:15px}
+.announcement-row.inactive{opacity:.65}
+.announcement-row-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.announcement-row h4{margin:0;color:#3b2049;font-size:17px}
+.announcement-meta{font-size:12px;color:#7d7082;margin-top:5px}
+.announcement-body{margin:10px 0;color:#5f5563;line-height:1.55;white-space:pre-wrap}
+.announcement-actions{display:flex;gap:8px;flex-wrap:wrap}
+.announcement-actions button{width:auto;min-width:84px;margin-top:0;padding:9px 12px}
+.btn-secondary{background:#6b7280}.btn-warning{background:#b7791f}
+@media(max-width:700px){.p3-grid{grid-template-columns:1fr}.p3-wide{grid-column:auto}.announcement-row-head{flex-direction:column}.announcement-actions button{flex:1}}
+
 </style>
 
 
@@ -635,6 +660,13 @@ Categories
 Website Settings
 </button>
 
+<button onclick="showHomepageCMS()">
+Homepage CMS
+</button>
+
+<button onclick="showAnnouncements()">
+Announcements
+</button>
 
 <button onclick="logout()">
 Logout
@@ -736,6 +768,11 @@ Login
 <div class="stat">
 <h3>Subcategories</h3>
 <h2 id="subCategoryCount">0</h2>
+</div>
+
+<div class="stat">
+<h3>Announcements</h3>
+<h2 id="announcementCount">0</h2>
 </div>
 
 
@@ -845,6 +882,54 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
     <button onclick="saveWebsiteSettings()">Save Website Settings</button>
     <span id="websiteSettingsStatus" class="settings-status"></span>
   </div>
+</div>
+
+
+<!-- HOMEPAGE CMS -->
+<div class="card" id="homepageCmsManagement">
+  <h2>Homepage CMS</h2>
+  <p class="cms-note">Homepage-এর মূল লেখা এখান থেকে পরিবর্তন করুন। Save করলে Public Website Supabase থেকে automatic update নেবে। Existing design/layout অপরিবর্তিত থাকবে।</p>
+  <div class="p3-grid">
+    <div class="p3-field p3-wide"><label>Top Badge</label><input id="homeBadgeInput" placeholder="গৈলা ইউনিয়ন • ডিজিটাল তথ্য প্ল্যাটফর্ম"></div>
+    <div class="p3-field"><label>Hero Lead Text</label><input id="homeHeroLeadInput" placeholder="গৈলার প্রয়োজনীয়"></div>
+    <div class="p3-field"><label>Hero Highlight</label><input id="homeHeroHighlightInput" placeholder="তথ্য ও সেবা"></div>
+    <div class="p3-field p3-wide"><label>Hero Second Line</label><input id="homeHeroTailInput" placeholder="এখন এক জায়গায়"></div>
+    <div class="p3-field p3-wide"><label>Hero Description</label><textarea id="homeHeroDescriptionInput"></textarea></div>
+    <div class="p3-field p3-wide"><label>Search Placeholder</label><input id="homeSearchPlaceholderInput"></div>
+    <div class="p3-field"><label>Category Section Title</label><input id="homeCategoryTitleInput"></div>
+    <div class="p3-field"><label>Category Section Subtitle</label><input id="homeCategorySubtitleInput"></div>
+    <div class="p3-field"><label>Emergency Section Title</label><input id="homeEmergencyTitleInput"></div>
+    <div class="p3-field"><label>Emergency Section Subtitle</label><input id="homeEmergencySubtitleInput"></div>
+    <div class="p3-field"><label>Announcement Section Title</label><input id="homeAnnouncementTitleInput"></div>
+    <div class="p3-field"><label>Announcement Section Subtitle</label><input id="homeAnnouncementSubtitleInput"></div>
+    <div class="p3-field"><label>Submit Section Title</label><input id="homeSubmitTitleInput"></div>
+    <div class="p3-field"><label>Submit Section Subtitle</label><input id="homeSubmitSubtitleInput"></div>
+    <div class="p3-field p3-wide"><label>Submit Section Description</label><textarea id="homeSubmitBodyInput"></textarea></div>
+    <div class="p3-field p3-wide"><label>Submit Button Text</label><input id="homeSubmitButtonInput"></div>
+  </div>
+  <div class="settings-actions">
+    <button onclick="saveHomepageContent()">Save Homepage</button>
+    <button class="btn-secondary" onclick="resetHomepageFormToDefaults()">Load Default Text</button>
+    <span id="homepageCmsStatus" class="p3-status"></span>
+  </div>
+</div>
+
+<!-- ANNOUNCEMENTS MANAGEMENT -->
+<div class="card" id="announcementManagement">
+  <h2>Announcements</h2>
+  <p class="cms-note">Add/Edit/Delete এবং Show/Hide করুন। শুধু Active announcement Public Website-এর “গুরুত্বপূর্ণ ঘোষণা” section-এ দেখা যাবে।</p>
+  <div class="announcement-form">
+    <input id="announcementDate" placeholder="Date label (যেমন: ১৯ আগস্ট ২০২৬)">
+    <input id="announcementTitle" placeholder="Announcement title *">
+    <textarea id="announcementBody" placeholder="বিস্তারিত লিখুন"></textarea>
+    <input id="announcementLink" placeholder="Optional link (https://...)">
+    <div class="announcement-options">
+      <label>Sort Order <input id="announcementSort" type="number" value="100" style="width:100px;margin:0"></label>
+      <label><input id="announcementActive" type="checkbox" checked> Active / Show</label>
+    </div>
+    <button onclick="addAnnouncement()">+ Add Announcement</button>
+  </div>
+  <div id="announcementAdminList" class="announcement-list">Loading...</div>
 </div>
 
 <!-- PENDING -->
@@ -984,6 +1069,22 @@ Loading...
 
 
 
+
+
+<!-- ANNOUNCEMENT EDIT MODAL -->
+<div id="announcementEditModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-header"><h2>Edit Announcement</h2><button class="close-btn" onclick="closeAnnouncementEdit()">×</button></div>
+    <input type="hidden" id="announcementEditId">
+    <label>Date label</label><input id="announcementEditDate">
+    <label>Title</label><input id="announcementEditTitle">
+    <label>Body</label><textarea id="announcementEditBody" style="min-height:120px"></textarea>
+    <label>Link</label><input id="announcementEditLink">
+    <label>Sort Order</label><input id="announcementEditSort" type="number">
+    <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:700"><input id="announcementEditActive" type="checkbox" style="width:auto;margin:0"> Active / Show</label>
+    <button onclick="saveAnnouncementEdit()">Save Changes</button>
+  </div>
+</div>
 
 <!-- EDIT MODAL -->
 
@@ -1189,7 +1290,7 @@ Save Changes
 
 <script src="js/supabase.js"></script>
 
-<script src="js/admin.js?v=20260819-1535"></script>
+<script src="js/admin.js?v=20260819-1625"></script>
 
 
 
