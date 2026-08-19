@@ -8,6 +8,7 @@ let selectedImageFile = null;
 
 let managedCategories = [];
 let managedSubCategories = [];
+let websiteSettingsRecord = null;
 
 
 
@@ -270,6 +271,12 @@ if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
 
 }
 
+function showWebsiteSettings(){
+    const section=document.getElementById("websiteSettingsManagement");
+    if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+
 
 
 
@@ -293,6 +300,7 @@ loadPending();
 loadDirectory();
 
 loadCategoryManager();
+loadWebsiteSettings();
 
 
 }
@@ -2302,6 +2310,196 @@ async function deleteManagedSubcategory(id){
     }catch(error){
         console.error(error);
         alert("Subcategory delete করা যায়নি: "+error.message);
+    }
+}
+
+
+
+// ===============================
+// WEBSITE SETTINGS MANAGER
+// ===============================
+
+function settingsValue(id){
+    const el=document.getElementById(id);
+    return el ? String(el.value || "").trim() : "";
+}
+
+function normalizeSettingsUrl(value){
+    const v=String(value || "").trim();
+    if(!v) return "";
+    if(/^https?:\/\//i.test(v)) return v;
+    return "https://"+v.replace(/^\/+/,"");
+}
+
+function setSettingsStatus(text,isError=false){
+    const el=document.getElementById("websiteSettingsStatus");
+    if(!el) return;
+    el.textContent=text || "";
+    el.style.color=isError ? "#b42318" : "#5d247c";
+}
+
+function setSettingsPreview(id,url){
+    const img=document.getElementById(id);
+    if(!img) return;
+    if(url){
+        img.src=url;
+        img.style.display="block";
+    }else{
+        img.removeAttribute("src");
+        img.style.display="none";
+    }
+}
+
+function previewWebsiteAsset(event,previewId){
+    const file=event.target.files && event.target.files[0];
+    if(!file) return;
+    if(!file.type.startsWith("image/")){
+        alert("শুধু image file দিন");
+        event.target.value="";
+        return;
+    }
+    if(file.size > 5*1024*1024){
+        alert("Image 5 MB-এর মধ্যে রাখুন");
+        event.target.value="";
+        return;
+    }
+    setSettingsPreview(previewId,URL.createObjectURL(file));
+}
+
+async function loadWebsiteSettings(){
+    const section=document.getElementById("websiteSettingsManagement");
+    if(!section) return;
+
+    setSettingsStatus("Loading...");
+    const {data,error}=await window.supabaseClient
+        .from("website_settings")
+        .select("*")
+        .order("id",{ascending:true})
+        .limit(1);
+
+    if(error){
+        console.error("Website settings load error:",error);
+        setSettingsStatus("Settings load হয়নি: "+error.message,true);
+        return;
+    }
+
+    websiteSettingsRecord=(data && data[0]) ? data[0] : null;
+    const row=websiteSettingsRecord || {};
+
+    const values={
+        settingSiteName:row.site_name || "Voice of Goila",
+        settingPhone:row.phone || "",
+        settingEmail:row.email || "",
+        settingAddress:row.address || "",
+        settingFacebook:row.facebook || "",
+        settingYoutube:row.youtube || "",
+        settingWhatsapp:row.whatsapp || ""
+    };
+    Object.entries(values).forEach(([id,value])=>{
+        const el=document.getElementById(id);
+        if(el) el.value=value;
+    });
+
+    setSettingsPreview("websiteLogoPreview",row.logo_url || "");
+    setSettingsPreview("websiteFaviconPreview",row.favicon_url || "");
+    setSettingsStatus(websiteSettingsRecord ? "Current settings loaded" : "এখনও settings save করা হয়নি");
+}
+
+async function uploadWebsiteAsset(file,type){
+    if(!file) return "";
+    const ext=(file.name.split(".").pop() || "png").replace(/[^a-zA-Z0-9]/g,"").toLowerCase() || "png";
+    const safeType=type==="favicon" ? "favicon" : "logo";
+    const path=`website/${safeType}_${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+
+    const {error}=await window.supabaseClient.storage
+        .from("image")
+        .upload(path,file,{cacheControl:"3600",upsert:false});
+    if(error) throw error;
+
+    const {data}=window.supabaseClient.storage
+        .from("image")
+        .getPublicUrl(path);
+    return data && data.publicUrl ? data.publicUrl : "";
+}
+
+async function saveWebsiteSettings(){
+    const siteName=settingsValue("settingSiteName");
+    if(!siteName){
+        alert("Website Name লিখুন");
+        return;
+    }
+
+    const email=settingsValue("settingEmail");
+    if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+        alert("সঠিক Email দিন");
+        return;
+    }
+
+    const logoInput=document.getElementById("settingLogoFile");
+    const faviconInput=document.getElementById("settingFaviconFile");
+    const logoFile=logoInput && logoInput.files ? logoInput.files[0] : null;
+    const faviconFile=faviconInput && faviconInput.files ? faviconInput.files[0] : null;
+
+    setSettingsStatus("Saving...");
+
+    try{
+        let logoUrl=(websiteSettingsRecord && websiteSettingsRecord.logo_url) || "";
+        let faviconUrl=(websiteSettingsRecord && websiteSettingsRecord.favicon_url) || "";
+
+        if(logoFile) logoUrl=await uploadWebsiteAsset(logoFile,"logo");
+        if(faviconFile) faviconUrl=await uploadWebsiteAsset(faviconFile,"favicon");
+
+        const payload={
+            site_name:siteName,
+            logo_url:logoUrl,
+            favicon_url:faviconUrl,
+            phone:settingsValue("settingPhone"),
+            email,
+            address:settingsValue("settingAddress"),
+            facebook:normalizeSettingsUrl(settingsValue("settingFacebook")),
+            youtube:normalizeSettingsUrl(settingsValue("settingYoutube")),
+            whatsapp:settingsValue("settingWhatsapp")
+        };
+
+        let result;
+        if(websiteSettingsRecord && websiteSettingsRecord.id!=null){
+            result=await window.supabaseClient
+                .from("website_settings")
+                .update(payload)
+                .eq("id",websiteSettingsRecord.id)
+                .select()
+                .single();
+        }else{
+            // Prefer database-generated identity/default when available.
+            result=await window.supabaseClient
+                .from("website_settings")
+                .insert(payload)
+                .select()
+                .single();
+
+            // Some older copies of this table may have a required id without a default.
+            // In that case retry safely with id=1 because the table is currently empty.
+            if(result.error && /id|null value|not-null/i.test(String(result.error.message || ""))){
+                result=await window.supabaseClient
+                    .from("website_settings")
+                    .insert({id:1,...payload})
+                    .select()
+                    .single();
+            }
+        }
+
+        if(result.error) throw result.error;
+        websiteSettingsRecord=result.data;
+        if(logoInput) logoInput.value="";
+        if(faviconInput) faviconInput.value="";
+        setSettingsPreview("websiteLogoPreview",websiteSettingsRecord.logo_url || "");
+        setSettingsPreview("websiteFaviconPreview",websiteSettingsRecord.favicon_url || "");
+        setSettingsStatus("Saved successfully ✓");
+        alert("Website Settings save হয়েছে");
+    }catch(error){
+        console.error("Website settings save error:",error);
+        setSettingsStatus("Save হয়নি: "+error.message,true);
+        alert("Website Settings save করা যায়নি: "+error.message);
     }
 }
 
