@@ -681,6 +681,30 @@ font-size:20px;
 .p6-status{font-size:12px;font-weight:700;margin-top:10px;color:#5d247c}
 @media(max-width:760px){.p6-grid{grid-template-columns:1fr}.p6-day{grid-template-columns:82px 1fr 72px}.p6-devices{grid-template-columns:repeat(2,1fr)}}
 
+
+/* Phase 2 Part 7 - Media Library */
+.p7-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.p7-head h2{margin:0}
+.p7-tools{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:14px}
+.p7-tools input[type="text"]{flex:1;min-width:180px;margin:0}
+.p7-tools button,.p7-upload-label{width:auto;margin:0;padding:10px 14px}
+.p7-upload-label{display:inline-flex;align-items:center;justify-content:center;background:#7b2895;color:#fff;border-radius:8px;font-weight:700;cursor:pointer}
+.p7-upload-label input{display:none}
+.p7-status{font-size:12px;font-weight:700;color:#5d247c;margin-top:10px}
+.p7-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:16px}
+.p7-item{border:1px solid #e7dfeb;background:#fcf9fd;border-radius:14px;overflow:hidden;min-width:0}
+.p7-thumb{aspect-ratio:1/1;background:#f1ebf4;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.p7-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.p7-body{padding:11px}
+.p7-name{font-weight:800;color:#3b2049;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p7-path{font-size:10px;color:#85788b;word-break:break-all;margin-top:4px;min-height:28px}
+.p7-meta{font-size:10px;color:#85788b;margin-top:5px}
+.p7-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.p7-actions button{width:100%;margin:0;padding:8px 6px;font-size:11px}
+.p7-actions .danger{background:#c62828}
+.p7-empty{padding:22px;text-align:center;color:#756b79;border:1px dashed #d9cddd;border-radius:14px;grid-column:1/-1}
+@media(max-width:480px){.p7-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.p7-actions{grid-template-columns:1fr}.p7-tools>*{width:100%!important}}
+
 </style>
 
 
@@ -757,6 +781,10 @@ Reviews
 
 <button onclick="showAnalytics()">
 Analytics
+</button>
+
+<button onclick="showMediaLibrary()">
+Media Library
 </button>
 
 <button onclick="logout()">
@@ -926,6 +954,27 @@ Login
     <div id="analyticsPopularPages" class="p6-pages">Loading...</div>
   </div>
   <div id="analyticsStatus" class="p6-status"></div>
+</div>
+
+
+<!-- MEDIA LIBRARY -->
+<div class="card" id="mediaLibraryManagement">
+  <div class="p7-head">
+    <div>
+      <h2>Media Library</h2>
+      <p class="p6-note">Supabase-এর public <b>image</b> bucket-এর uploaded ছবি manage করুন। Live website-এ ব্যবহৃত image delete করা block থাকবে।</p>
+    </div>
+    <button onclick="loadMediaLibrary()" style="width:auto;margin:0">Refresh</button>
+  </div>
+
+  <div class="p7-tools">
+    <label class="p7-upload-label">📷 Upload Image
+      <input type="file" id="mediaUploadInput" accept="image/*" onchange="uploadMediaImage(event)">
+    </label>
+    <input id="mediaSearchInput" type="text" placeholder="ছবির নাম/পাথ দিয়ে খুঁজুন..." oninput="renderMediaLibrary()">
+  </div>
+  <div id="mediaLibraryStatus" class="p7-status"></div>
+  <div id="mediaLibraryGrid" class="p7-grid"><div class="p7-empty">Loading...</div></div>
 </div>
 
 
