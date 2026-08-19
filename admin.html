@@ -729,6 +729,12 @@ font-size:20px;
 .p7-empty{padding:22px;text-align:center;color:#756b79;border:1px dashed #d9cddd;border-radius:14px;grid-column:1/-1}
 @media(max-width:480px){.p7-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.p7-actions{grid-template-columns:1fr}.p7-tools>*{width:100%!important}}
 
+
+
+/* COMPLETE ENHANCEMENT PACK */
+.ce-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.ce-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.ce-field{display:flex;flex-direction:column;gap:6px}.ce-field.full{grid-column:1/-1}.ce-field label{font-size:12px;font-weight:800;color:#48205d}.ce-checks{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:10px 0}.ce-checks label{display:flex;gap:7px;align-items:center;font-weight:700}.ce-checks input{width:auto;margin:0}.ce-primary{width:auto!important;margin:0!important}.ce-badge{display:inline-flex;align-items:center;background:#f4e9fb;color:#6b2c91;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:800;margin-left:6px}.ce-notice-row{border:1px solid #eadff0;border-radius:14px;padding:12px;margin:10px 0;background:#fff}.ce-notice-row.inactive{opacity:.58}.ce-notice-row img{width:72px;height:72px;border-radius:10px;object-fit:cover;float:left;margin-right:10px}.ce-notice-actions{display:flex;gap:7px;flex-wrap:wrap;clear:both;padding-top:9px}.ce-notice-status{font-size:11px;color:#6b2c91;margin-top:7px}.ce-analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.ce-analytics-list{display:flex;flex-direction:column;gap:8px}.ce-analytics-row{display:flex;justify-content:space-between;gap:12px;padding:9px 10px;border:1px solid #eee2f4;border-radius:11px;background:#fff}.ce-analytics-row span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ce-analytics-row b{flex:0 0 auto;color:#6b2c91}.ce-preview{max-width:180px;max-height:140px;display:none;border-radius:12px;margin-top:8px;object-fit:cover}.ce-note{font-size:11px;color:#725d7c;line-height:1.5}.ce-directory-tools{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:8px 0 14px}.ce-directory-tools input{flex:1;min-width:220px}.ce-featured-item{border-color:#d8b6e8!important;box-shadow:0 7px 24px rgba(107,44,145,.08)}
+@media(max-width:760px){.ce-grid,.ce-analytics-grid{grid-template-columns:1fr}.ce-field.full{grid-column:auto}.ce-directory-tools>*{width:100%!important}}
+
 </style>
 
 
@@ -789,6 +795,10 @@ Homepage CMS
 
 <button onclick="showAnnouncements()">
 Announcements
+</button>
+
+<button onclick="showNotices()">
+Notices
 </button>
 
 <button onclick="showAds()">
@@ -919,6 +929,11 @@ Login
 </div>
 
 <div class="stat">
+<h3>Notices</h3>
+<h2 id="noticeCount">0</h2>
+</div>
+
+<div class="stat">
 <h3>Ads</h3>
 <h2 id="adsCount">0</h2>
 </div>
@@ -976,6 +991,16 @@ Login
   <div class="p6-panel" style="margin-top:16px">
     <h3>Popular Pages / Sections</h3>
     <div id="analyticsPopularPages" class="p6-pages">Loading...</div>
+  </div>
+  <div class="ce-analytics-grid">
+    <div class="p6-panel">
+      <h3>Popular Search Keywords</h3>
+      <div id="analyticsPopularSearches" class="ce-analytics-list">Loading...</div>
+    </div>
+    <div class="p6-panel">
+      <h3>Popular Directory Items</h3>
+      <div id="analyticsPopularItems" class="ce-analytics-list">Loading...</div>
+    </div>
   </div>
   <div id="analyticsStatus" class="p6-status"></div>
 </div>
@@ -1075,6 +1100,20 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
     <div class="settings-field settings-wide">
       <label for="settingWhatsapp">WhatsApp</label>
       <input id="settingWhatsapp" placeholder="8801XXXXXXXXX অথবা https://wa.me/...">
+    </div>
+
+    <div class="settings-field settings-wide">
+      <label for="settingSiteUrl">Website URL / Canonical URL</label>
+      <input id="settingSiteUrl" type="url" placeholder="https://voiceofgoila.github.io/">
+    </div>
+    <div class="settings-field settings-wide">
+      <label for="settingSeoDescription">SEO / Share Description</label>
+      <textarea id="settingSeoDescription" maxlength="300" placeholder="গৈলা ইউনিয়নের তথ্য, প্রয়োজনীয় সেবা ও গুরুত্বপূর্ণ স্থানীয় তথ্য।" style="min-height:90px"></textarea>
+    </div>
+    <div class="settings-field settings-wide">
+      <label for="settingSocialShareImageUrl">Social Share Image URL</label>
+      <input id="settingSocialShareImageUrl" type="url" placeholder="Media Library থেকে Copy URL দিন">
+      <div class="settings-help">Facebook/WhatsApp/LinkedIn preview-এর জন্য 1200×630 অনুপাতের image ভালো।</div>
     </div>
     <div class="settings-field settings-wide">
       <label for="settingDeveloperCreditLabel">Developer Credit Label</label>
@@ -1222,6 +1261,25 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
 </div>
 
 
+
+
+<!-- NOTICES CMS -->
+<div class="card" id="noticesManagement">
+  <div class="ce-head">
+    <div><h2>Notices</h2><p class="cms-note">Announcements-এর বাইরে image সহ সাধারণ Notice/Update প্রকাশ করুন।</p></div>
+    <button class="ce-primary" onclick="loadNoticesAdmin()">Refresh</button>
+  </div>
+  <div class="ce-grid">
+    <div class="ce-field full"><label>Title</label><input id="noticeNewTitle" maxlength="160" placeholder="নোটিশের শিরোনাম"></div>
+    <div class="ce-field full"><label>Description</label><textarea id="noticeNewDescription" maxlength="1200" style="min-height:100px" placeholder="নোটিশের বিস্তারিত"></textarea></div>
+    <div class="ce-field"><label>Image (optional)</label><input id="noticeNewImage" type="file" accept="image/*" onchange="previewNoticeNewImage(event)"><img id="noticeNewPreview" class="ce-preview" alt="Notice preview"></div>
+    <div class="ce-field"><label>Status</label><select id="noticeNewStatus"><option value="true">Show / Active</option><option value="false">Hide / Inactive</option></select></div>
+  </div>
+  <button class="ce-primary" onclick="addNotice()">+ Add Notice</button>
+  <div id="noticesAdminStatus" class="ce-notice-status"></div>
+  <div id="noticesAdminList">Loading...</div>
+</div>
+
 <!-- EMERGENCY NUMBERS MANAGEMENT -->
 <div class="card" id="emergencyManagement">
   <h2>Emergency Numbers</h2>
@@ -1340,13 +1398,10 @@ Directory Management
 
 
 
-<input
-
-id="searchBox"
-
-placeholder="Search..."
-
->
+<div class="ce-directory-tools">
+<button class="ce-primary" onclick="openDirectoryAdd()">+ Add Directory Item</button>
+<input id="searchBox" placeholder="Search Directory...">
+</div>
 
 
 
@@ -1451,6 +1506,41 @@ Loading...
     <label>Sort Order</label><input id="announcementEditSort" type="number">
     <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:700"><input id="announcementEditActive" type="checkbox" style="width:auto;margin:0"> Active / Show</label>
     <button onclick="saveAnnouncementEdit()">Save Changes</button>
+  </div>
+</div>
+
+
+<!-- DIRECTORY ADD MODAL -->
+<div id="directoryAddModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-header"><h2>Add Directory Item</h2><button class="close-btn" onclick="closeDirectoryAdd()">✕</button></div>
+    <div class="ce-grid">
+      <div class="ce-field full"><label>Name *</label><input id="addDirName" maxlength="150"></div>
+      <div class="ce-field"><label>Category *</label><select id="addDirCat" onchange="changeAddSubCategory()"></select></div>
+      <div class="ce-field"><label>Subcategory</label><select id="addDirSubcat"></select></div>
+      <div class="ce-field"><label>Phone</label><input id="addDirPhone" inputmode="tel"></div>
+      <div class="ce-field"><label>Sort Order</label><input id="addDirSort" type="number" value="0"></div>
+      <div class="ce-field full"><label>Address</label><input id="addDirAddress"></div>
+      <div class="ce-field full"><label>Google Maps URL</label><input id="addDirMap" type="url"></div>
+      <div class="ce-field full"><label>Description</label><textarea id="addDirDescription" style="min-height:100px"></textarea></div>
+      <div class="ce-field full"><label>Image</label><input id="addDirImage" type="file" accept="image/*" onchange="previewAddDirectoryImage(event)"><img id="addDirImagePreview" class="ce-preview" alt="Directory image preview"></div>
+    </div>
+    <div class="ce-checks"><label><input id="addDirActive" type="checkbox" checked> Active / Public</label><label><input id="addDirFeatured" type="checkbox"> ⭐ Featured / Pin</label></div>
+    <button onclick="saveNewDirectoryItem()">Save Directory Item</button>
+  </div>
+</div>
+
+<!-- NOTICE EDIT MODAL -->
+<div id="noticeEditModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-header"><h2>Edit Notice</h2><button class="close-btn" onclick="closeNoticeEdit()">✕</button></div>
+    <input id="noticeEditId" type="hidden">
+    <label>Title</label><input id="noticeEditTitle" maxlength="160">
+    <label>Description</label><textarea id="noticeEditDescription" maxlength="1200" style="min-height:120px"></textarea>
+    <label style="margin-top:10px">Change Image (optional)</label><input id="noticeEditImage" type="file" accept="image/*" onchange="previewNoticeEditImage(event)">
+    <img id="noticeEditPreview" class="ce-preview" alt="Notice preview">
+    <div class="ce-checks"><label><input id="noticeEditRemoveImage" type="checkbox"> Remove current image</label><label><input id="noticeEditStatus" type="checkbox"> Active / Show</label></div>
+    <button onclick="saveNoticeEdit()">Save Changes</button>
   </div>
 </div>
 
@@ -1576,6 +1666,13 @@ placeholder="Description">
 
 </textarea>
 
+<div class="ce-grid">
+  <div class="ce-field"><label>Sort Order</label><input id="editSortOrder" type="number" value="0"></div>
+  <div class="ce-field"><label>Visibility</label><select id="editActive"><option value="true">Active / Public</option><option value="false">Hidden</option></select></div>
+</div>
+<div class="ce-checks"><label><input id="editFeatured" type="checkbox"> ⭐ Featured / Pin</label></div>
+
+
 
 
 
@@ -1660,7 +1757,7 @@ Save Changes
 
 <script src="js/supabase.js"></script>
 
-<script src="js/admin.js?v=20260819-full-footer-cms-1"></script>
+<script src="js/admin.js?v=20260819-complete-1"></script>
 
 
 
