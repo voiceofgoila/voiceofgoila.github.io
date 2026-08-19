@@ -200,7 +200,7 @@ async function submitInformation(e){
     }
 }
 const REVIEW_KEY="voiceOfGoilaSingleReview";const LEGACY_REVIEW_KEY="voiceOfGoilaWebsiteReviews";let selectedRating=0;function getReview(){try{const r=JSON.parse(localStorage.getItem(REVIEW_KEY)||"null");if(r)return r;const old=JSON.parse(localStorage.getItem(LEGACY_REVIEW_KEY)||"[]");if(Array.isArray(old)&&old.length){const latest=old[old.length-1];localStorage.setItem(REVIEW_KEY,JSON.stringify(latest));return latest}}catch(e){}return null}function saveReview(r){try{localStorage.setItem(REVIEW_KEY,JSON.stringify(r))}catch(e){}}
-function paintStarPicker(){document.querySelectorAll("#starPicker button").forEach(b=>b.classList.toggle("active",Number(b.dataset.rating)<=selectedRating))}function renderReview(){const r=getReview(),btn=$("reviewSubmitBtn"),list=$("reviewList");if(!r){$("avgRating").textContent="0.0";$("avgStars").textContent="☆☆☆☆☆";$("ratingMeta").textContent="এখনও কোনো রেটিং নেই";list.innerHTML="";btn.disabled=false;return}const rating=Number(r.rating||0);$("avgRating").textContent=rating.toFixed(1);$("avgStars").textContent="★".repeat(rating)+"☆".repeat(5-rating);$("ratingMeta").textContent="এই browser/device-এর রেটিং";list.innerHTML=`<article class="review-card"><div class="review-card-top"><b>${escapeHtml(r.name||"একজন ব্যবহারকারী")}</b><span class="stars">${"★".repeat(rating)}${"☆".repeat(5-rating)}</span></div>${r.text?`<p>${escapeHtml(r.text)}</p>`:""}</article>`;btn.disabled=true;btn.textContent="রিভিউ দেওয়া হয়েছে";$("reviewName").disabled=true;$("reviewText").disabled=true;document.querySelectorAll("#starPicker button").forEach(b=>b.disabled=true)}function submitReview(){if(getReview()){showReviewMessage("আপনি ইতোমধ্যে একটি রিভিউ দিয়েছেন।");return}if(!selectedRating){alert("অনুগ্রহ করে ১ থেকে ৫ স্টারের মধ্যে একটি রেটিং নির্বাচন করুন।");return}saveReview({rating:selectedRating,name:$("reviewName").value.trim(),text:$("reviewText").value.trim(),time:Date.now()});renderReview();showReviewMessage("✅ ধন্যবাদ! আপনার রিভিউ সংরক্ষণ হয়েছে।")}function showReviewMessage(t){const m=$("reviewMessage");m.textContent=t;m.style.display="block"}function scrollToReview(){closeSideMenu();$("reviewSection").scrollIntoView({behavior:"smooth",block:"start"})}
+function paintStarPicker(){document.querySelectorAll("#starPicker button").forEach(b=>b.classList.toggle("active",Number(b.dataset.rating)<=selectedRating))}function renderReview(){const r=getReview(),btn=$("reviewSubmitBtn"),list=$("reviewList");if(!r){$("avgRating").textContent="0.0";$("avgStars").textContent="☆☆☆☆☆";$("ratingMeta").textContent="এখনও কোনো রেটিং নেই";list.innerHTML="";btn.disabled=false;return}const rating=Number(r.rating||0);$("avgRating").textContent=rating.toFixed(1);$("avgStars").textContent="★".repeat(rating)+"☆".repeat(5-rating);$("ratingMeta").textContent="এই browser/device-এর রেটিং";list.innerHTML=`<article class="review-card"><div class="review-card-top"><b>${escapeHtml(r.name||"একজন ব্যবহারকারী")}</b><span class="stars">${"★".repeat(rating)}${"☆".repeat(5-rating)}</span></div>${r.text?`<p>${escapeHtml(r.text)}</p>`:""}</article>`;btn.disabled=true;btn.textContent="রিভিউ দেওয়া হয়েছে";$("reviewName").disabled=true;$("reviewText").disabled=true;document.querySelectorAll("#starPicker button").forEach(b=>b.disabled=true)}function submitReview(){if(getReview()){showReviewMessage("আপনি ইতোমধ্যে একটি রিভিউ দিয়েছেন।");return}if(!selectedRating){alert("অনুগ্রহ করে ১ থেকে ৫ স্টারের মধ্যে একটি রেটিং নির্বাচন করুন।");return}saveReview({rating:selectedRating,name:$("reviewName").value.trim(),text:$("reviewText").value.trim(),time:Date.now()});renderReview()}function showReviewMessage(t){const m=$("reviewMessage");m.textContent=t;m.style.display="block"}function scrollToReview(){closeSideMenu();$("reviewSection").scrollIntoView({behavior:"smooth",block:"start"})}
 function setupContactLinks(){const f=$("facebookLink"),e=$("emailLink");if(SITE_CONFIG.facebook){f.href=SITE_CONFIG.facebook;f.target="_blank";f.rel="noopener"}else f.addEventListener("click",ev=>{ev.preventDefault();alert("Facebook Page link এখনো সেট করা হয়নি।")});if(SITE_CONFIG.email){e.href="mailto:"+SITE_CONFIG.email}else e.addEventListener("click",ev=>{ev.preventDefault();alert("Email address এখনো সেট করা হয়নি।")})}
 function escapeHtml(text){return String(text||"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]||ch))}function escapeAttr(text){return escapeHtml(text).replace(/`/g,"&#96;")}
 const AD_HISTORY_PREFIX="voiceOfGoilaAdHistoryV2:";let adTimerHandle=null;let inlineAdTimerHandle=null;let ADS_CONFIG={enabled:false,popup:{enabled:false,id:null,image:"",link:"",alt:"Sponsored advertisement",views24h:1,durationSeconds:8},inline:{enabled:false,id:null,image:"",link:"",alt:"Sponsored advertisement",views24h:1,durationSeconds:8}};
@@ -463,10 +463,8 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
         if(name)name.disabled=submitted;
         if(text)text.disabled=submitted;
         document.querySelectorAll("#starPicker button").forEach(b=>b.disabled=submitted);
-        if(submitted){
-            const m=byId("reviewMessage");
-            if(m){m.textContent="✅ আপনার রিভিউ জমা হয়েছে। Admin অনুমোদনের পর Public Website-এ দেখা যাবে।";m.style.display="block";}
-        }
+        const m=byId("reviewMessage");
+        if(m){m.textContent="";m.style.display="none";}
     }
 
     function renderApprovedReviews(rows){
@@ -499,7 +497,8 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
 
     window.submitReview=async function(){
         if(reviewWasSubmitted()){
-            if(typeof showReviewMessage==="function")showReviewMessage("আপনি ইতোমধ্যে একটি রিভিউ জমা দিয়েছেন।");
+            const m=byId("reviewMessage");
+            if(m){m.textContent="";m.style.display="none";}
             return;
         }
         if(typeof selectedRating==="undefined" || !selectedRating){alert("অনুগ্রহ করে ১ থেকে ৫ স্টারের মধ্যে একটি রেটিং নির্বাচন করুন।");return;}
@@ -519,7 +518,6 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
         }
         markReviewSubmitted();
         syncReviewFormState();
-        if(typeof showReviewMessage==="function")showReviewMessage("✅ ধন্যবাদ! আপনার রিভিউ Admin approval-এর জন্য পাঠানো হয়েছে।");
     };
 
     loadPublicEmergencyNumbers();
