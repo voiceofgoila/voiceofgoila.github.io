@@ -824,14 +824,18 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
 
   <div class="settings-assets">
     <div class="settings-asset">
-      <label for="settingLogoFile">Website Logo</label>
-      <input id="settingLogoFile" type="file" accept="image/*" onchange="previewWebsiteAsset(event,'websiteLogoPreview')">
+      <div style="font-weight:700;margin-bottom:8px;">Website Logo</div>
+      <label class="file-label" for="settingLogoFile">📷 Choose Logo
+        <input id="settingLogoFile" type="file" accept="image/*" onchange="previewWebsiteAsset(event,'websiteLogoPreview')">
+      </label>
       <img id="websiteLogoPreview" class="settings-preview" alt="Current website logo preview">
       <div class="settings-help">নতুন file না দিলে বর্তমান logo অপরিবর্তিত থাকবে।</div>
     </div>
     <div class="settings-asset">
-      <label for="settingFaviconFile">Favicon</label>
-      <input id="settingFaviconFile" type="file" accept="image/*" onchange="previewWebsiteAsset(event,'websiteFaviconPreview')">
+      <div style="font-weight:700;margin-bottom:8px;">Favicon</div>
+      <label class="file-label" for="settingFaviconFile">🖼️ Choose Favicon
+        <input id="settingFaviconFile" type="file" accept="image/*" onchange="previewWebsiteAsset(event,'websiteFaviconPreview')">
+      </label>
       <img id="websiteFaviconPreview" class="settings-preview" alt="Current favicon preview">
       <div class="settings-help">Square PNG/WebP image ব্যবহার করলে ভালো দেখাবে।</div>
     </div>
