@@ -1045,7 +1045,7 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
 <!-- WEBSITE SETTINGS MANAGEMENT -->
 <div class="card" id="websiteSettingsManagement">
   <h2>Website Settings</h2>
-  <p class="cms-note">এখান থেকে Save করলে Public Website-এর নাম, logo, favicon, contact/social এবং developer profile link Supabase থেকে automatic update হবে।</p>
+  <p class="cms-note">এখান থেকে Save করলে Public Website-এর নাম, logo, favicon, contact/social এবং footer developer credit/rights Supabase থেকে automatic update হবে।</p>
 
   <div class="settings-grid">
     <div class="settings-field settings-wide">
@@ -1077,9 +1077,26 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
       <input id="settingWhatsapp" placeholder="8801XXXXXXXXX অথবা https://wa.me/...">
     </div>
     <div class="settings-field settings-wide">
+      <label for="settingDeveloperCreditLabel">Developer Credit Label</label>
+      <input id="settingDeveloperCreditLabel" placeholder="Site Developed & Maintained by">
+    </div>
+    <div class="settings-field">
+      <label for="settingDeveloperName">Developer Name</label>
+      <input id="settingDeveloperName" placeholder="Shawan Sarder Solyman">
+    </div>
+    <div class="settings-field">
       <label for="settingDeveloperProfileLink">Developer Profile Link</label>
       <input id="settingDeveloperProfileLink" type="url" placeholder="https://www.facebook.com/ShawanSarderSolyman">
-      <div class="settings-help">Footer-এর developer name-এ click করলে এই link নতুন tab-এ খুলবে।</div>
+      <div class="settings-help">Link খালি রাখলে নাম দেখা যাবে, কিন্তু clickable হবে না।</div>
+    </div>
+    <div class="settings-field settings-wide">
+      <label for="settingDeveloperSubtitle">Developer Subtitle</label>
+      <input id="settingDeveloperSubtitle" placeholder="Innovator at Medical Assistant Robot">
+    </div>
+    <div class="settings-field settings-wide">
+      <label for="settingFooterRightsText">Footer Rights Text</label>
+      <input id="settingFooterRightsText" placeholder="© Voice of Goila · All Rights Reserved">
+      <div class="settings-help">যে field খালি রাখবেন, Public footer-এ সেই line hide থাকবে।</div>
     </div>
   </div>
 
@@ -1643,7 +1660,7 @@ Save Changes
 
 <script src="js/supabase.js"></script>
 
-<script src="js/admin.js?v=20260819-final-audit-1"></script>
+<script src="js/admin.js?v=20260819-full-footer-cms-1"></script>
 
 
 

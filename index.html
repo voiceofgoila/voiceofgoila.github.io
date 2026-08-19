@@ -339,20 +339,46 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
         const location=freshAnchor("locationLink");
         configureAnchor(location,mapsUrl(row.address),true);
 
+        const creditLabel=document.querySelector(".developer-credit .credit-label");
         const developer=document.querySelector(".developer-name");
+        const developerSubtitle=document.querySelector(".developer-credit small");
+        const footerRights=document.querySelector(".footer-rights");
+
+        const creditLabelText=row.developer_credit_label == null ? "Site Developed & Maintained by" : clean(row.developer_credit_label);
+        const developerName=row.developer_name == null ? "Shawan Sarder Solyman" : clean(row.developer_name);
+        const developerSubtitleText=row.developer_subtitle == null ? "Innovator at Medical Assistant Robot" : clean(row.developer_subtitle);
+        const footerRightsText=row.footer_rights_text == null ? "© Voice of Goila · All Rights Reserved" : clean(row.footer_rights_text);
+
+        if(creditLabel){
+            creditLabel.textContent=creditLabelText;
+            creditLabel.style.display=creditLabelText ? "" : "none";
+        }
         if(developer){
+            const mark=developer.querySelector(".external-mark");
+            developer.childNodes[0].nodeValue=developerName ? developerName+" " : "";
+            developer.style.display=developerName ? "inline-flex" : "none";
             const developerUrl=clean(row.developer_profile_link);
-            if(developerUrl){
+            if(developerName && developerUrl){
                 developer.href=developerUrl;
                 developer.target="_blank";
                 developer.rel="noopener noreferrer";
-                developer.title="Visit Shawan Sarder Solyman";
+                developer.title="Visit "+developerName;
+                if(mark) mark.style.display="";
             }else{
                 developer.removeAttribute("href");
                 developer.removeAttribute("target");
                 developer.removeAttribute("rel");
                 developer.title="";
+                if(mark) mark.style.display="none";
             }
+        }
+        if(developerSubtitle){
+            developerSubtitle.textContent=developerSubtitleText;
+            developerSubtitle.style.display=developerSubtitleText ? "" : "none";
+        }
+        if(footerRights){
+            footerRights.textContent=footerRightsText;
+            footerRights.style.display=footerRightsText ? "" : "none";
         }
 
         removeLegacyContactText();
