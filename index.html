@@ -527,4 +527,71 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
 
 <!-- Phase 2 Part 5: Emergency Numbers + Supabase Reviews -->
 
+
+
+<script>
+// Voice of Goila - Phase 2 Part 6 Public Analytics
+(function(){
+    const TOKEN_KEY="voiceOfGoilaAnalyticsVisitorV1";
+    const byId=id=>document.getElementById(id);
+
+    function makeUuid(){
+        if(window.crypto && typeof crypto.randomUUID==="function")return crypto.randomUUID();
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{
+            const r=Math.random()*16|0,v=c==="x"?r:(r&3|8);return v.toString(16);
+        });
+    }
+    function visitorToken(){
+        try{
+            let t=localStorage.getItem(TOKEN_KEY);
+            if(!t){t=makeUuid();localStorage.setItem(TOKEN_KEY,t);}
+            return t;
+        }catch(e){return makeUuid();}
+    }
+    function deviceType(){
+        const ua=navigator.userAgent||"";
+        if(/ipad|tablet|playbook|silk/i.test(ua) || (/android/i.test(ua)&&!/mobile/i.test(ua)))return "Tablet";
+        if(/mobi|android|iphone|ipod|windows phone/i.test(ua))return "Mobile";
+        return "Desktop";
+    }
+    function safePage(name){
+        const v=String(name||"Homepage").replace(/\s+/g," ").trim();
+        return (v||"Homepage").slice(0,120);
+    }
+    async function track(name){
+        if(!window.supabaseClient)return;
+        try{
+            const {error}=await window.supabaseClient.rpc("track_analytics",{
+                p_page:safePage(name),
+                p_device:deviceType(),
+                p_visitor_token:visitorToken()
+            });
+            if(error)console.warn("Analytics tracking skipped:",error.message);
+        }catch(e){console.warn("Analytics tracking unavailable");}
+    }
+    window.vogTrackAnalytics=track;
+
+    // Main page view
+    if(document.readyState==="complete")track("Homepage");
+    else window.addEventListener("load",()=>track("Homepage"),{once:true});
+
+    // Count meaningful section/category opens as page/section views.
+    if(typeof window.openCategory==="function"){
+        const originalOpenCategory=window.openCategory;
+        window.openCategory=function(slug){
+            let label=String(slug||"Category");
+            try{if(typeof window.catInfo==="function")label=window.catInfo(slug)?.[1]||label;}catch(e){}
+            track("Category: "+label);
+            return originalOpenCategory.apply(this,arguments);
+        };
+    }
+    if(typeof window.doSearch==="function"){
+        const originalSearch=window.doSearch;
+        window.doSearch=function(){track("Search");return originalSearch.apply(this,arguments);};
+    }
+})();
+</script>
+
+<!-- Phase 2 Part 6: Analytics Tracking -->
+
 </body></html>
