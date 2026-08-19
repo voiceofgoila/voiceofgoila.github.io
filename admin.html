@@ -627,6 +627,30 @@ font-size:20px;
 .adm-ad-actions button{width:auto;padding:9px 13px;margin:0}
 @media(max-width:700px){.adm-ad-form{grid-template-columns:1fr}.adm-ad-form .wide{grid-column:auto}.adm-ad-row{grid-template-columns:1fr}.adm-ad-thumb{width:100%;height:160px}.adm-ad-actions button{flex:1}}
 
+
+/* Phase 2 Part 5 - Emergency Numbers + Reviews */
+.p5-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.p5-field{display:flex;flex-direction:column;gap:6px}
+.p5-field label{font-weight:700;color:#4e1f6b;font-size:13px}
+.p5-wide{grid-column:1/-1}
+.p5-options{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:10px}
+.p5-options label{display:flex;align-items:center;gap:7px;font-weight:700}
+.p5-options input[type="checkbox"]{width:auto;margin:0}
+.p5-list{display:grid;gap:11px;margin-top:18px}
+.p5-row{border:1px solid #e7dfeb;background:#fcf9fd;border-radius:14px;padding:13px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.p5-row.inactive{opacity:.62}
+.p5-main{min-width:0;flex:1}
+.p5-main h4{margin:0 0 5px;color:#3b2049;font-size:16px}
+.p5-meta{font-size:12px;color:#756b79;margin-top:4px;word-break:break-word}
+.p5-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.p5-actions button{width:auto;padding:8px 11px;margin:0}
+.p5-stars{color:#e09b18;font-size:17px;letter-spacing:1px}
+.p5-review-text{margin:7px 0 0;white-space:pre-wrap;color:#4e4352;line-height:1.5}
+.p5-filter{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 0}
+.p5-filter select{max-width:220px;margin:0}
+.p5-status{font-weight:800;font-size:12px;padding:4px 8px;border-radius:999px;background:#efe7f4;color:#5d247c;display:inline-block}
+@media(max-width:760px){.p5-grid{grid-template-columns:1fr}.p5-wide{grid-column:auto}.p5-row{flex-direction:column}.p5-actions{width:100%;justify-content:flex-start}.p5-actions button{flex:1}}
+
 </style>
 
 
@@ -691,6 +715,14 @@ Announcements
 
 <button onclick="showAds()">
 Ads
+</button>
+
+<button onclick="showEmergencyCMS()">
+Emergency
+</button>
+
+<button onclick="showReviewsCMS()">
+Reviews
 </button>
 
 <button onclick="logout()">
@@ -803,6 +835,16 @@ Login
 <div class="stat">
 <h3>Ads</h3>
 <h2 id="adsCount">0</h2>
+</div>
+
+<div class="stat">
+<h3>Emergency</h3>
+<h2 id="emergencyCount">0</h2>
+</div>
+
+<div class="stat">
+<h3>Pending Reviews</h3>
+<h2 id="reviewPendingCount">0</h2>
 </div>
 
 
@@ -1010,6 +1052,44 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
   <div id="adsAdminList" class="adm-ad-list">Loading...</div>
 </div>
 
+
+<!-- EMERGENCY NUMBERS MANAGEMENT -->
+<div class="card" id="emergencyManagement">
+  <h2>Emergency Numbers</h2>
+  <p class="cms-note">জরুরি নম্বর Add/Edit/Delete এবং Show/Hide করুন। শুধু Active নম্বর Public Website-এর জরুরি সেবা section ও quick menu-তে দেখা যাবে।</p>
+  <div class="p5-grid">
+    <div class="p5-field"><label>Icon / Emoji</label><input id="emergencyIcon" value="☎️" maxlength="10" placeholder="☎️"></div>
+    <div class="p5-field"><label>Name *</label><input id="emergencyName" placeholder="যেমন: জাতীয় জরুরি সেবা"></div>
+    <div class="p5-field p5-wide"><label>Note</label><input id="emergencyNote" placeholder="যেমন: পুলিশ • ফায়ার • অ্যাম্বুলেন্স"></div>
+    <div class="p5-field"><label>Phone *</label><input id="emergencyPhone" placeholder="999" inputmode="tel"></div>
+    <div class="p5-field"><label>Sort Order</label><input id="emergencySort" type="number" value="100"></div>
+  </div>
+  <div class="p5-options">
+    <label><input id="emergencyActive" type="checkbox" checked> Active / Show</label>
+    <button onclick="addEmergencyNumber()" style="width:auto;margin:0">+ Add Emergency Number</button>
+    <span id="emergencyAdminStatus" class="settings-status"></span>
+  </div>
+  <div id="emergencyAdminList" class="p5-list">Loading...</div>
+</div>
+
+<!-- REVIEWS MANAGEMENT -->
+<div class="card" id="reviewsManagement">
+  <h2>Reviews Management</h2>
+  <p class="cms-note">Visitor review প্রথমে Pending থাকবে। Admin Approve করলে শুধু তখনই Public Website-এ দেখা যাবে এবং Average Rating-এ গণনা হবে।</p>
+  <div class="p5-filter">
+    <label for="reviewStatusFilter"><b>Status:</b></label>
+    <select id="reviewStatusFilter" onchange="renderReviewsAdmin()">
+      <option value="all">All</option>
+      <option value="pending" selected>Pending</option>
+      <option value="approved">Approved</option>
+      <option value="rejected">Rejected</option>
+    </select>
+    <button onclick="loadReviewsAdmin()" style="width:auto;margin:0">Refresh</button>
+    <span id="reviewsAdminStatus" class="settings-status"></span>
+  </div>
+  <div id="reviewsAdminList" class="p5-list">Loading...</div>
+</div>
+
 <!-- PENDING -->
 
 <div class="card">
@@ -1148,6 +1228,22 @@ Loading...
 
 
 
+
+
+<!-- EMERGENCY EDIT MODAL -->
+<div id="emergencyEditModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-header"><h2>Edit Emergency Number</h2><button class="close-btn" onclick="closeEmergencyEdit()">✕</button></div>
+    <input id="emergencyEditId" type="hidden">
+    <label>Icon / Emoji</label><input id="emergencyEditIcon" maxlength="10">
+    <label>Name</label><input id="emergencyEditName">
+    <label>Note</label><input id="emergencyEditNote">
+    <label>Phone</label><input id="emergencyEditPhone" inputmode="tel">
+    <label>Sort Order</label><input id="emergencyEditSort" type="number">
+    <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:700"><input id="emergencyEditActive" type="checkbox" style="width:auto;margin:0"> Active / Show</label>
+    <button onclick="saveEmergencyEdit()">Save Changes</button>
+  </div>
+</div>
 
 <!-- ANNOUNCEMENT EDIT MODAL -->
 <!-- ADS EDIT MODAL -->
@@ -1393,7 +1489,7 @@ Save Changes
 
 <script src="js/supabase.js"></script>
 
-<script src="js/admin.js?v=20260819-1655"></script>
+<script src="js/admin.js?v=20260819-1705"></script>
 
 
 

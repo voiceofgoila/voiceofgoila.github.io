@@ -414,4 +414,119 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
 
 <!-- Phase 2 Part 3: Homepage CMS + Announcements -->
 
+
+
+<script>
+// Voice of Goila - Phase 2 Part 5 Public Emergency + Reviews
+(function(){
+    const REVIEW_SUBMITTED_KEY="voiceOfGoilaReviewSubmittedV2";
+    const REVIEW_TOKEN_KEY="voiceOfGoilaVisitorTokenV2";
+    const byId=id=>document.getElementById(id);
+    const esc=v=>String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+
+    async function loadPublicEmergencyNumbers(){
+        if(!window.supabaseClient)return;
+        const {data,error}=await window.supabaseClient.from("emergency_numbers")
+            .select("icon,name,note,phone,active,sort_order")
+            .eq("active",true)
+            .order("sort_order",{ascending:true});
+        if(error){console.warn("Emergency numbers unavailable; built-in fallback kept.",error.message);return;}
+        if(typeof emergencyNumbers!=="undefined" && Array.isArray(emergencyNumbers)){
+            emergencyNumbers.splice(0,emergencyNumbers.length,...(data||[]).map(x=>({icon:x.icon||"☎️",name:x.name||"",note:x.note||"",phone:x.phone||""})));
+            if(typeof renderEmergency==="function")renderEmergency();
+            if(typeof renderMenu==="function")renderMenu();
+        }
+    }
+
+    function makeUuid(){
+        if(window.crypto && typeof crypto.randomUUID==="function")return crypto.randomUUID();
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{
+            const r=Math.random()*16|0,v=c==="x"?r:(r&3|8);return v.toString(16);
+        });
+    }
+
+    function getVisitorToken(){
+        try{
+            let token=localStorage.getItem(REVIEW_TOKEN_KEY);
+            if(!token){token=makeUuid();localStorage.setItem(REVIEW_TOKEN_KEY,token);}
+            return token;
+        }catch(e){return makeUuid();}
+    }
+
+    function reviewWasSubmitted(){try{return localStorage.getItem(REVIEW_SUBMITTED_KEY)==="1"}catch(e){return false}}
+    function markReviewSubmitted(){try{localStorage.setItem(REVIEW_SUBMITTED_KEY,"1")}catch(e){}}
+
+    function syncReviewFormState(){
+        const submitted=reviewWasSubmitted();
+        const btn=byId("reviewSubmitBtn"),name=byId("reviewName"),text=byId("reviewText");
+        if(btn){btn.disabled=submitted;btn.textContent=submitted?"রিভিউ পাঠানো হয়েছে":"রিভিউ জমা দিন";}
+        if(name)name.disabled=submitted;
+        if(text)text.disabled=submitted;
+        document.querySelectorAll("#starPicker button").forEach(b=>b.disabled=submitted);
+        if(submitted){
+            const m=byId("reviewMessage");
+            if(m){m.textContent="✅ আপনার রিভিউ জমা হয়েছে। Admin অনুমোদনের পর Public Website-এ দেখা যাবে।";m.style.display="block";}
+        }
+    }
+
+    function renderApprovedReviews(rows){
+        rows=Array.isArray(rows)?rows:[];
+        const avg=rows.length?rows.reduce((sum,r)=>sum+Number(r.rating||0),0)/rows.length:0;
+        const rounded=Math.max(0,Math.min(5,Math.round(avg)));
+        if(byId("avgRating"))byId("avgRating").textContent=avg.toFixed(1);
+        if(byId("avgStars"))byId("avgStars").textContent="★".repeat(rounded)+"☆".repeat(5-rounded);
+        if(byId("ratingMeta"))byId("ratingMeta").textContent=rows.length?`${rows.length}টি অনুমোদিত রিভিউ`:"এখনও কোনো অনুমোদিত রিভিউ নেই";
+        const list=byId("reviewList");
+        if(list){
+            list.innerHTML=rows.slice(0,20).map(r=>{
+                const rating=Math.max(1,Math.min(5,Number(r.rating||0)));
+                return `<article class="review-card"><div class="review-card-top"><b>${esc(r.name||"একজন ব্যবহারকারী")}</b><span class="stars">${"★".repeat(rating)}${"☆".repeat(5-rating)}</span></div>${r.review_text?`<p>${esc(r.review_text)}</p>`:""}</article>`;
+            }).join("");
+        }
+        syncReviewFormState();
+    }
+
+    async function loadApprovedReviews(){
+        if(!window.supabaseClient)return;
+        const {data,error}=await window.supabaseClient.from("reviews")
+            .select("id,rating,name,review_text,created_at")
+            .eq("status","approved")
+            .order("created_at",{ascending:false})
+            .limit(50);
+        if(error){console.warn("Approved reviews unavailable; existing fallback kept.",error.message);syncReviewFormState();return;}
+        renderApprovedReviews(data||[]);
+    }
+
+    window.submitReview=async function(){
+        if(reviewWasSubmitted()){
+            if(typeof showReviewMessage==="function")showReviewMessage("আপনি ইতোমধ্যে একটি রিভিউ জমা দিয়েছেন।");
+            return;
+        }
+        if(typeof selectedRating==="undefined" || !selectedRating){alert("অনুগ্রহ করে ১ থেকে ৫ স্টারের মধ্যে একটি রেটিং নির্বাচন করুন।");return;}
+        if(!window.supabaseClient){alert("Review service এখন পাওয়া যাচ্ছে না। আবার চেষ্টা করুন।");return;}
+        const btn=byId("reviewSubmitBtn");if(btn){btn.disabled=true;btn.textContent="Submitting...";}
+        const payload={
+            visitor_token:getVisitorToken(),
+            rating:Number(selectedRating),
+            name:String(byId("reviewName")?.value||"").trim(),
+            review_text:String(byId("reviewText")?.value||"").trim(),
+            status:"pending"
+        };
+        const {error}=await window.supabaseClient.from("reviews").insert(payload);
+        if(error){
+            if(btn){btn.disabled=false;btn.textContent="রিভিউ জমা দিন";}
+            alert("Review জমা হয়নি: "+error.message);return;
+        }
+        markReviewSubmitted();
+        syncReviewFormState();
+        if(typeof showReviewMessage==="function")showReviewMessage("✅ ধন্যবাদ! আপনার রিভিউ Admin approval-এর জন্য পাঠানো হয়েছে।");
+    };
+
+    loadPublicEmergencyNumbers();
+    loadApprovedReviews();
+})();
+</script>
+
+<!-- Phase 2 Part 5: Emergency Numbers + Supabase Reviews -->
+
 </body></html>
