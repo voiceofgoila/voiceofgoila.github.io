@@ -12,6 +12,8 @@ let websiteSettingsRecord = null;
 let adminAnnouncements = [];
 let homepageSettingsRecord = null;
 let adminAds = [];
+let adminEmergencyNumbers = [];
+let adminReviews = [];
 
 
 
@@ -294,6 +296,16 @@ function showAds(){
     if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
+function showEmergencyCMS(){
+    const section=document.getElementById("emergencyManagement");
+    if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function showReviewsCMS(){
+    const section=document.getElementById("reviewsManagement");
+    if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
 
 
 
@@ -322,6 +334,8 @@ loadWebsiteSettings();
 loadHomepageContent();
 loadAnnouncementsAdmin();
 loadAdsAdmin();
+loadEmergencyAdmin();
+loadReviewsAdmin();
 
 
 }
@@ -341,14 +355,16 @@ loadAdsAdmin();
 
 async function loadStats(){
 
-const [total,pending,approved,categoriesCount,subCategoriesCount,announcementCount,adsCount] = await Promise.all([
+const [total,pending,approved,categoriesCount,subCategoriesCount,announcementCount,adsCount,emergencyCount,reviewPendingCount] = await Promise.all([
     window.supabaseClient.from("directory_items").select("*",{count:"exact",head:true}),
     window.supabaseClient.from("submissions").select("*",{count:"exact",head:true}).eq("status","pending"),
     window.supabaseClient.from("submissions").select("*",{count:"exact",head:true}).eq("status","approved"),
     window.supabaseClient.from("categories").select("*",{count:"exact",head:true}),
     window.supabaseClient.from("sub_categories").select("*",{count:"exact",head:true}),
     window.supabaseClient.from("announcements").select("*",{count:"exact",head:true}),
-    window.supabaseClient.from("ads").select("*",{count:"exact",head:true})
+    window.supabaseClient.from("ads").select("*",{count:"exact",head:true}),
+    window.supabaseClient.from("emergency_numbers").select("*",{count:"exact",head:true}),
+    window.supabaseClient.from("reviews").select("*",{count:"exact",head:true}).eq("status","pending")
 ]);
 
 const setCount=(id,result)=>{
@@ -363,6 +379,8 @@ setCount("categoryCount",categoriesCount);
 setCount("subCategoryCount",subCategoriesCount);
 setCount("announcementCount",announcementCount);
 setCount("adsCount",adsCount);
+setCount("emergencyCount",emergencyCount);
+setCount("reviewPendingCount",reviewPendingCount);
 
 }
 
@@ -2903,6 +2921,165 @@ async function deleteAd(id){
     await loadAdsAdmin();await loadStats();
 }
 
+
+
+// ===============================
+// PHASE 2 PART 5 - EMERGENCY NUMBERS + REVIEWS
+// ===============================
+
+function p5Escape(v){
+    return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+}
+
+function setEmergencyStatus(text,isError=false){
+    const el=document.getElementById("emergencyAdminStatus");
+    if(!el)return;
+    el.textContent=text||"";
+    el.style.color=isError?"#b42318":"#5d247c";
+}
+
+async function loadEmergencyAdmin(){
+    const box=document.getElementById("emergencyAdminList");
+    if(!box)return;
+    box.textContent="Loading...";
+    const {data,error}=await window.supabaseClient.from("emergency_numbers").select("*").order("sort_order",{ascending:true}).order("id",{ascending:true});
+    if(error){box.textContent="Load হয়নি: "+error.message;setEmergencyStatus("Emergency load হয়নি",true);return;}
+    adminEmergencyNumbers=data||[];
+    renderEmergencyAdmin();
+    setEmergencyStatus(`${adminEmergencyNumbers.length} item loaded`);
+}
+
+function renderEmergencyAdmin(){
+    const box=document.getElementById("emergencyAdminList");if(!box)return;
+    if(!adminEmergencyNumbers.length){box.innerHTML='<div class="cms-note">এখনও কোনো Emergency Number নেই।</div>';return;}
+    box.innerHTML=adminEmergencyNumbers.map(x=>`<div class="p5-row ${x.active?'':'inactive'}">
+      <div class="p5-main">
+        <h4>${p5Escape(x.icon||'☎️')} ${p5Escape(x.name||'')}</h4>
+        <div class="p5-meta">${p5Escape(x.note||'')}</div>
+        <div class="p5-meta">Phone: <b>${p5Escape(x.phone||'')}</b> • Sort: ${Number(x.sort_order||100)} • ${x.active?'Active':'Hidden'}</div>
+      </div>
+      <div class="p5-actions">
+        <button class="edit" onclick="openEmergencyEdit(${Number(x.id)})">Edit</button>
+        <button class="btn-warning" onclick="toggleEmergencyStatus(${Number(x.id)},${x.active?'false':'true'})">${x.active?'Hide':'Show'}</button>
+        <button class="delete" onclick="deleteEmergencyNumber(${Number(x.id)})">Delete</button>
+      </div>
+    </div>`).join("");
+}
+
+async function addEmergencyNumber(){
+    const icon=String(document.getElementById("emergencyIcon")?.value||"☎️").trim()||"☎️";
+    const name=String(document.getElementById("emergencyName")?.value||"").trim();
+    const note=String(document.getElementById("emergencyNote")?.value||"").trim();
+    const phone=String(document.getElementById("emergencyPhone")?.value||"").trim();
+    const sort_order=Number(document.getElementById("emergencySort")?.value||100)||100;
+    const active=!!document.getElementById("emergencyActive")?.checked;
+    if(!name){alert("Name লিখুন");return;}
+    if(!phone){alert("Phone লিখুন");return;}
+    const {error}=await window.supabaseClient.from("emergency_numbers").insert({icon,name,note,phone,sort_order,active});
+    if(error){alert("Add হয়নি: "+error.message);return;}
+    document.getElementById("emergencyIcon").value="☎️";
+    document.getElementById("emergencyName").value="";
+    document.getElementById("emergencyNote").value="";
+    document.getElementById("emergencyPhone").value="";
+    document.getElementById("emergencySort").value="100";
+    document.getElementById("emergencyActive").checked=true;
+    await loadEmergencyAdmin();await loadStats();
+}
+
+function openEmergencyEdit(id){
+    const x=adminEmergencyNumbers.find(v=>Number(v.id)===Number(id));if(!x)return;
+    document.getElementById("emergencyEditId").value=x.id;
+    document.getElementById("emergencyEditIcon").value=x.icon||"☎️";
+    document.getElementById("emergencyEditName").value=x.name||"";
+    document.getElementById("emergencyEditNote").value=x.note||"";
+    document.getElementById("emergencyEditPhone").value=x.phone||"";
+    document.getElementById("emergencyEditSort").value=Number(x.sort_order||100);
+    document.getElementById("emergencyEditActive").checked=!!x.active;
+    document.getElementById("emergencyEditModal").style.display="flex";
+}
+
+function closeEmergencyEdit(){const m=document.getElementById("emergencyEditModal");if(m)m.style.display="none";}
+
+async function saveEmergencyEdit(){
+    const id=Number(document.getElementById("emergencyEditId")?.value);
+    const icon=String(document.getElementById("emergencyEditIcon")?.value||"☎️").trim()||"☎️";
+    const name=String(document.getElementById("emergencyEditName")?.value||"").trim();
+    const note=String(document.getElementById("emergencyEditNote")?.value||"").trim();
+    const phone=String(document.getElementById("emergencyEditPhone")?.value||"").trim();
+    const sort_order=Number(document.getElementById("emergencyEditSort")?.value||100)||100;
+    const active=!!document.getElementById("emergencyEditActive")?.checked;
+    if(!name||!phone){alert("Name ও Phone দরকার");return;}
+    const {error}=await window.supabaseClient.from("emergency_numbers").update({icon,name,note,phone,sort_order,active,updated_at:new Date().toISOString()}).eq("id",id);
+    if(error){alert("Update হয়নি: "+error.message);return;}
+    closeEmergencyEdit();await loadEmergencyAdmin();await loadStats();
+}
+
+async function toggleEmergencyStatus(id,active){
+    const {error}=await window.supabaseClient.from("emergency_numbers").update({active:!!active,updated_at:new Date().toISOString()}).eq("id",Number(id));
+    if(error){alert("Status change হয়নি: "+error.message);return;}
+    await loadEmergencyAdmin();await loadStats();
+}
+
+async function deleteEmergencyNumber(id){
+    const x=adminEmergencyNumbers.find(v=>Number(v.id)===Number(id));
+    if(!confirm(`Delete করবেন?\n${x?.name||'Emergency Number'}`))return;
+    const {error}=await window.supabaseClient.from("emergency_numbers").delete().eq("id",Number(id));
+    if(error){alert("Delete হয়নি: "+error.message);return;}
+    await loadEmergencyAdmin();await loadStats();
+}
+
+function setReviewsStatus(text,isError=false){
+    const el=document.getElementById("reviewsAdminStatus");if(!el)return;
+    el.textContent=text||"";el.style.color=isError?"#b42318":"#5d247c";
+}
+
+async function loadReviewsAdmin(){
+    const box=document.getElementById("reviewsAdminList");if(!box)return;
+    box.textContent="Loading...";
+    const {data,error}=await window.supabaseClient.from("reviews").select("*").order("created_at",{ascending:false}).order("id",{ascending:false});
+    if(error){box.textContent="Load হয়নি: "+error.message;setReviewsStatus("Reviews load হয়নি",true);return;}
+    adminReviews=data||[];
+    renderReviewsAdmin();
+    setReviewsStatus(`${adminReviews.length} review loaded`);
+}
+
+function renderReviewsAdmin(){
+    const box=document.getElementById("reviewsAdminList");if(!box)return;
+    const filter=String(document.getElementById("reviewStatusFilter")?.value||"all");
+    const rows=filter==="all"?adminReviews:adminReviews.filter(r=>String(r.status||"")===filter);
+    if(!rows.length){box.innerHTML='<div class="cms-note">এই filter-এ কোনো Review নেই।</div>';return;}
+    box.innerHTML=rows.map(r=>{
+      const rating=Math.max(1,Math.min(5,Number(r.rating||0)));
+      const status=String(r.status||"pending");
+      const date=r.created_at?new Date(r.created_at).toLocaleString("bn-BD"):"";
+      return `<div class="p5-row">
+        <div class="p5-main">
+          <h4>${p5Escape(r.name||'একজন ব্যবহারকারী')} <span class="p5-status">${p5Escape(status)}</span></h4>
+          <div class="p5-stars">${'★'.repeat(rating)}${'☆'.repeat(5-rating)}</div>
+          ${r.review_text?`<div class="p5-review-text">${p5Escape(r.review_text)}</div>`:''}
+          <div class="p5-meta">${p5Escape(date)}</div>
+        </div>
+        <div class="p5-actions">
+          ${status!=='approved'?`<button class="edit" onclick="setReviewStatus(${Number(r.id)},'approved')">Approve</button>`:''}
+          ${status!=='rejected'?`<button class="btn-warning" onclick="setReviewStatus(${Number(r.id)},'rejected')">Reject</button>`:''}
+          <button class="delete" onclick="deleteReview(${Number(r.id)})">Delete</button>
+        </div>
+      </div>`;
+    }).join("");
+}
+
+async function setReviewStatus(id,status){
+    const {error}=await window.supabaseClient.from("reviews").update({status,reviewed_at:new Date().toISOString()}).eq("id",Number(id));
+    if(error){alert("Review status update হয়নি: "+error.message);return;}
+    await loadReviewsAdmin();await loadStats();
+}
+
+async function deleteReview(id){
+    if(!confirm("Review delete করবেন?"))return;
+    const {error}=await window.supabaseClient.from("reviews").delete().eq("id",Number(id));
+    if(error){alert("Review delete হয়নি: "+error.message);return;}
+    await loadReviewsAdmin();await loadStats();
+}
 
 // ===============================
 // DIRECTORY SEARCH
