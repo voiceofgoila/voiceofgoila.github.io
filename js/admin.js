@@ -15,6 +15,7 @@ let managedCategories = [];
 let managedSubCategories = [];
 let websiteSettingsRecord = null;
 let adminAnnouncements = [];
+let adminNotices = [];
 let homepageSettingsRecord = null;
 let adminAds = [];
 let adminEmergencyNumbers = [];
@@ -296,6 +297,12 @@ function showAnnouncements(){
     if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
+function showNotices(){
+    const section=document.getElementById("noticesManagement");
+    if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
+    loadNoticesAdmin();
+}
+
 function showAds(){
     const section=document.getElementById("adsManagement");
     if(section) section.scrollIntoView({behavior:"smooth",block:"start"});
@@ -350,6 +357,7 @@ loadCategoryManager();
 loadWebsiteSettings();
 loadHomepageContent();
 loadAnnouncementsAdmin();
+loadNoticesAdmin();
 loadAdsAdmin();
 loadEmergencyAdmin();
 loadReviewsAdmin();
@@ -374,13 +382,14 @@ loadMediaLibrary();
 
 async function loadStats(){
 
-const [total,pending,approved,categoriesCount,subCategoriesCount,announcementCount,adsCount,emergencyCount,reviewPendingCount] = await Promise.all([
+const [total,pending,approved,categoriesCount,subCategoriesCount,announcementCount,noticeCount,adsCount,emergencyCount,reviewPendingCount] = await Promise.all([
     window.supabaseClient.from("directory_items").select("*",{count:"exact",head:true}),
     window.supabaseClient.from("submissions").select("*",{count:"exact",head:true}).eq("status","pending"),
     window.supabaseClient.from("submissions").select("*",{count:"exact",head:true}).eq("status","approved"),
     window.supabaseClient.from("categories").select("*",{count:"exact",head:true}),
     window.supabaseClient.from("sub_categories").select("*",{count:"exact",head:true}),
     window.supabaseClient.from("announcements").select("*",{count:"exact",head:true}),
+    window.supabaseClient.from("notices").select("*",{count:"exact",head:true}),
     window.supabaseClient.from("ads").select("*",{count:"exact",head:true}),
     window.supabaseClient.from("emergency_numbers").select("*",{count:"exact",head:true}),
     window.supabaseClient.from("reviews").select("*",{count:"exact",head:true}).eq("status","pending")
@@ -397,6 +406,7 @@ setCount("approvedCount",approved);
 setCount("categoryCount",categoriesCount);
 setCount("subCategoryCount",subCategoriesCount);
 setCount("announcementCount",announcementCount);
+setCount("noticeCount",noticeCount);
 setCount("adsCount",adsCount);
 setCount("emergencyCount",emergencyCount);
 setCount("reviewPendingCount",reviewPendingCount);
@@ -1160,6 +1170,18 @@ loadAll();
 
 
 
+
+function adminCategoryLabel(value){
+    const v=String(value||"");
+    const map={coaching:"কোচিং / হোম টিউটর"};
+    return map[v]||v;
+}
+function adminSubcategoryLabel(value){
+    const v=String(value||"");
+    const map={"coaching-center":"কোচিং সেন্টার","home-tutor":"হোম টিউটর","subject-tutor":"বিষয়ভিত্তিক শিক্ষক","admission":"ভর্তি / এডমিশন কোচিং"};
+    return map[v]||v;
+}
+
 // ===============================
 // LOAD DIRECTORY
 // ===============================
@@ -1177,10 +1199,9 @@ await window.supabaseClient
 
 .select("*")
 
-.order("id",
-{
-ascending:false
-});
+.order("featured",{ascending:false})
+.order("sort_order",{ascending:true})
+.order("id",{ascending:false});
 
 
 
@@ -1262,9 +1283,9 @@ box.innerHTML=data.map(item=>`
 
 
 
-<div class="item">
+<div class="item ${item.featured?"ce-featured-item":""}">
 
-
+${item.featured?`<span class="ce-badge">⭐ Featured</span>`:""}
 
 ${item.image_url ? `
 
@@ -1419,7 +1440,7 @@ data.forEach(cat=>{
 box.innerHTML += `
 
 <option value="${cat.name}">
-${cat.name}
+${adminCategoryLabel(cat.name)}
 </option>
 
 `;
@@ -1570,7 +1591,7 @@ data.forEach(sub=>{
 box.innerHTML += `
 
 <option value="${sub.name}">
-${sub.name}
+${adminSubcategoryLabel(sub.name)}
 </option>
 
 `;
@@ -1721,6 +1742,9 @@ document.getElementById("editMap").value=item.map_url || "";
 
 
 document.getElementById("editDescription").value=item.description || "";
+const editSort=document.getElementById("editSortOrder");if(editSort)editSort.value=Number(item.sort_order||0);
+const editFeatured=document.getElementById("editFeatured");if(editFeatured)editFeatured.checked=!!item.featured;
+const editActive=document.getElementById("editActive");if(editActive)editActive.value=item.active===false?"false":"true";
 
 
 
@@ -1826,7 +1850,10 @@ async function updateDirectory(){
         phone:document.getElementById("editPhone").value,
         address:document.getElementById("editAddress").value,
         map_url:document.getElementById("editMap").value,
-        description:document.getElementById("editDescription").value
+        description:document.getElementById("editDescription").value,
+        sort_order:Number(document.getElementById("editSortOrder")?.value||0),
+        featured:!!document.getElementById("editFeatured")?.checked,
+        active:String(document.getElementById("editActive")?.value||"true")==="true"
     };
 
     const imageFile=document.getElementById("editImage").files[0];
@@ -1960,7 +1987,7 @@ function renderManagedCategories(){
         return `
         <div class="cms-row">
             <div>
-                <strong>${cmsEscape(cat.name)}</strong>
+                <strong>${cmsEscape(adminCategoryLabel(cat.name))}</strong>
                 <span class="cms-parent">${childCount} subcategory</span>
             </div>
             <button class="edit" onclick="openCategoryManagerEdit('category',${Number(cat.id)})">Edit</button>
@@ -1983,8 +2010,8 @@ function renderManagedSubcategories(){
     box.innerHTML=managedSubCategories.map(sub=>`
         <div class="cms-row">
             <div>
-                <strong>${cmsEscape(sub.name)}</strong>
-                <span class="cms-parent">${cmsEscape(categoryMap.get(String(sub.category_id)) || "Unknown Category")}</span>
+                <strong>${cmsEscape(adminSubcategoryLabel(sub.name))}</strong>
+                <span class="cms-parent">${cmsEscape(adminCategoryLabel(categoryMap.get(String(sub.category_id)) || "Unknown Category"))}</span>
             </div>
             <button class="edit" onclick="openCategoryManagerEdit('subcategory',${Number(sub.id)})">Edit</button>
             <button class="delete" onclick="deleteManagedSubcategory(${Number(sub.id)})">Delete</button>
@@ -1995,7 +2022,7 @@ function renderManagedSubcategories(){
 function fillManagedCategorySelects(selectedId=""){
     const optionHtml=[
         '<option value="">Parent Category নির্বাচন করুন</option>',
-        ...managedCategories.map(cat=>`<option value="${Number(cat.id)}">${cmsEscape(cat.name)}</option>`)
+        ...managedCategories.map(cat=>`<option value="${Number(cat.id)}">${cmsEscape(adminCategoryLabel(cat.name))}</option>`)
     ].join("");
 
     const addSelect=document.getElementById("subCategoryParent");
@@ -2349,6 +2376,9 @@ async function loadWebsiteSettings(){
         settingFacebook:row.facebook || "",
         settingYoutube:row.youtube || "",
         settingWhatsapp:row.whatsapp || "",
+        settingSiteUrl:row.site_url || "https://voiceofgoila.github.io/",
+        settingSeoDescription:row.seo_description || "গৈলা ইউনিয়নের তথ্য, প্রয়োজনীয় সেবা ও গুরুত্বপূর্ণ স্থানীয় তথ্য।",
+        settingSocialShareImageUrl:row.social_share_image_url || "",
         settingDeveloperCreditLabel:row.developer_credit_label ?? "Site Developed & Maintained by",
         settingDeveloperName:row.developer_name ?? "Shawan Sarder Solyman",
         settingDeveloperProfileLink:row.developer_profile_link || "https://www.facebook.com/ShawanSarderSolyman",
@@ -2419,6 +2449,9 @@ async function saveWebsiteSettings(){
             facebook:normalizeSettingsUrl(settingsValue("settingFacebook")),
             youtube:normalizeSettingsUrl(settingsValue("settingYoutube")),
             whatsapp:settingsValue("settingWhatsapp"),
+            site_url:normalizeSettingsUrl(settingsValue("settingSiteUrl")),
+            seo_description:settingsValue("settingSeoDescription"),
+            social_share_image_url:normalizeSettingsUrl(settingsValue("settingSocialShareImageUrl")),
             developer_credit_label:settingsValue("settingDeveloperCreditLabel"),
             developer_name:settingsValue("settingDeveloperName"),
             developer_profile_link:normalizeSettingsUrl(settingsValue("settingDeveloperProfileLink")),
@@ -3003,6 +3036,102 @@ async function deleteReview(id){
     await loadReviewsAdmin();await loadStats();
 }
 
+
+
+// ===============================
+// COMPLETE PACK - DIRECT DIRECTORY ADD
+// ===============================
+async function fillDirectoryAddCategories(){
+    const box=document.getElementById("addDirCat");if(!box)return;
+    const {data,error}=await window.supabaseClient.from("categories").select("id,name").order("id");
+    if(error){alert("Category load হয়নি: "+error.message);return;}
+    box.innerHTML='<option value="">Select Category</option>'+(data||[]).map(c=>`<option value="${cmsEscape(c.name)}">${cmsEscape(adminCategoryLabel(c.name))}</option>`).join("");
+    await changeAddSubCategory();
+}
+async function changeAddSubCategory(){
+    const cat=document.getElementById("addDirCat")?.value||"";
+    const box=document.getElementById("addDirSubcat");if(!box)return;
+    box.innerHTML='<option value="">Select Sub Category</option>';
+    if(!cat)return;
+    const {data:catRow,error}=await window.supabaseClient.from("categories").select("id").eq("name",cat).maybeSingle();
+    if(error||!catRow)return;
+    const {data}=await window.supabaseClient.from("sub_categories").select("name").eq("category_id",catRow.id).order("id");
+    box.innerHTML+=[...(data||[])].map(s=>`<option value="${cmsEscape(s.name)}">${cmsEscape(adminSubcategoryLabel(s.name))}</option>`).join("");
+}
+async function openDirectoryAdd(){
+    ["addDirName","addDirPhone","addDirAddress","addDirMap","addDirDescription"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+    const sort=document.getElementById("addDirSort");if(sort)sort.value="0";
+    const active=document.getElementById("addDirActive");if(active)active.checked=true;
+    const featured=document.getElementById("addDirFeatured");if(featured)featured.checked=false;
+    const file=document.getElementById("addDirImage");if(file)file.value="";
+    const prev=document.getElementById("addDirImagePreview");if(prev){prev.removeAttribute("src");prev.style.display="none";}
+    await fillDirectoryAddCategories();
+    const modal=document.getElementById("directoryAddModal");if(modal)modal.style.display="flex";
+}
+function closeDirectoryAdd(){const m=document.getElementById("directoryAddModal");if(m)m.style.display="none";}
+function previewAddDirectoryImage(event){const file=event.target.files?.[0],img=document.getElementById("addDirImagePreview");if(file&&img){img.src=URL.createObjectURL(file);img.style.display="block";}}
+async function saveNewDirectoryItem(){
+    const name=String(document.getElementById("addDirName")?.value||"").trim();
+    const cat=String(document.getElementById("addDirCat")?.value||"").trim();
+    if(!name||!cat){alert("Name এবং Category প্রয়োজন");return;}
+    const file=document.getElementById("addDirImage")?.files?.[0];
+    let imageUrl="";
+    if(file){imageUrl=await uploadImage(file)||"";if(!imageUrl)return;}
+    const payload={name,cat,subcat:String(document.getElementById("addDirSubcat")?.value||""),phone:String(document.getElementById("addDirPhone")?.value||"").trim(),address:String(document.getElementById("addDirAddress")?.value||"").trim(),map_url:String(document.getElementById("addDirMap")?.value||"").trim(),description:String(document.getElementById("addDirDescription")?.value||"").trim(),image_url:imageUrl,active:!!document.getElementById("addDirActive")?.checked,featured:!!document.getElementById("addDirFeatured")?.checked,sort_order:Number(document.getElementById("addDirSort")?.value||0)};
+    const {error}=await window.supabaseClient.from("directory_items").insert(payload);
+    if(error){if(imageUrl)await deleteDirectoryStorageImageByUrl(imageUrl);alert("Add হয়নি: "+error.message);return;}
+    closeDirectoryAdd();await loadDirectory();await loadStats();alert("Directory item added successfully");
+}
+
+// ===============================
+// COMPLETE PACK - NOTICES CMS
+// ===============================
+function noticeAdminStatus(text,isError=false){const el=document.getElementById("noticesAdminStatus");if(el){el.textContent=text||"";el.style.color=isError?"#b42318":"#6b2c91";}}
+function noticeEsc(v){return String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
+function previewNoticeNewImage(e){const f=e.target.files?.[0],p=document.getElementById("noticeNewPreview");if(f&&p){p.src=URL.createObjectURL(f);p.style.display="block";}}
+function previewNoticeEditImage(e){const f=e.target.files?.[0],p=document.getElementById("noticeEditPreview");if(f&&p){p.src=URL.createObjectURL(f);p.style.display="block";const r=document.getElementById("noticeEditRemoveImage");if(r)r.checked=false;}}
+async function loadNoticesAdmin(){
+    const box=document.getElementById("noticesAdminList");if(!box||!window.supabaseClient)return;
+    box.innerHTML="Loading...";
+    const {data,error}=await window.supabaseClient.from("notices").select("*").order("created_at",{ascending:false}).order("id",{ascending:false});
+    if(error){box.textContent="Load হয়নি: "+error.message;noticeAdminStatus("Notices load হয়নি",true);return;}
+    adminNotices=data||[];renderNoticesAdmin();noticeAdminStatus(`${adminNotices.length} notice loaded`);
+}
+function renderNoticesAdmin(){
+    const box=document.getElementById("noticesAdminList");if(!box)return;
+    if(!adminNotices.length){box.innerHTML='<div class="cms-note">এখনও কোনো Notice নেই।</div>';return;}
+    box.innerHTML=adminNotices.map(n=>`<div class="ce-notice-row ${n.status?'':'inactive'}">${n.image_url?`<img src="${noticeEsc(n.image_url)}" alt="">`:''}<strong>${noticeEsc(n.title||'Untitled')}</strong><div class="ce-note">${noticeEsc(n.description||'')}</div><div class="ce-notice-actions"><button class="edit" onclick="openNoticeEdit(${Number(n.id)})">Edit</button><button class="btn-warning" onclick="toggleNoticeStatus(${Number(n.id)},${n.status?'false':'true'})">${n.status?'Hide':'Show'}</button><button class="delete" onclick="deleteNotice(${Number(n.id)})">Delete</button></div></div>`).join("");
+}
+async function addNotice(){
+    const title=String(document.getElementById("noticeNewTitle")?.value||"").trim();if(!title){alert("Notice title লিখুন");return;}
+    const file=document.getElementById("noticeNewImage")?.files?.[0];let imageUrl="";
+    if(file){imageUrl=await uploadImage(file)||"";if(!imageUrl)return;}
+    const payload={title,description:String(document.getElementById("noticeNewDescription")?.value||"").trim(),image_url:imageUrl,status:String(document.getElementById("noticeNewStatus")?.value||"true")==="true"};
+    const {error}=await window.supabaseClient.from("notices").insert(payload);if(error){if(imageUrl)await deleteDirectoryStorageImageByUrl(imageUrl);alert("Notice add হয়নি: "+error.message);return;}
+    document.getElementById("noticeNewTitle").value="";document.getElementById("noticeNewDescription").value="";document.getElementById("noticeNewImage").value="";const p=document.getElementById("noticeNewPreview");if(p){p.style.display="none";p.removeAttribute("src");}
+    await loadNoticesAdmin();await loadStats();
+}
+function openNoticeEdit(id){
+    const n=adminNotices.find(x=>Number(x.id)===Number(id));if(!n)return;
+    document.getElementById("noticeEditId").value=n.id;document.getElementById("noticeEditTitle").value=n.title||"";document.getElementById("noticeEditDescription").value=n.description||"";document.getElementById("noticeEditStatus").checked=!!n.status;document.getElementById("noticeEditRemoveImage").checked=false;document.getElementById("noticeEditImage").value="";
+    const p=document.getElementById("noticeEditPreview");if(n.image_url){p.src=n.image_url;p.style.display="block";}else{p.removeAttribute("src");p.style.display="none";}
+    document.getElementById("noticeEditModal").style.display="flex";
+}
+function closeNoticeEdit(){const m=document.getElementById("noticeEditModal");if(m)m.style.display="none";}
+async function saveNoticeEdit(){
+    const id=Number(document.getElementById("noticeEditId")?.value||0),old=adminNotices.find(x=>Number(x.id)===id);if(!old)return;
+    const title=String(document.getElementById("noticeEditTitle")?.value||"").trim();if(!title){alert("Title প্রয়োজন");return;}
+    const file=document.getElementById("noticeEditImage")?.files?.[0];let imageUrl=old.image_url||"",newUpload="";
+    if(file){newUpload=await uploadImage(file)||"";if(!newUpload)return;imageUrl=newUpload;}else if(document.getElementById("noticeEditRemoveImage")?.checked){imageUrl="";}
+    const payload={title,description:String(document.getElementById("noticeEditDescription")?.value||"").trim(),image_url:imageUrl,status:!!document.getElementById("noticeEditStatus")?.checked};
+    const {error}=await window.supabaseClient.from("notices").update(payload).eq("id",id);if(error){if(newUpload)await deleteDirectoryStorageImageByUrl(newUpload);alert("Save হয়নি: "+error.message);return;}
+    if(old.image_url&&old.image_url!==imageUrl)await deleteDirectoryStorageImageIfUnused(old.image_url);
+    closeNoticeEdit();await loadNoticesAdmin();await loadStats();
+}
+async function toggleNoticeStatus(id,status){const {error}=await window.supabaseClient.from("notices").update({status:!!status}).eq("id",Number(id));if(error){alert(error.message);return;}await loadNoticesAdmin();}
+async function deleteNotice(id){const old=adminNotices.find(x=>Number(x.id)===Number(id));if(!confirm(`Notice delete করবেন?\n${old?.title||''}`))return;const {error}=await window.supabaseClient.from("notices").delete().eq("id",Number(id));if(error){alert(error.message);return;}if(old?.image_url)await deleteDirectoryStorageImageIfUnused(old.image_url);await loadNoticesAdmin();await loadStats();}
+
+
 // ===============================
 // DIRECTORY SEARCH
 // ===============================
@@ -3090,17 +3219,23 @@ function renderPopularPages(rows){
     box.innerHTML=rows.map(r=>`<div class="p6-page"><div class="p6-page-name" title="${p6Esc(r.page_name||'')}">${p6Esc(r.page_name||"Unknown")}</div><div class="p6-page-views">${p6Format(r.views)} views</div></div>`).join("");
 }
 
+
+function renderPopularSearches(rows){const box=document.getElementById("analyticsPopularSearches");if(!box)return;rows=Array.isArray(rows)?rows:[];if(!rows.length){box.innerHTML='<div class="cms-note">এখনও search keyword data নেই।</div>';return;}box.innerHTML=rows.map(r=>`<div class="ce-analytics-row"><span title="${p6Esc(r.keyword||'')}">${p6Esc(r.keyword||'')}</span><b>${p6Format(r.searches)} searches</b></div>`).join("");}
+function renderPopularItems(rows){const box=document.getElementById("analyticsPopularItems");if(!box)return;rows=Array.isArray(rows)?rows:[];if(!rows.length){box.innerHTML='<div class="cms-note">এখনও item-view data নেই।</div>';return;}box.innerHTML=rows.map(r=>`<div class="ce-analytics-row"><span title="${p6Esc(r.item_name||'')}">${p6Esc(r.item_name||('Item #'+(r.item_id||'')))}</span><b>${p6Format(r.views)} views</b></div>`).join("");}
+
 async function loadAnalytics(){
     const section=document.getElementById("analyticsManagement");
     if(!section || !window.supabaseClient)return;
     p6AnalyticsError("Loading analytics...");
     try{
-        const [summaryRes,dailyRes,pagesRes]=await Promise.all([
+        const [summaryRes,dailyRes,pagesRes,searchRes,itemRes]=await Promise.all([
             window.supabaseClient.rpc("get_analytics_summary"),
             window.supabaseClient.rpc("get_analytics_daily",{p_days:7}),
-            window.supabaseClient.rpc("get_popular_pages",{p_limit:10})
+            window.supabaseClient.rpc("get_popular_pages",{p_limit:10}),
+            window.supabaseClient.rpc("get_popular_searches",{p_limit:10}),
+            window.supabaseClient.rpc("get_popular_items",{p_limit:10})
         ]);
-        const firstError=summaryRes.error||dailyRes.error||pagesRes.error;
+        const firstError=summaryRes.error||dailyRes.error||pagesRes.error||searchRes.error||itemRes.error;
         if(firstError)throw firstError;
         const x=p6SummaryRow(summaryRes.data);
         p6SetText("analyticsTotalVisitors",p6Format(x.total_visitors));
@@ -3113,11 +3248,13 @@ async function loadAnalytics(){
         p6SetText("analyticsOther",p6Format(x.other_visitors));
         renderAnalyticsDaily(dailyRes.data||[]);
         renderPopularPages(pagesRes.data||[]);
+        renderPopularSearches(searchRes.data||[]);
+        renderPopularItems(itemRes.data||[]);
         p6AnalyticsError("Updated: "+new Date().toLocaleTimeString("bn-BD",{hour:"2-digit",minute:"2-digit"}));
     }catch(error){
         console.error("Analytics load error",error);
         p6AnalyticsError("Analytics load হয়নি: "+(error?.message||error));
-        renderAnalyticsDaily([]);renderPopularPages([]);
+        renderAnalyticsDaily([]);renderPopularPages([]);renderPopularSearches([]);renderPopularItems([]);
     }
 }
 
