@@ -6,6 +6,11 @@ let directoryData = [];
 
 let selectedImageFile = null;
 
+// Directory edit image state (Final Audit)
+let editOriginalImageUrl = "";
+let editRemoveImageRequested = false;
+let editPreviewObjectUrl = "";
+
 let managedCategories = [];
 let managedSubCategories = [];
 let websiteSettingsRecord = null;
@@ -704,61 +709,68 @@ return null;
 // ===============================
 
 
+function setDirectoryEditImageButton(){
+    const btn=document.getElementById("removeEditImageBtn");
+    if(!btn) return;
+    const input=document.getElementById("editImage");
+    const hasSelected=!!(input?.files && input.files[0]);
+    const hasImage=!!editOriginalImageUrl || hasSelected || editRemoveImageRequested;
+    btn.style.display=hasImage?"inline-block":"none";
+    btn.textContent=editRemoveImageRequested?"↩ Cancel Remove":"🗑️ Remove Image";
+}
+
+function clearEditPreviewObjectUrl(){
+    if(editPreviewObjectUrl){
+        try{URL.revokeObjectURL(editPreviewObjectUrl);}catch(e){}
+        editPreviewObjectUrl="";
+    }
+}
+
 function showEditImage(event){
+    const file=event.target.files[0];
+    const name=document.getElementById("editImageName");
+    const preview=document.getElementById("editImagePreview");
+    if(!file) return;
 
-
-const file =
-
-event.target.files[0];
-
-
-
-const name =
-
-document.getElementById("editImageName");
-
-
-
-const preview =
-
-document.getElementById("editImagePreview");
-
-
-
-
-if(file){
-
-
-
-name.innerHTML =
-
-"Selected Image: " + file.name;
-
-
-
-preview.src =
-
-URL.createObjectURL(file);
-
-
-
-preview.style.display="block";
-
-
-
+    editRemoveImageRequested=false;
+    clearEditPreviewObjectUrl();
+    editPreviewObjectUrl=URL.createObjectURL(file);
+    if(name) name.textContent="Selected Image: "+file.name;
+    if(preview){
+        preview.src=editPreviewObjectUrl;
+        preview.style.display="block";
+    }
+    setDirectoryEditImageButton();
 }
 
+function removeDirectoryEditImage(){
+    const input=document.getElementById("editImage");
+    const name=document.getElementById("editImageName");
+    const preview=document.getElementById("editImagePreview");
 
+    if(editRemoveImageRequested){
+        editRemoveImageRequested=false;
+        if(input) input.value="";
+        clearEditPreviewObjectUrl();
+        if(editOriginalImageUrl){
+            if(preview){preview.src=editOriginalImageUrl;preview.style.display="block";}
+            if(name) name.textContent="No new image selected";
+        }else{
+            if(preview){preview.removeAttribute("src");preview.style.display="none";}
+            if(name) name.textContent="No image selected";
+        }
+        setDirectoryEditImageButton();
+        return;
+    }
 
+    if(!editOriginalImageUrl && !(input?.files && input.files[0])) return;
+    editRemoveImageRequested=true;
+    if(input) input.value="";
+    clearEditPreviewObjectUrl();
+    if(preview){preview.removeAttribute("src");preview.style.display="none";}
+    if(name) name.textContent="Image will be removed after Save Changes";
+    setDirectoryEditImageButton();
 }
-
-
-
-
-
-
-
-
 
 // ===============================
 // LOAD PENDING
@@ -1597,6 +1609,59 @@ box.value=selected;
 
 
 // ===============================
+// SAFE DIRECTORY IMAGE CLEANUP
+// ===============================
+
+function directoryStoragePathFromUrl(url){
+    const value=String(url||"");
+    const marker="/storage/v1/object/public/image/";
+    const pos=value.indexOf(marker);
+    if(pos<0) return "";
+    const raw=value.slice(pos+marker.length).split("?")[0];
+    try{return decodeURIComponent(raw);}catch(e){return raw;}
+}
+
+async function directoryImageUsageCheck(url){
+    if(!url) return {safe:true,used:false};
+    const queries=[
+        window.supabaseClient.from("directory_items").select("id",{count:"exact",head:true}).eq("image_url",url),
+        window.supabaseClient.from("ads").select("id",{count:"exact",head:true}).eq("image_url",url),
+        window.supabaseClient.from("notices").select("id",{count:"exact",head:true}).eq("image_url",url),
+        window.supabaseClient.from("website_settings").select("id",{count:"exact",head:true}).eq("logo_url",url),
+        window.supabaseClient.from("website_settings").select("id",{count:"exact",head:true}).eq("favicon_url",url)
+    ];
+    try{
+        const results=await Promise.all(queries);
+        // Fail closed: if usage cannot be verified, keep the storage object.
+        if(results.some(r=>r.error)) return {safe:false,used:true};
+        return {safe:true,used:results.some(r=>Number(r.count||0)>0)};
+    }catch(e){
+        return {safe:false,used:true};
+    }
+}
+
+async function deleteDirectoryStorageImageByUrl(url){
+    const path=directoryStoragePathFromUrl(url);
+    if(!path) return false; // external/non-storage URL: only unlink from DB
+    try{
+        const {error}=await window.supabaseClient.storage.from("image").remove([path]);
+        if(error){console.warn("Storage image cleanup skipped:",error.message);return false;}
+        return true;
+    }catch(e){
+        console.warn("Storage image cleanup skipped",e);
+        return false;
+    }
+}
+
+async function deleteDirectoryStorageImageIfUnused(url){
+    const path=directoryStoragePathFromUrl(url);
+    if(!path) return false;
+    const usage=await directoryImageUsageCheck(url);
+    if(!usage.safe || usage.used) return false;
+    return deleteDirectoryStorageImageByUrl(url);
+}
+
+// ===============================
 // EDIT DIRECTORY
 // ===============================
 
@@ -1666,7 +1731,11 @@ const img=
 
 document.getElementById("editImagePreview");
 
-
+const editInput=document.getElementById("editImage");
+if(editInput) editInput.value="";
+clearEditPreviewObjectUrl();
+editOriginalImageUrl=item.image_url || "";
+editRemoveImageRequested=false;
 
 if(item.image_url){
 
@@ -1681,6 +1750,7 @@ img.style.display="block";
 else{
 
 
+img.removeAttribute("src");
 img.style.display="none";
 
 
@@ -1691,9 +1761,10 @@ img.style.display="none";
 
 
 
-document.getElementById("editImageName").innerHTML=
+document.getElementById("editImageName").textContent=
 
-"No image selected";
+item.image_url ? "No new image selected" : "No image selected";
+setDirectoryEditImageButton();
 
 
 
@@ -1720,13 +1791,14 @@ document.getElementById("editModal")
 
 
 function closeEditModal(){
-
-
-document.getElementById("editModal")
-.style.display="none";
-
-
-
+    const modal=document.getElementById("editModal");
+    if(modal) modal.style.display="none";
+    const input=document.getElementById("editImage");
+    if(input) input.value="";
+    clearEditPreviewObjectUrl();
+    editOriginalImageUrl="";
+    editRemoveImageRequested=false;
+    setDirectoryEditImageButton();
 }
 
 
@@ -1743,184 +1815,56 @@ document.getElementById("editModal")
 
 
 async function updateDirectory(){
+    const id=document.getElementById("editId").value;
+    const oldItem=directoryData.find(x=>x.id==id);
+    const oldImageUrl=oldItem?.image_url || editOriginalImageUrl || "";
 
+    const updateData={
+        name:document.getElementById("editName").value,
+        cat:document.getElementById("editCat").value,
+        subcat:document.getElementById("editSubcat").value,
+        phone:document.getElementById("editPhone").value,
+        address:document.getElementById("editAddress").value,
+        map_url:document.getElementById("editMap").value,
+        description:document.getElementById("editDescription").value
+    };
 
+    const imageFile=document.getElementById("editImage").files[0];
+    let uploadedNewImage="";
 
-const id =
+    if(imageFile){
+        uploadedNewImage=await uploadImage(imageFile);
+        if(!uploadedNewImage) return; // uploadImage already shows the error
+        updateData.image_url=uploadedNewImage;
+    }else if(editRemoveImageRequested){
+        updateData.image_url="";
+    }else{
+        updateData.image_url=oldImageUrl;
+    }
 
-document.getElementById("editId").value;
+    const {error}=await window.supabaseClient
+        .from("directory_items")
+        .update(updateData)
+        .eq("id",id);
 
+    if(error){
+        // If DB update failed after a new upload, remove the orphan upload.
+        if(uploadedNewImage) await deleteDirectoryStorageImageByUrl(uploadedNewImage);
+        alert(error.message);
+        console.log(error);
+        return;
+    }
 
+    // After the DB no longer references the old image, remove it from Storage only
+    // when no other live record uses the same URL. External URLs are never deleted.
+    if(oldImageUrl && updateData.image_url!==oldImageUrl){
+        await deleteDirectoryStorageImageIfUnused(oldImageUrl);
+    }
 
-
-
-
-let updateData={
-
-
-
-name:
-document.getElementById("editName").value,
-
-
-
-cat:
-document.getElementById("editCat").value,
-
-
-
-subcat:
-document.getElementById("editSubcat").value,
-
-
-
-phone:
-document.getElementById("editPhone").value,
-
-
-
-address:
-document.getElementById("editAddress").value,
-
-
-
-map_url:
-document.getElementById("editMap").value,
-
-
-
-description:
-document.getElementById("editDescription").value
-
-
-
-};
-
-
-
-
-
-
-
-const imageFile =
-
-document.getElementById("editImage").files[0];
-
-
-
-
-
-
-
-if(imageFile){
-
-
-
-const newImage =
-
-await uploadImage(imageFile);
-
-
-
-
-
-if(newImage){
-
-updateData.image_url=newImage;
-
+    alert("Updated Successfully");
+    closeEditModal();
+    loadDirectory();
 }
-
-
-
-}
-
-else{
-
-
-
-const oldItem =
-
-directoryData.find(x=>x.id==id);
-
-
-
-
-
-if(oldItem && oldItem.image_url){
-
-
-updateData.image_url =
-oldItem.image_url;
-
-
-}
-
-
-
-}
-
-
-
-
-
-
-
-
-
-const {error}=
-
-await window.supabaseClient
-
-.from("directory_items")
-
-.update(updateData)
-
-.eq("id",id);
-
-
-
-
-
-
-
-if(error){
-
-
-alert(error.message);
-
-console.log(error);
-
-return;
-
-
-}
-
-
-
-
-
-
-
-alert("Updated Successfully");
-
-
-
-closeEditModal();
-
-
-
-loadDirectory();
-
-
-
-}
-
-
-
-
-
-
-
 
 
 // ===============================
@@ -1929,60 +1873,28 @@ loadDirectory();
 
 
 async function deleteDirectory(id){
+    if(!confirm("Delete করতে চান?")) return;
 
+    const oldItem=directoryData.find(x=>x.id==id);
+    const oldImageUrl=oldItem?.image_url || "";
 
+    const {error}=await window.supabaseClient
+        .from("directory_items")
+        .delete()
+        .eq("id",id);
 
-if(!confirm("Delete করতে চান?"))
+    if(error){
+        alert(error.message);
+        return;
+    }
 
-return;
+    if(oldImageUrl){
+        await deleteDirectoryStorageImageIfUnused(oldImageUrl);
+    }
 
-
-
-
-
-
-const {error}=
-
-await window.supabaseClient
-
-.from("directory_items")
-
-.delete()
-
-.eq("id",id);
-
-
-
-
-
-
-
-if(error){
-
-
-alert(error.message);
-
-return;
-
-
+    alert("Deleted Successfully");
+    loadAll();
 }
-
-
-
-
-
-
-
-alert("Deleted Successfully");
-
-
-
-loadAll();
-
-
-
-             }
-
 
 
 // ===============================
@@ -3289,18 +3201,21 @@ function renderMediaLibrary(){
         grid.innerHTML='<div class="p7-empty">কোনো image পাওয়া যায়নি।</div>';
         return;
     }
-    grid.innerHTML=rows.map((x,i)=>`<div class="p7-item">
+    grid.innerHTML=rows.map(x=>{
+        const realIndex=mediaLibraryItems.findIndex(m=>m.path===x.path);
+        return `<div class="p7-item">
       <a class="p7-thumb" href="${mediaEscape(x.url)}" target="_blank" rel="noopener"><img src="${mediaEscape(x.url)}" alt="${mediaEscape(x.name)}" loading="lazy" onerror="this.style.display='none'"></a>
       <div class="p7-body">
         <div class="p7-name" title="${mediaEscape(x.name)}">${mediaEscape(x.name)}</div>
         <div class="p7-path">${mediaEscape(x.path)}</div>
         <div class="p7-meta">${mediaEscape(mediaFormatBytes(x.size))}${x.created_at?` • ${mediaEscape(new Date(x.created_at).toLocaleDateString("bn-BD"))}`:""}</div>
         <div class="p7-actions">
-          <button onclick="copyMediaUrl(${i})">Copy URL</button>
-          <button class="danger" onclick="deleteMediaItem(${i})">Delete</button>
+          <button onclick="copyMediaUrl(${realIndex})">Copy URL</button>
+          <button class="danger" onclick="deleteMediaItem(${realIndex})">Delete</button>
         </div>
       </div>
-    </div>`).join("");
+    </div>`;
+    }).join("");
 }
 
 async function uploadMediaImage(event){
