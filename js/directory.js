@@ -28,6 +28,135 @@
   const clean=v=>String(v??"").trim();
   const lower=v=>clean(v).toLowerCase();
 
+  // Keep the homepage taxonomy clean. Database rows may contain old/duplicate
+  // labels, but built-in categories should show only the canonical list from
+  // index.html. Common legacy labels are mapped to those canonical slugs.
+  const builtInSubParents=new Set(
+    typeof subcategories!=="undefined" ? Object.keys(subcategories) : []
+  );
+  const subAliasesByParent={
+    government:{
+      "ইউনিয়ন পরিষদ":"union",
+      "উপজেলা সরকারি কর্মকর্তা":"upazila",
+      "উপজেলা কর্মকর্তা":"upazila",
+      "অন্যান্য সরকারি অফিস":"govt-office",
+      "সরকারি অফিস":"govt-office",
+      "সরকারি সেবা":"public-service"
+    },
+    education:{
+      "প্রাথমিক বিদ্যালয়":"primary",
+      "প্রাথমিক বিদ্যালয়":"primary",
+      "প্রাথমিক স্কুল":"primary",
+      "মাধ্যমিক বিদ্যালয়":"secondary",
+      "মাধ্যমিক বিদ্যালয়":"secondary",
+      "মাধ্যমিক স্কুল":"secondary",
+      "কলেজ":"college",
+      "মাদ্রাসা":"madrasa",
+      "শিক্ষক ও কর্মচারী":"teachers",
+      "অন্যান্য শিক্ষা প্রতিষ্ঠান":"other"
+    },
+    coaching:{
+      "কোচিং সেন্টার":"coaching-center",
+      "হোম টিউটর":"home-tutor",
+      "বিষয়ভিত্তিক শিক্ষক":"subject-tutor",
+      "বিষয়ভিত্তিক শিক্ষক":"subject-tutor",
+      "ভর্তি / এডমিশন কোচিং":"admission",
+      "ভর্তি/এডমিশন কোচিং":"admission",
+      "অন্যান্য":"other"
+    },
+    health:{
+      "হাসপাতাল/ক্লিনিক":"hospital",
+      "হাসপাতাল":"hospital",
+      "ক্লিনিক":"hospital",
+      "ডাক্তার":"doctor",
+      "ফার্মেসি":"pharmacy",
+      "ডায়াগনস্টিক/ল্যাব":"diagnostic",
+      "ডায়াগনস্টিক/ল্যাব":"diagnostic",
+      "ডায়াগনস্টিক":"diagnostic",
+      "অ্যাম্বুলেন্স":"ambulance"
+    },
+    business:{
+      "মুদি দোকান":"grocery",
+      "হোটেল/রেস্টুরেন্ট":"restaurant",
+      "রেস্টুরেন্ট":"restaurant",
+      "হোটেল":"restaurant",
+      "মিষ্টান্ন ভান্ডার/বেকারি":"sweets",
+      "মিষ্টির দোকান":"sweets",
+      "লাইব্রেরি/স্টেশনারি":"library",
+      "বিকাশ/নগদ/রকেট এজেন্ট":"mfs",
+      "কাপড় ও ফ্যাশন":"fashion",
+      "কাপড় ও ফ্যাশন":"fashion",
+      "টেইলার্স":"tailor",
+      "কসমেটিকস":"cosmetics",
+      "মোবাইল/ইলেকট্রনিক্স":"mobile",
+      "মোবাইল শপ":"mobile",
+      "ইলেকট্রনিক্স":"mobile",
+      "মোবাইল সার্ভিসিং":"mobile-service",
+      "কম্পিউটার/ফটোকপি/অনলাইন সেবা":"computer",
+      "কম্পিউটার/অনলাইন সেবা":"computer",
+      "হার্ডওয়্যার/নির্মাণ সামগ্রী":"hardware",
+      "হার্ডওয়্যার/নির্মাণ সামগ্রী":"hardware",
+      "হার্ডওয়্যার":"hardware",
+      "হার্ডওয়্যার":"hardware",
+      "কাঁচামাল/পাইকারি":"raw-material",
+      "ফার্নিচার":"furniture",
+      "সেলুন/পার্লার":"salon",
+      "কৃষি উপকরণ":"agri",
+      "অন্যান্য ব্যবসা/সেবা":"service"
+    },
+    banking:{
+      "ব্যাংক শাখা":"bank",
+      "ব্যাংক":"bank",
+      "atm":"atm",
+      "ব্যাংক এজেন্ট":"agent",
+      "বিকাশ/নগদ/রকেট":"mfs"
+    },
+    religion:{
+      "মসজিদ":"mosque",
+      "ধর্মীয় শিক্ষা":"madrasa",
+      "ধর্মীয় শিক্ষা":"madrasa",
+      "অন্যান্য ধর্মীয় প্রতিষ্ঠান":"other",
+      "অন্যান্য ধর্মীয় প্রতিষ্ঠান":"other"
+    },
+    post:{
+      "ডাকঘর":"post-office",
+      "পোস্ট অফিস":"post-office",
+      "কুরিয়ার/ডেলিভারি":"courier",
+      "কুরিয়ার/ডেলিভারি":"courier"
+    },
+    transport:{
+      "বাস/গণপরিবহন":"bus",
+      "বাস":"bus",
+      "ডাক/কুরিয়ার":"courier",
+      "ডাক/কুরিয়ার":"courier",
+      "গ্যারেজ/মেরামত":"garage",
+      "অন্যান্য যোগাযোগ সেবা":"other"
+    },
+    agriculture:{
+      "কৃষি অফিস/কর্মকর্তা":"agri-office",
+      "কৃষি সেবা":"service",
+      "প্রাণিসম্পদ":"livestock",
+      "মৎস্য":"fisheries",
+      "বীজ/সার/কৃষি উপকরণ":"shop"
+    },
+    social:{
+      "সামাজিক সংগঠন":"social-org",
+      "ক্লাব/যুব সংগঠন":"club",
+      "এনজিও/স্বেচ্ছাসেবী সংগঠন":"ngo"
+    }
+  };
+  function canonicalSubSlug(parentSlug,raw,list){
+    const key=lower(raw);
+    const byLabel=(list||[]).find(x=>lower(x[1])===key);
+    if(byLabel)return String(byLabel[0]);
+    const aliases=subAliasesByParent[parentSlug]||{};
+    const alias=aliases[key];
+    if(alias&&(list||[]).some(x=>String(x[0])===String(alias)))return String(alias);
+    const known=knownSubNameMap[raw];
+    if(known&&(list||[]).some(x=>String(x[0])===String(known)))return String(known);
+    return null;
+  }
+
   async function load(){
     if(!window.supabaseClient)return;
     const [dirRes,catRes,subRes]=await Promise.all([
@@ -63,11 +192,26 @@
     for(const s of subRows){
       const parentSlug=catSlugById.get(String(s.category_id)); if(!parentSlug)continue;
       const raw=clean(s.name); if(!raw)continue;
-      let slug=knownSubNameMap[raw]||raw;
       const list=(typeof subcategories!=="undefined"?(subcategories[parentSlug]||[]):[]);
-      const staticMatch=list.some(x=>String(x[0])===slug);
-      if(!staticMatch && !/^[a-z0-9][a-z0-9-]*$/i.test(slug)) slug=`cms-sub-${s.id}`;
-      if(!list.some(x=>String(x[0])===slug)) list.push([slug,raw]);
+      const canonical=canonicalSubSlug(parentSlug,raw,list);
+      let slug=canonical||knownSubNameMap[raw]||raw;
+
+      if(builtInSubParents.has(parentSlug)){
+        // Built-in category: never append duplicate/legacy DB labels to the
+        // public subcategory grid. Map known aliases; keep unknown values only
+        // for data compatibility, not as extra UI buttons.
+        if(canonical)slug=canonical;
+      }else{
+        // Truly custom CMS category: keep its subcategories, but de-duplicate
+        // both by slug and by visible label.
+        const existingByLabel=list.find(x=>lower(x[1])===lower(raw));
+        if(existingByLabel){
+          slug=String(existingByLabel[0]);
+        }else{
+          if(!/^[a-z0-9][a-z0-9-]*$/i.test(slug)) slug=`cms-sub-${s.id}`;
+          if(!list.some(x=>String(x[0])===String(slug))) list.push([slug,raw]);
+        }
+      }
       if(typeof subcategories!=="undefined") subcategories[parentSlug]=list;
       const parentRaw=(catRows.find(c=>String(c.id)===String(s.category_id))||{}).name||"";
       subSlugByRawKey.set(lower(parentRaw)+"::"+lower(raw),slug);
