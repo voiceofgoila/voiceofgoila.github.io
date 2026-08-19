@@ -2349,7 +2349,11 @@ async function loadWebsiteSettings(){
         settingFacebook:row.facebook || "",
         settingYoutube:row.youtube || "",
         settingWhatsapp:row.whatsapp || "",
-        settingDeveloperProfileLink:row.developer_profile_link || "https://www.facebook.com/ShawanSarderSolyman"
+        settingDeveloperCreditLabel:row.developer_credit_label ?? "Site Developed & Maintained by",
+        settingDeveloperName:row.developer_name ?? "Shawan Sarder Solyman",
+        settingDeveloperProfileLink:row.developer_profile_link || "https://www.facebook.com/ShawanSarderSolyman",
+        settingDeveloperSubtitle:row.developer_subtitle ?? "Innovator at Medical Assistant Robot",
+        settingFooterRightsText:row.footer_rights_text ?? "© Voice of Goila · All Rights Reserved"
     };
     Object.entries(values).forEach(([id,value])=>{
         const el=document.getElementById(id);
@@ -2415,7 +2419,11 @@ async function saveWebsiteSettings(){
             facebook:normalizeSettingsUrl(settingsValue("settingFacebook")),
             youtube:normalizeSettingsUrl(settingsValue("settingYoutube")),
             whatsapp:settingsValue("settingWhatsapp"),
-            developer_profile_link:normalizeSettingsUrl(settingsValue("settingDeveloperProfileLink"))
+            developer_credit_label:settingsValue("settingDeveloperCreditLabel"),
+            developer_name:settingsValue("settingDeveloperName"),
+            developer_profile_link:normalizeSettingsUrl(settingsValue("settingDeveloperProfileLink")),
+            developer_subtitle:settingsValue("settingDeveloperSubtitle"),
+            footer_rights_text:settingsValue("settingFooterRightsText")
         };
 
         let result;
