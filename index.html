@@ -339,6 +339,22 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
         const location=freshAnchor("locationLink");
         configureAnchor(location,mapsUrl(row.address),true);
 
+        const developer=document.querySelector(".developer-name");
+        if(developer){
+            const developerUrl=clean(row.developer_profile_link);
+            if(developerUrl){
+                developer.href=developerUrl;
+                developer.target="_blank";
+                developer.rel="noopener noreferrer";
+                developer.title="Visit Shawan Sarder Solyman";
+            }else{
+                developer.removeAttribute("href");
+                developer.removeAttribute("target");
+                developer.removeAttribute("rel");
+                developer.title="";
+            }
+        }
+
         removeLegacyContactText();
     }
 
