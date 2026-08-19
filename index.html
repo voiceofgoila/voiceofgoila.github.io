@@ -204,7 +204,22 @@ function paintStarPicker(){document.querySelectorAll("#starPicker button").forEa
 function setupContactLinks(){const f=$("facebookLink"),e=$("emailLink");if(SITE_CONFIG.facebook){f.href=SITE_CONFIG.facebook;f.target="_blank";f.rel="noopener"}else f.addEventListener("click",ev=>{ev.preventDefault();alert("Facebook Page link এখনো সেট করা হয়নি।")});if(SITE_CONFIG.email){e.href="mailto:"+SITE_CONFIG.email}else e.addEventListener("click",ev=>{ev.preventDefault();alert("Email address এখনো সেট করা হয়নি।")})}
 function escapeHtml(text){return String(text||"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]||ch))}function escapeAttr(text){return escapeHtml(text).replace(/`/g,"&#96;")}
 const AD_LAST_SHOWN_KEY="voiceOfGoilaAdLastShown";let adTimerHandle=null;let ADS_CONFIG={enabled:false,popup:{enabled:false,image:"",link:"",alt:"Sponsored advertisement",autoClose:8,frequency:"daily"},inline:{enabled:false,image:"",link:"",alt:"Sponsored advertisement"}};
-async function loadAdsConfig(){try{const r=await fetch("ads.json?ts="+Date.now(),{cache:"no-store"});if(r.ok){const j=await r.json();ADS_CONFIG={...ADS_CONFIG,...j,popup:{...ADS_CONFIG.popup,...(j.popup||{})},inline:{...ADS_CONFIG.inline,...(j.inline||{})}}}}catch(e){}return ADS_CONFIG}
+async function loadAdsConfig(){
+  try{
+    if(!window.supabaseClient) return ADS_CONFIG;
+    const {data,error}=await window.supabaseClient.from("ads").select("id,title,image_url,link,position,status,created_at").eq("status",true).in("position",["popup","inline"]).order("created_at",{ascending:false}).order("id",{ascending:false});
+    if(error) throw error;
+    const rows=data||[];
+    const popup=rows.find(a=>a.position==="popup");
+    const inline=rows.find(a=>a.position==="inline");
+    ADS_CONFIG={
+      enabled:!!(popup||inline),
+      popup:{enabled:!!popup,image:popup?.image_url||"",link:popup?.link||"",alt:popup?.title||"Sponsored advertisement",autoClose:8,frequency:"daily"},
+      inline:{enabled:!!inline,image:inline?.image_url||"",link:inline?.link||"",alt:inline?.title||"Sponsored advertisement"}
+    };
+  }catch(e){console.error("Ads load error",e);}
+  return ADS_CONFIG;
+}
 function shouldShowPopup(ad){if(ad.frequency!=="daily")return true;try{const last=Number(localStorage.getItem(AD_LAST_SHOWN_KEY)||0);return!last||Date.now()-last>=86400000}catch(e){return true}}
 function markPopupShown(){try{localStorage.setItem(AD_LAST_SHOWN_KEY,String(Date.now()))}catch(e){}}
 function closeAdPopup(){clearInterval(adTimerHandle);const o=$("adOverlay");if(o)o.classList.remove("show")}

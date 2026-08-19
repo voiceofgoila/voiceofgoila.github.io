@@ -606,6 +606,27 @@ font-size:20px;
 .btn-secondary{background:#6b7280}.btn-warning{background:#b7791f}
 @media(max-width:700px){.p3-grid{grid-template-columns:1fr}.p3-wide{grid-column:auto}.announcement-row-head{flex-direction:column}.announcement-actions button{flex:1}}
 
+
+/* Phase 2 Part 4 - Ads Management */
+.adm-ad-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.adm-ad-form .wide{grid-column:1/-1}
+.adm-ad-field label{display:block;font-weight:700;margin-bottom:6px;color:#4d2a5a}
+.adm-ad-field input,.adm-ad-field select{width:100%;margin:0}
+.adm-ad-upload{border:1px dashed #d7c7df;border-radius:14px;padding:14px;background:#fcf9fd}
+.adm-ad-preview{display:none;width:100%;max-height:220px;object-fit:contain;border-radius:12px;margin-top:10px;background:#f5f1f7}
+.adm-ad-options{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.adm-ad-options label{display:flex;align-items:center;gap:7px;font-weight:700}
+.adm-ad-options input[type=checkbox]{width:auto;margin:0}
+.adm-ad-list{display:grid;gap:12px;margin-top:18px}
+.adm-ad-row{border:1px solid #e5ddea;background:#fcf9fd;border-radius:14px;padding:14px;display:grid;grid-template-columns:110px 1fr;gap:14px;align-items:start}
+.adm-ad-row.inactive{opacity:.62}
+.adm-ad-thumb{width:110px;height:85px;object-fit:cover;border-radius:10px;background:#eee}
+.adm-ad-info h4{margin:0 0 5px;color:#3b2049;font-size:16px}
+.adm-ad-meta{font-size:12px;color:#756b79;margin-top:4px;word-break:break-word}
+.adm-ad-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.adm-ad-actions button{width:auto;padding:9px 13px;margin:0}
+@media(max-width:700px){.adm-ad-form{grid-template-columns:1fr}.adm-ad-form .wide{grid-column:auto}.adm-ad-row{grid-template-columns:1fr}.adm-ad-thumb{width:100%;height:160px}.adm-ad-actions button{flex:1}}
+
 </style>
 
 
@@ -666,6 +687,10 @@ Homepage CMS
 
 <button onclick="showAnnouncements()">
 Announcements
+</button>
+
+<button onclick="showAds()">
+Ads
 </button>
 
 <button onclick="logout()">
@@ -773,6 +798,11 @@ Login
 <div class="stat">
 <h3>Announcements</h3>
 <h2 id="announcementCount">0</h2>
+</div>
+
+<div class="stat">
+<h3>Ads</h3>
+<h2 id="adsCount">0</h2>
 </div>
 
 
@@ -932,6 +962,44 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
   <div id="announcementAdminList" class="announcement-list">Loading...</div>
 </div>
 
+<!-- ADS MANAGEMENT -->
+<div class="card" id="adsManagement">
+  <h2>Ads Management</h2>
+  <p class="cms-note">Popup ও Inline advertisement Supabase থেকে নিয়ন্ত্রণ করুন। একই position-এ একসাথে একটি Active ad রাখা হবে। Image public <b>image</b> bucket-এ upload হবে।</p>
+
+  <div class="adm-ad-form">
+    <div class="adm-ad-field">
+      <label>Ad Title</label>
+      <input id="adTitle" placeholder="যেমন: Local Business Promotion">
+    </div>
+    <div class="adm-ad-field">
+      <label>Position</label>
+      <select id="adPosition">
+        <option value="popup">Popup</option>
+        <option value="inline">Inline Banner</option>
+      </select>
+    </div>
+    <div class="adm-ad-field wide">
+      <label>Click Link (optional)</label>
+      <input id="adLink" placeholder="https://example.com">
+    </div>
+    <div class="adm-ad-upload wide">
+      <label class="file-label" for="adImageFile">📷 Choose Ad Image
+        <input id="adImageFile" type="file" accept="image/*" onchange="previewAdminAdImage(event,'adImagePreview')">
+      </label>
+      <img id="adImagePreview" class="adm-ad-preview" alt="Ad preview">
+      <div class="settings-help">Popup-এর জন্য square/portrait এবং Inline-এর জন্য wide banner image ভালো দেখাবে। Max 5 MB.</div>
+    </div>
+    <div class="adm-ad-options wide">
+      <label><input id="adStatus" type="checkbox" checked> Active / Show</label>
+      <button onclick="addAd()" style="width:auto;margin:0">+ Add Ad</button>
+      <span id="adsStatus" class="settings-status"></span>
+    </div>
+  </div>
+
+  <div id="adsAdminList" class="adm-ad-list">Loading...</div>
+</div>
+
 <!-- PENDING -->
 
 <div class="card">
@@ -1072,6 +1140,29 @@ Loading...
 
 
 <!-- ANNOUNCEMENT EDIT MODAL -->
+<!-- ADS EDIT MODAL -->
+<div id="adEditModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Edit Ad</h2>
+      <button class="close-btn" onclick="closeAdEdit()">✕</button>
+    </div>
+    <input id="adEditId" type="hidden">
+    <div class="adm-ad-field"><label>Title</label><input id="adEditTitle"></div>
+    <div class="adm-ad-field"><label>Position</label><select id="adEditPosition"><option value="popup">Popup</option><option value="inline">Inline Banner</option></select></div>
+    <div class="adm-ad-field"><label>Click Link</label><input id="adEditLink" placeholder="https://..."></div>
+    <div class="adm-ad-upload">
+      <label class="file-label" for="adEditImageFile">📷 Change Image
+        <input id="adEditImageFile" type="file" accept="image/*" onchange="previewAdminAdImage(event,'adEditImagePreview')">
+      </label>
+      <img id="adEditImagePreview" class="adm-ad-preview" alt="Ad image preview">
+      <div class="settings-help">নতুন image না দিলে বর্তমান image থাকবে।</div>
+    </div>
+    <div class="adm-ad-options"><label><input id="adEditStatus" type="checkbox"> Active / Show</label></div>
+    <button onclick="saveAdEdit()">Save Ad</button>
+  </div>
+</div>
+
 <div id="announcementEditModal" class="modal">
   <div class="modal-box">
     <div class="modal-header"><h2>Edit Announcement</h2><button class="close-btn" onclick="closeAnnouncementEdit()">×</button></div>
