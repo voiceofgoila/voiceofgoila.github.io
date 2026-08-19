@@ -2348,7 +2348,8 @@ async function loadWebsiteSettings(){
         settingAddress:row.address || "",
         settingFacebook:row.facebook || "",
         settingYoutube:row.youtube || "",
-        settingWhatsapp:row.whatsapp || ""
+        settingWhatsapp:row.whatsapp || "",
+        settingDeveloperProfileLink:row.developer_profile_link || "https://www.facebook.com/ShawanSarderSolyman"
     };
     Object.entries(values).forEach(([id,value])=>{
         const el=document.getElementById(id);
@@ -2413,7 +2414,8 @@ async function saveWebsiteSettings(){
             address:settingsValue("settingAddress"),
             facebook:normalizeSettingsUrl(settingsValue("settingFacebook")),
             youtube:normalizeSettingsUrl(settingsValue("settingYoutube")),
-            whatsapp:settingsValue("settingWhatsapp")
+            whatsapp:settingsValue("settingWhatsapp"),
+            developer_profile_link:normalizeSettingsUrl(settingsValue("settingDeveloperProfileLink"))
         };
 
         let result;
