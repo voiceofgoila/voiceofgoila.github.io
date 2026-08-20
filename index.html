@@ -45,6 +45,54 @@ footer{background:#24152B;color:#fff;margin-top:20px;padding:22px 0 13px}.footer
 @media(max-width:430px){.container{padding:0 15px}.nav{min-height:68px}.brand-icon{width:44px;height:44px;flex-basis:44px}.brand h1{font-size:18px}.brand p{font-size:10.5px}.menu-btn{width:41px;height:41px;flex-basis:41px}.hero h2{font-size:31px}.search button{padding:0 13px}.section-head h3{font-size:19px}.review-section .section-head{align-items:flex-start;flex-direction:column}.footer-grid{grid-template-columns:1fr;gap:12px}.footer-grid>div:first-child{grid-column:auto}.social-btn{width:41px;height:41px}.modal{padding:9px}.modal-box{padding:14px;border-radius:17px}.ad-popup{width:92vw;border-radius:19px}}
 
 .hero h2 .hero-normal{color:inherit}
+
+/* Compact Website Only App Download */
+.app-download-box{
+  margin:12px 18px 5px;
+  max-width:none;
+  padding:8px 12px;
+  border-radius:14px;
+  background:#fff;
+  border:1px solid #eee1f5;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.app-download-text h3{
+  margin:0;
+  font-size:15px;
+  color:#24102f;
+}
+.app-download-text p{
+  margin:2px 0 0;
+  font-size:11px;
+  color:#777;
+}
+.app-download-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  padding:8px 15px;
+  border-radius:30px;
+  background:#6B2C91;
+  color:#fff;
+  text-decoration:none;
+  font-weight:700;
+  font-size:13px;
+  white-space:nowrap;
+  box-shadow:0 4px 10px rgba(107,44,145,.18);
+}
+/* Installed app/PWA mode এ hide হবে */
+@media (display-mode: standalone){
+ .app-download-box{display:none!important;}
+}
+@media(max-width:600px){
+ .app-download-box{margin-left:14px;margin-right:14px;padding:8px 10px;}
+ .app-download-text h3{font-size:14px;}
+ .app-download-btn{padding:8px 12px;font-size:12px;}
+}
 </style>
 </head>
 <body>
@@ -57,7 +105,17 @@ footer{background:#24152B;color:#fff;margin-top:20px;padding:22px 0 13px}.footer
 <div id="menuOverlay" class="menu-overlay" onclick="closeSideMenu()"></div><aside id="sideMenu" class="side-menu" aria-hidden="true"><div class="side-menu-head"><div class="side-menu-title">দ্রুত মেনু</div><button class="side-menu-close" onclick="closeSideMenu()" aria-label="মেনু বন্ধ করুন">×</button></div><div class="side-menu-body"><div class="menu-group"><h4>সেবার বিভাগ</h4><div id="menuCategories" class="menu-cats"></div></div><div class="menu-group"><h4>জরুরি সেবা</h4><div id="menuEmergency" class="menu-emergency"></div></div><div class="menu-quick"><button class="primary" onclick="openSubmission()">➕ তথ্য যোগ করুন</button><button class="soft" onclick="scrollToReview()">⭐ রিভিউ দিন</button></div></div></aside>
 <main>
 <section class="hero"><div class="container hero-grid"><div><span class="badge" id="homeBadge">গৈলা ইউনিয়ন • ডিজিটাল তথ্য প্ল্যাটফর্ম</span><h2><span class="hero-normal" id="homeHeroLead">গৈলার প্রয়োজনীয়</span> <span id="homeHeroHighlight">তথ্য ও সেবা</span><br><span class="hero-normal" id="homeHeroTail">এখন এক জায়গায়</span></h2><p id="homeHeroDescription">স্থানীয় প্রতিষ্ঠান, জরুরি সেবা, শিক্ষা, স্বাস্থ্য, ব্যবসা, সরকারি সেবা ও গুরুত্বপূর্ণ স্থান সহজে খুঁজে নিন।</p><div class="search-wrap"><div class="search"><input id="search" autocomplete="off" placeholder="প্রতিষ্ঠান, সেবা বা জায়গার নাম লিখুন..."><button onclick="doSearch()">খুঁজুন</button></div><div id="searchPanel" class="search-panel" hidden><div id="suggestions" class="suggestions"></div><div id="searchResults"></div></div></div></div><div class="hero-card"><small>Voice of Goila</small><strong id="count">0+</strong><span>তথ্য ও সেবার বিভাগ</span><div class="mini"><div>📞 জরুরি সেবা<br><b>এক ক্লিকে কল</b></div><div>📍 লোকেশন<br><b>Google Maps</b></div></div></div></div></section>
+
 <section id="categorySection"><div class="container"><div class="section-head"><h3 id="homeCategoryTitle">সেবার বিভাগ</h3><span id="homeCategorySubtitle">প্রয়োজনীয় বিভাগ বেছে নিন</span></div><div id="categories" class="categories"></div><div id="subcategoryArea" class="subcategory-panel" hidden></div></div></section>
+<section class="app-download-box">
+  <div class="app-download-text">
+    <h3>Voice of Goila App</h3>
+    <p>সহজ ব্যবহারের জন্য অ্যাপ ডাউনলোড করুন</p>
+  </div>
+  <a class="app-download-btn" href="voice-of-goila.apk" download>
+    ⬇ Download App
+  </a>
+</section>
 <section><div class="container"><div class="section-head"><h3 id="homeEmergencyTitle">🚨 জরুরি সেবা</h3><span id="homeEmergencySubtitle">দ্রুত যোগাযোগ</span></div><div class="emergency"><div id="emergencyGrid" class="emergency-grid"></div></div></div></section>
 <section id="resultsSection"><div class="container"><div class="section-head"><h3 id="listTitle">সাম্প্রতিক তথ্য</h3><span id="resultCount"></span></div><div id="cards" class="cards"></div></div></section><section id="inlineAdSection" class="inline-ad-section" hidden><div class="container"><div class="inline-ad-wrap"><button id="inlineAdClose" class="inline-ad-close" type="button" aria-label="বিজ্ঞাপন বন্ধ করুন">×</button><a id="inlineAdLink" href="#" target="_blank" rel="noopener sponsored"><img id="inlineAdImage" alt="Sponsored advertisement"></a><span class="inline-ad-label">SPONSORED</span></div></div></section>
 <section id="announcementSection" hidden><div class="container"><div class="section-head"><h3 id="homeAnnouncementTitle">📢 গুরুত্বপূর্ণ ঘোষণা</h3><span id="homeAnnouncementSubtitle">প্রয়োজনীয় তথ্য ও জনসচেতনতা</span></div><div id="announcementList" class="notice"></div></div></section>
