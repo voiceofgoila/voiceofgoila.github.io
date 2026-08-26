@@ -3136,20 +3136,112 @@ async function deleteReview(id){
 // ===============================
 // COMPLETE PACK - DIRECT DIRECTORY ADD
 // ===============================
+function adminDirectoryCategorySlug(rawValue){
+    const raw=String(rawValue||"").trim();
+    const key=raw.toLowerCase();
+    const aliases={
+        "government":"government","সরকারি ও ইউনিয়ন সেবা":"government","সরকারি সেবা":"government",
+        "education":"education","শিক্ষা":"education","শিক্ষা প্রতিষ্ঠান":"education",
+        "coaching":"coaching","কোচিং / হোম টিউটর":"coaching","কোচিং/হোম টিউটর":"coaching",
+        "health":"health","স্বাস্থ্য":"health","স্বাস্থ্যসেবা":"health",
+        "business":"business","ব্যবসা ও দোকান":"business","ব্যবসা ও বাণিজ্য":"business","ব্যবসা":"business",
+        "banking":"banking","ব্যাংক":"banking",
+        "religion":"religion","ধর্মীয় প্রতিষ্ঠান":"religion","ধর্মীয় প্রতিষ্ঠান":"religion",
+        "blood":"blood","ব্লাড ডোনার্স":"blood","ব্লাড ডোনার":"blood",
+        "police":"police","পুলিশ":"police",
+        "fire":"fire","ফায়ার সার্ভিস":"fire","ফায়ার সার্ভিস":"fire",
+        "ambulance":"ambulance","অ্যাম্বুলেন্স":"ambulance",
+        "doctor":"doctor","ডাক্তার":"doctor",
+        "electricity":"electricity","বিদ্যুৎ":"electricity",
+        "places":"places","গুরুত্বপূর্ণ স্থান":"places",
+        "people":"people","গুরুত্বপূর্ণ ব্যক্তিবর্গ":"people",
+        "post":"post","ডাকঘর":"post",
+        "transport":"transport","যাতায়াত ও যোগাযোগ":"transport",
+        "social":"social","সামাজিক সংগঠন":"social"
+    };
+    return aliases[key]||"";
+}
+
+function adminDirectorySubcategorySlug(cat,rawValue){
+    const raw=String(rawValue||"").trim();
+    const key=raw.toLowerCase();
+    const list=ADMIN_DIRECTORY_SUBCATEGORIES[cat]||[];
+    const bySlug=list.find(s=>String(s[0]).toLowerCase()===key);
+    if(bySlug)return bySlug[0];
+    const byLabel=list.find(s=>String(s[1]).trim().toLowerCase()===key);
+    if(byLabel)return byLabel[0];
+    if(cat==="people" && ["abroad-student","public-university","বিদেশে পড়াশোনা করা শিক্ষার্থী","পাবলিক বিশ্ববিদ্যালয়ের শিক্ষার্থী"].includes(key))return "university-student";
+    return "";
+}
+
+function shouldHideLegacyAdminCategory(rawValue){
+    const key=String(rawValue||"").trim().toLowerCase();
+    return ["agriculture","কৃষি","কৃষি ও স্থানীয় সেবা"].includes(key);
+}
+
+function shouldHideLegacyAdminSubcategory(cat,rawValue){
+    const key=String(rawValue||"").trim().toLowerCase();
+    if(cat==="post" && ["courier","কুরিয়ার/ডেলিভারি","কুরিয়ার/ডেলিভারি"].includes(key))return true;
+    if(cat==="health" && ["pharmacy","ফার্মেসি"].includes(key))return true;
+    return false;
+}
+
 async function fillDirectoryAddCategories(){
     const box=document.getElementById("addDirCat");if(!box)return;
-    box.innerHTML='<option value="">Select Category</option>'+
-        ADMIN_DIRECTORY_CATEGORIES.map(c=>`<option value="${cmsEscape(c[0])}">${cmsEscape(c[1])}</option>`).join("");
+    const options=[...ADMIN_DIRECTORY_CATEGORIES];
+    const seen=new Set(options.map(c=>String(c[0]).toLowerCase()));
+
+    // Preserve CMS-created custom categories while keeping the canonical list complete.
+    (managedCategories||[]).forEach(row=>{
+        const raw=String(row?.name||"").trim();
+        if(!raw||shouldHideLegacyAdminCategory(raw))return;
+        const canonical=adminDirectoryCategorySlug(raw);
+        if(canonical)return;
+        const key=raw.toLowerCase();
+        if(seen.has(key))return;
+        seen.add(key);
+        options.push([raw,raw]);
+    });
+
+    box.innerHTML='<option value="">Select Category</option>'+ 
+        options.map(c=>`<option value="${cmsEscape(c[0])}">${cmsEscape(c[1])}</option>`).join("");
     await changeAddSubCategory();
 }
+
 async function changeAddSubCategory(){
-    const cat=String(document.getElementById("addDirCat")?.value||"");
+    const catValue=String(document.getElementById("addDirCat")?.value||"").trim();
     const box=document.getElementById("addDirSubcat");if(!box)return;
-    const list=ADMIN_DIRECTORY_SUBCATEGORIES[cat]||[];
-    box.innerHTML='<option value="">Select Sub Category</option>'+
+    const canonicalCat=ADMIN_DIRECTORY_SUBCATEGORIES[catValue]?catValue:adminDirectoryCategorySlug(catValue);
+    const list=[...(ADMIN_DIRECTORY_SUBCATEGORIES[canonicalCat]||[])];
+    const seen=new Set(list.flatMap(s=>[String(s[0]).toLowerCase(),String(s[1]).trim().toLowerCase()]));
+
+    // Merge CMS-created custom subcategories without reintroducing removed legacy options.
+    const matchingCategoryIds=new Set((managedCategories||[])
+        .filter(row=>{
+            const raw=String(row?.name||"").trim();
+            if(!raw||shouldHideLegacyAdminCategory(raw))return false;
+            if(canonicalCat)return adminDirectoryCategorySlug(raw)===canonicalCat;
+            return raw.toLowerCase()===catValue.toLowerCase();
+        })
+        .map(row=>String(row.id)));
+
+    (managedSubCategories||[]).forEach(row=>{
+        if(!matchingCategoryIds.has(String(row?.category_id)))return;
+        const raw=String(row?.name||"").trim();
+        if(!raw||shouldHideLegacyAdminSubcategory(canonicalCat,raw))return;
+        const canonicalSub=adminDirectorySubcategorySlug(canonicalCat,raw);
+        if(canonicalSub)return;
+        const key=raw.toLowerCase();
+        if(seen.has(key))return;
+        seen.add(key);
+        list.push([raw,raw]);
+    });
+
+    box.innerHTML='<option value="">Select Sub Category</option>'+ 
         list.map(s=>`<option value="${cmsEscape(s[0])}">${cmsEscape(s[1])}</option>`).join("");
     updateDirectoryNotificationOption();
 }
+
 async function openDirectoryAdd(){
     ["addDirName","addDirPhone","addDirAddress","addDirMap","addDirDescription"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
     const sort=document.getElementById("addDirSort");if(sort)sort.value="0";
