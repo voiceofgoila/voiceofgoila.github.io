@@ -784,7 +784,12 @@ function removeDirectoryEditImage(){
 
 
 // ===============================
-// BLOOD DONOR NOTIFICATIONS
+// SELECTIVE ADMIN NOTIFICATIONS
+// Supported scope:
+// Blood Donor, Doctor, Ambulance, Fire/Emergency, Police,
+// Government/Union Service, Transport, Social Organization,
+// Coaching/Home Tutor, Important Places, Important People.
+// Announcement, Notice and Emergency Number are handled in their CMS add flows.
 // ===============================
 
 function isBloodDonorCategory(value){
@@ -798,18 +803,125 @@ function bloodGroupLabel(value){
     return allowed.includes(v) ? v : "";
 }
 
-function shouldOfferBloodNotification(cat,subcat){
-    return isBloodDonorCategory(cat) && !!bloodGroupLabel(subcat);
+function notificationCategorySlug(cat,subcat=""){
+    const rawCat=String(cat||"").trim();
+    const rawSub=String(subcat||"").trim();
+    const catSlug=(typeof adminDirectoryCategorySlug==="function" ? adminDirectoryCategorySlug(rawCat) : "") || rawCat.toLowerCase();
+    const subSlug=(typeof adminDirectorySubcategorySlug==="function" ? adminDirectorySubcategorySlug(catSlug,rawSub) : "") || rawSub.toLowerCase();
+
+    // Health has synced Doctor/Ambulance views, so notify for either storage path.
+    if(catSlug==="health" && subSlug==="doctor") return "doctor";
+    if(catSlug==="health" && subSlug==="ambulance") return "ambulance";
+
+    if(isBloodDonorCategory(rawCat)) return "blood";
+    if(catSlug==="doctor") return "doctor";
+    if(catSlug==="ambulance") return "ambulance";
+    if(catSlug==="fire" || catSlug==="emergency" || rawCat.includes("জরুরি")) return "emergency";
+    if(catSlug==="police") return "police";
+    if(catSlug==="government") return "government";
+    if(catSlug==="transport") return "transport";
+    if(catSlug==="social") return "social";
+    if(catSlug==="coaching") return "coaching";
+    if(catSlug==="places") return "places";
+    if(catSlug==="people") return "people";
+    return "";
 }
 
-function bloodDonorNotificationPayload(subcat,itemId){
-    const group=bloodGroupLabel(subcat);
-    if(!group) return null;
+function directoryNotificationDescriptor(cat,subcat,name=""){
+    const scope=notificationCategorySlug(cat,subcat);
+    const itemName=String(name||"").trim();
+    const sub=String(subcat||"").trim();
+    const subSlug=(typeof adminDirectorySubcategorySlug==="function" ? adminDirectorySubcategorySlug(scope,sub) : "") || sub.toLowerCase();
+    const detail=(fallback)=> itemName ? `${itemName} সম্পর্কে নতুন তথ্য Voice of Goila-তে যুক্ত হয়েছে। বিস্তারিত দেখুন।` : fallback;
+
+    if(scope==="blood"){
+        const group=bloodGroupLabel(subcat);
+        if(!group) return null;
+        return {
+            type:"blood_donor",
+            title:`নতুন ${group} রক্তদাতা যুক্ত হয়েছে`,
+            body:`${group} গ্রুপের একজন নতুন রক্তদাতা তালিকাভুক্ত হয়েছেন। বিস্তারিত দেখুন।`
+        };
+    }
+    if(scope==="doctor") return {type:"doctor",title:"নতুন ডাক্তার যুক্ত হয়েছেন",body:detail("নতুন একজন ডাক্তারের তথ্য যুক্ত হয়েছে। বিস্তারিত দেখুন।")};
+    if(scope==="ambulance") return {type:"ambulance",title:"নতুন অ্যাম্বুলেন্স সেবা যুক্ত হয়েছে",body:detail("নতুন অ্যাম্বুলেন্স সেবার তথ্য যুক্ত হয়েছে। বিস্তারিত দেখুন।")};
+    if(scope==="emergency") return {type:"emergency",title:"নতুন ফায়ার / জরুরি সেবার তথ্য",body:detail("নতুন জরুরি সেবার তথ্য যুক্ত হয়েছে। বিস্তারিত দেখুন।")};
+    if(scope==="police") return {type:"police",title:"নতুন পুলিশ সেবার তথ্য যুক্ত হয়েছে",body:detail("নতুন পুলিশ/নিরাপত্তা সেবার তথ্য যুক্ত হয়েছে। বিস্তারিত দেখুন।")};
+    if(scope==="government") return {type:"government_service",title:"নতুন সরকারি ও ইউনিয়ন সেবার তথ্য",body:detail("নতুন সরকারি বা ইউনিয়ন সেবার তথ্য যুক্ত হয়েছে। বিস্তারিত দেখুন।")};
+    if(scope==="transport") return {type:"transport",title:"নতুন যাতায়াত ও যোগাযোগ তথ্য",body:detail("নতুন যাতায়াত বা যোগাযোগ সেবার তথ্য যুক্ত হয়েছে। বিস্তারিত দেখুন।")};
+    if(scope==="social") return {type:"social_organization",title:"নতুন সামাজিক সংগঠনের তথ্য",body:detail("নতুন সামাজিক সংগঠনের তথ্য যুক্ত হয়েছে। বিস্তারিত দেখুন।")};
+    if(scope==="coaching"){
+        const raw=String(subcat||"").trim().toLowerCase();
+        let title="নতুন কোচিং / হোম টিউটর তথ্য";
+        if(subSlug==="coaching-center" || raw.includes("কোচিং সেন্টার")) title="নতুন কোচিং সেন্টার যুক্ত হয়েছে";
+        else if(subSlug==="home-tutor" || raw.includes("হোম টিউটর")) title="নতুন হোম টিউটর যুক্ত হয়েছেন";
+        else if(subSlug==="subject-tutor" || raw.includes("বিষয়ভিত্তিক")) title="নতুন বিষয়ভিত্তিক শিক্ষকের তথ্য";
+        else if(subSlug==="admission" || raw.includes("এডমিশন") || raw.includes("ভর্তি")) title="নতুন ভর্তি / এডমিশন কোচিং তথ্য";
+        return {type:"coaching",title,body:detail("নতুন কোচিং বা হোম টিউটর তথ্য যুক্ত হয়েছে। বিস্তারিত দেখুন।")};
+    }
+    if(scope==="places") return {type:"important_place",title:"নতুন গুরুত্বপূর্ণ স্থান যুক্ত হয়েছে",body:detail("নতুন গুরুত্বপূর্ণ স্থানের তথ্য যুক্ত হয়েছে। বিস্তারিত দেখুন।")};
+    if(scope==="people"){
+        const raw=String(subcat||"").trim().toLowerCase();
+        let title="নতুন গুরুত্বপূর্ণ ব্যক্তির তথ্য যুক্ত হয়েছে";
+        if(raw==="innovator" || raw.includes("উদ্ভাবক")) title="নতুন উদ্ভাবকের তথ্য যুক্ত হয়েছে";
+        else if(raw==="university-student" || raw.includes("বিশ্ববিদ্যাল")) title="নতুন বিশ্ববিদ্যালয় শিক্ষার্থীর তথ্য যুক্ত হয়েছে";
+        return {type:"important_person",title,body:detail("নতুন গুরুত্বপূর্ণ ব্যক্তির তথ্য যুক্ত হয়েছে। বিস্তারিত দেখুন।")};
+    }
+    return null;
+}
+
+function shouldOfferDirectoryNotification(cat,subcat){
+    return !!directoryNotificationDescriptor(cat,subcat,"");
+}
+
+function directoryNotificationPayload(cat,subcat,name,itemId){
+    const d=directoryNotificationDescriptor(cat,subcat,name);
+    if(!d) return null;
     return {
-        title:`নতুন ${group} রক্তদাতা যুক্ত হয়েছে`,
-        body:`${group} গ্রুপের একজন নতুন রক্তদাতা তালিকাভুক্ত হয়েছেন। বিস্তারিত দেখুন।`,
-        type:"blood_donor",
+        ...d,
         url:itemId ? `https://voiceofgoila.pages.dev/?item=${encodeURIComponent(itemId)}` : "https://voiceofgoila.pages.dev"
+    };
+}
+
+function notificationSnippet(value,max=220){
+    const text=String(value||"").trim().replace(/\s+/g," ");
+    return text.length>max ? text.slice(0,Math.max(1,max-1)).trimEnd()+"…" : text;
+}
+
+function announcementNotificationPayload(payload){
+    const title=notificationSnippet(payload?.title,100);
+    const body=notificationSnippet(payload?.body,220);
+    if(!title) return null;
+    return {
+        title:`📢 ${title}`,
+        body:body || "Voice of Goila-তে নতুন গুরুত্বপূর্ণ ঘোষণা প্রকাশিত হয়েছে। বিস্তারিত দেখুন।",
+        type:"announcement",
+        url:String(payload?.link_url||"").trim() || "https://voiceofgoila.pages.dev"
+    };
+}
+
+function noticeNotificationPayload(payload){
+    const title=notificationSnippet(payload?.title,100);
+    const description=notificationSnippet(payload?.description,220);
+    if(!title) return null;
+    return {
+        title:`📰 ${title}`,
+        body:description || "Voice of Goila-তে নতুন Notice প্রকাশিত হয়েছে। বিস্তারিত দেখুন।",
+        type:"notice",
+        url:"https://voiceofgoila.pages.dev"
+    };
+}
+
+function emergencyNumberNotificationPayload({name,note,phone}={}){
+    const n=notificationSnippet(name,90);
+    const p=notificationSnippet(phone,40);
+    const extra=notificationSnippet(note,100);
+    if(!n || !p) return null;
+    return {
+        title:"☎️ নতুন জরুরি নম্বর যুক্ত হয়েছে",
+        body:`${n}: ${p}${extra ? ` • ${extra}` : ""}`,
+        type:"emergency_number",
+        url:"https://voiceofgoila.pages.dev"
     };
 }
 
@@ -838,19 +950,22 @@ function pendingNotificationChecked(id){
 function updateDirectoryNotificationOption(){
     const cat=document.getElementById("addDirCat")?.value||"";
     const subcat=document.getElementById("addDirSubcat")?.value||"";
+    const name=document.getElementById("addDirName")?.value||"";
     const wrap=document.getElementById("addDirNotifyWrap");
     const checkbox=document.getElementById("addDirNotify");
-    const show=shouldOfferBloodNotification(cat,subcat);
+    const help=document.getElementById("addDirNotifyHelp");
+    const active=!!document.getElementById("addDirActive")?.checked;
+    const descriptor=directoryNotificationDescriptor(cat,subcat,name);
+    const show=!!descriptor;
 
     if(wrap) wrap.style.display=show ? "block" : "none";
+    if(help && descriptor){
+        help.textContent=active ? `Auto notification: ${descriptor.title}` : "Inactive / Public বন্ধ থাকলে notification যাবে না।";
+    }
 
     if(checkbox){
-        checkbox.disabled=!show;
-
-        if(show && checkbox.dataset.userChanged!=="1"){
-            checkbox.checked=true;
-        }
-
+        checkbox.disabled=!show || !active;
+        if(show && checkbox.dataset.userChanged!=="1") checkbox.checked=true;
         if(!show){
             checkbox.checked=false;
             delete checkbox.dataset.userChanged;
@@ -859,9 +974,12 @@ function updateDirectoryNotificationOption(){
 }
 
 document.addEventListener("change",function(event){
-    if(event.target?.id==="addDirNotify"){
-        event.target.dataset.userChanged="1";
-    }
+    if(event.target?.id==="addDirNotify") event.target.dataset.userChanged="1";
+    if(event.target?.id==="addDirActive") updateDirectoryNotificationOption();
+});
+
+document.addEventListener("input",function(event){
+    if(event.target?.id==="addDirName") updateDirectoryNotificationOption();
 });
 
 // ===============================
@@ -970,13 +1088,13 @@ ${item.phone || ""}
 ${item.address || ""}
 </p>
 
-${shouldOfferBloodNotification(item.cat,item.subcat) ? `
+${shouldOfferDirectoryNotification(item.cat,item.subcat) ? `
 <div class="cms-note" style="margin:12px 0 4px;border-left-color:#7e19b4;">
 <label style="display:flex;align-items:center;gap:8px;font-weight:800;color:#4e1f6d;">
 <input id="notifySubmission-${item.id}" type="checkbox" checked style="width:auto;margin:0;">
 🔔 Approve করার সাথে Notification পাঠাবেন
 </label>
-<div style="margin-top:5px;font-size:12px;color:#75677d;">${bloodGroupLabel(item.subcat)} group-এর নতুন donor notification যাবে।</div>
+<div style="margin-top:5px;font-size:12px;color:#75677d;">${cmsEscape(directoryNotificationDescriptor(item.cat,item.subcat,item.name)?.title||"Notification যাবে")}</div>
 </div>` : ""}
 
 
@@ -1043,7 +1161,7 @@ async function approveSubmission(id){
     }
 
     const sendNotification=
-        shouldOfferBloodNotification(item.cat,item.subcat) &&
+        shouldOfferDirectoryNotification(item.cat,item.subcat) &&
         pendingNotificationChecked(id);
 
     let imageUrl="";
@@ -1095,7 +1213,7 @@ async function approveSubmission(id){
 
     if(sendNotification){
         notificationResult=await sendAdminNotification(
-            bloodDonorNotificationPayload(item.subcat,inserted?.id)
+            directoryNotificationPayload(item.cat,item.subcat,item.name,inserted?.id)
         );
     }
 
@@ -1111,9 +1229,9 @@ async function approveSubmission(id){
 
     if(sendNotification){
         if(notificationResult?.ok){
-            alert(`Approved Successfully\n🔔 ${bloodGroupLabel(item.subcat)} donor notification পাঠানো হয়েছে।`);
+            alert("Approved Successfully\n🔔 Notification পাঠানো হয়েছে।");
         }else{
-            alert("Approved Successfully\n⚠️ Donor publish হয়েছে, কিন্তু notification পাঠানো যায়নি। Edge Function logs দেখুন।");
+            alert("Approved Successfully\n⚠️ তথ্য publish হয়েছে, কিন্তু notification পাঠানো যায়নি। Edge Function logs দেখুন।");
         }
     }else{
         alert("Approved Successfully");
@@ -2754,13 +2872,22 @@ function announcementFormPayload(prefix="announcement"){
 async function addAnnouncement(){
     const payload=announcementFormPayload("announcement");
     if(!payload.title){alert("Announcement title লিখুন");return;}
+    const wantsNotification=payload.active && !!document.getElementById("announcementNotify")?.checked;
     const {error}=await window.supabaseClient.from("announcements").insert(payload);
     if(error){alert("Add হয়নি: "+error.message);return;}
+
+    let notificationResult=null;
+    if(wantsNotification) notificationResult=await sendAdminNotification(announcementNotificationPayload(payload));
+
     ["announcementDate","announcementTitle","announcementBody","announcementLink"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
     document.getElementById("announcementSort").value="100";
     document.getElementById("announcementActive").checked=true;
+    const notify=document.getElementById("announcementNotify");if(notify)notify.checked=true;
     await loadAnnouncementsAdmin(); await loadStats();
-    alert("Announcement add হয়েছে");
+
+    if(wantsNotification){
+        alert(notificationResult?.ok ? "Announcement add হয়েছে\n🔔 Notification পাঠানো হয়েছে।" : "Announcement add হয়েছে\n⚠️ Notification পাঠানো যায়নি।");
+    }else alert("Announcement add হয়েছে");
 }
 
 function openAnnouncementEdit(id){
@@ -3023,17 +3150,27 @@ async function addEmergencyNumber(){
     const phone=String(document.getElementById("emergencyPhone")?.value||"").trim();
     const sort_order=Number(document.getElementById("emergencySort")?.value||100)||100;
     const active=!!document.getElementById("emergencyActive")?.checked;
+    const wantsNotification=active && !!document.getElementById("emergencyNotify")?.checked;
     if(!name){alert("Name লিখুন");return;}
     if(!phone){alert("Phone লিখুন");return;}
     const {error}=await window.supabaseClient.from("emergency_numbers").insert({icon,name,note,phone,sort_order,active});
     if(error){alert("Add হয়নি: "+error.message);return;}
+
+    let notificationResult=null;
+    if(wantsNotification) notificationResult=await sendAdminNotification(emergencyNumberNotificationPayload({name,note,phone}));
+
     document.getElementById("emergencyIcon").value="☎️";
     document.getElementById("emergencyName").value="";
     document.getElementById("emergencyNote").value="";
     document.getElementById("emergencyPhone").value="";
     document.getElementById("emergencySort").value="100";
     document.getElementById("emergencyActive").checked=true;
+    const notify=document.getElementById("emergencyNotify");if(notify)notify.checked=true;
     await loadEmergencyAdmin();await loadStats();
+
+    if(wantsNotification){
+        alert(notificationResult?.ok ? "Emergency Number add হয়েছে\n🔔 Notification পাঠানো হয়েছে।" : "Emergency Number add হয়েছে\n⚠️ Notification পাঠানো যায়নি।");
+    }else alert("Emergency Number add হয়েছে");
 }
 
 function openEmergencyEdit(id){
@@ -3280,7 +3417,7 @@ async function saveNewDirectoryItem(){
     }
 
     const wantsNotification=
-        shouldOfferBloodNotification(cat,subcat) &&
+        shouldOfferDirectoryNotification(cat,subcat) &&
         !!document.getElementById("addDirActive")?.checked &&
         !!document.getElementById("addDirNotify")?.checked;
 
@@ -3323,7 +3460,7 @@ async function saveNewDirectoryItem(){
 
     if(wantsNotification){
         notificationResult=await sendAdminNotification(
-            bloodDonorNotificationPayload(subcat,inserted?.id)
+            directoryNotificationPayload(cat,subcat,name,inserted?.id)
         );
     }
 
@@ -3333,9 +3470,9 @@ async function saveNewDirectoryItem(){
 
     if(wantsNotification){
         if(notificationResult?.ok){
-            alert(`Directory item added successfully\n🔔 ${bloodGroupLabel(subcat)} donor notification পাঠানো হয়েছে।`);
+            alert("Directory item added successfully\n🔔 Notification পাঠানো হয়েছে।");
         }else{
-            alert("Directory item added successfully\n⚠️ Donor publish হয়েছে, কিন্তু notification পাঠানো যায়নি।");
+            alert("Directory item added successfully\n⚠️ তথ্য publish হয়েছে, কিন্তু notification পাঠানো যায়নি।");
         }
     }else{
         alert("Directory item added successfully");
@@ -3366,9 +3503,19 @@ async function addNotice(){
     const file=document.getElementById("noticeNewImage")?.files?.[0];let imageUrl="";
     if(file){imageUrl=await uploadImage(file)||"";if(!imageUrl)return;}
     const payload={title,description:String(document.getElementById("noticeNewDescription")?.value||"").trim(),image_url:imageUrl,status:String(document.getElementById("noticeNewStatus")?.value||"true")==="true"};
+    const wantsNotification=payload.status && !!document.getElementById("noticeNewNotify")?.checked;
     const {error}=await window.supabaseClient.from("notices").insert(payload);if(error){if(imageUrl)await deleteDirectoryStorageImageByUrl(imageUrl);alert("Notice add হয়নি: "+error.message);return;}
+
+    let notificationResult=null;
+    if(wantsNotification) notificationResult=await sendAdminNotification(noticeNotificationPayload(payload));
+
     document.getElementById("noticeNewTitle").value="";document.getElementById("noticeNewDescription").value="";document.getElementById("noticeNewImage").value="";const p=document.getElementById("noticeNewPreview");if(p){p.style.display="none";p.removeAttribute("src");}
+    const notify=document.getElementById("noticeNewNotify");if(notify)notify.checked=true;
     await loadNoticesAdmin();await loadStats();
+
+    if(wantsNotification){
+        alert(notificationResult?.ok ? "Notice add হয়েছে\n🔔 Notification পাঠানো হয়েছে।" : "Notice add হয়েছে\n⚠️ Notification পাঠানো যায়নি।");
+    }else alert("Notice add হয়েছে");
 }
 function openNoticeEdit(id){
     const n=adminNotices.find(x=>Number(x.id)===Number(id));if(!n)return;
