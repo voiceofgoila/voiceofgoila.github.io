@@ -1206,6 +1206,7 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
     <div class="announcement-options">
       <label>Sort Order <input id="announcementSort" type="number" value="100" style="width:100px;margin:0"></label>
       <label><input id="announcementActive" type="checkbox" checked> Active / Show</label>
+      <label><input id="announcementNotify" type="checkbox" checked> 🔔 Notification পাঠাবেন</label>
     </div>
     <button onclick="addAnnouncement()">+ Add Announcement</button>
   </div>
@@ -1275,6 +1276,7 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
     <div class="ce-field"><label>Image (optional)</label><input id="noticeNewImage" type="file" accept="image/*" onchange="previewNoticeNewImage(event)"><img id="noticeNewPreview" class="ce-preview" alt="Notice preview"></div>
     <div class="ce-field"><label>Status</label><select id="noticeNewStatus"><option value="true">Show / Active</option><option value="false">Hide / Inactive</option></select></div>
   </div>
+  <div class="ce-checks"><label><input id="noticeNewNotify" type="checkbox" checked> 🔔 Notification পাঠাবেন</label></div>
   <button class="ce-primary" onclick="addNotice()">+ Add Notice</button>
   <div id="noticesAdminStatus" class="ce-notice-status"></div>
   <div id="noticesAdminList">Loading...</div>
@@ -1293,6 +1295,7 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
   </div>
   <div class="p5-options">
     <label><input id="emergencyActive" type="checkbox" checked> Active / Show</label>
+    <label><input id="emergencyNotify" type="checkbox" checked> 🔔 Notification পাঠাবেন</label>
     <button onclick="addEmergencyNumber()" style="width:auto;margin:0">+ Add Emergency Number</button>
     <span id="emergencyAdminStatus" class="settings-status"></span>
   </div>
@@ -1529,9 +1532,9 @@ Loading...
     <div id="addDirNotifyWrap" class="cms-note" style="display:none;margin:12px 0;border-left-color:#7e19b4;">
       <label style="display:flex;align-items:center;gap:8px;font-weight:800;color:#4e1f6d;">
         <input id="addDirNotify" type="checkbox" checked disabled style="width:auto;margin:0;">
-        🔔 নতুন Blood Donor notification পাঠাবেন
+        🔔 Notification পাঠাবেন
       </label>
-      <div style="margin-top:5px;font-size:12px;color:#75677d;">শুধু valid Blood Donor group (A+, A-, B+, B-, O+, O-, AB+, AB-) নির্বাচন করলে এই option চালু হবে।</div>
+      <div id="addDirNotifyHelp" style="margin-top:5px;font-size:12px;color:#75677d;">Supported category নির্বাচন করলে notification text নিজে তৈরি হবে।</div>
     </div>
     <button onclick="saveNewDirectoryItem()">Save Directory Item</button>
   </div>
@@ -1764,7 +1767,7 @@ Save Changes
 
 <script src="js/supabase.js"></script>
 
-<script src="js/admin.js?v=20260826-taxonomy-ui-2"></script>
+<script src="js/admin.js?v=20260826-notify-expansion-1"></script>
 
 
 
