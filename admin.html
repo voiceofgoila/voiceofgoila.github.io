@@ -1517,7 +1517,7 @@ Loading...
     <div class="ce-grid">
       <div class="ce-field full"><label>Name *</label><input id="addDirName" maxlength="150"></div>
       <div class="ce-field"><label>Category *</label><select id="addDirCat" onchange="changeAddSubCategory()"></select></div>
-      <div class="ce-field"><label>Subcategory</label><select id="addDirSubcat"></select></div>
+      <div class="ce-field"><label>Subcategory</label><select id="addDirSubcat" onchange="updateDirectoryNotificationOption()"></select></div>
       <div class="ce-field"><label>Phone</label><input id="addDirPhone" inputmode="tel"></div>
       <div class="ce-field"><label>Sort Order</label><input id="addDirSort" type="number" value="0"></div>
       <div class="ce-field full"><label>Address</label><input id="addDirAddress"></div>
@@ -1526,6 +1526,13 @@ Loading...
       <div class="ce-field full"><label>Image</label><input id="addDirImage" type="file" accept="image/*" onchange="previewAddDirectoryImage(event)"><img id="addDirImagePreview" class="ce-preview" alt="Directory image preview"></div>
     </div>
     <div class="ce-checks"><label><input id="addDirActive" type="checkbox" checked> Active / Public</label><label><input id="addDirFeatured" type="checkbox"> ⭐ Featured / Pin</label></div>
+    <div id="addDirNotifyWrap" class="cms-note" style="display:none;margin:12px 0;border-left-color:#7e19b4;">
+      <label style="display:flex;align-items:center;gap:8px;font-weight:800;color:#4e1f6d;">
+        <input id="addDirNotify" type="checkbox" checked disabled style="width:auto;margin:0;">
+        🔔 নতুন Blood Donor notification পাঠাবেন
+      </label>
+      <div style="margin-top:5px;font-size:12px;color:#75677d;">শুধু valid Blood Donor group (A+, A-, B+, B-, O+, O-, AB+, AB-) নির্বাচন করলে এই option চালু হবে।</div>
+    </div>
     <button onclick="saveNewDirectoryItem()">Save Directory Item</button>
   </div>
 </div>
@@ -1757,7 +1764,7 @@ Save Changes
 
 <script src="js/supabase.js"></script>
 
-<script src="js/admin.js?v=20260819-complete-1"></script>
+<script src="js/admin.js?v=20260826-bloodnotify-1"></script>
 
 
 
