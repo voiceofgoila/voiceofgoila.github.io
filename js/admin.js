@@ -782,6 +782,88 @@ function removeDirectoryEditImage(){
     setDirectoryEditImageButton();
 }
 
+
+// ===============================
+// BLOOD DONOR NOTIFICATIONS
+// ===============================
+
+function isBloodDonorCategory(value){
+    const v=String(value||"").trim().toLowerCase();
+    return v==="blood" || v.includes("ব্লাড") || v.includes("রক্ত");
+}
+
+function bloodGroupLabel(value){
+    const v=String(value||"").trim().toUpperCase().replace(/\s+/g,"");
+    const allowed=["A+","A-","B+","B-","O+","O-","AB+","AB-"];
+    return allowed.includes(v) ? v : "";
+}
+
+function shouldOfferBloodNotification(cat,subcat){
+    return isBloodDonorCategory(cat) && !!bloodGroupLabel(subcat);
+}
+
+function bloodDonorNotificationPayload(subcat,itemId){
+    const group=bloodGroupLabel(subcat);
+    if(!group) return null;
+    return {
+        title:`নতুন ${group} রক্তদাতা যুক্ত হয়েছে`,
+        body:`${group} গ্রুপের একজন নতুন রক্তদাতা তালিকাভুক্ত হয়েছেন। বিস্তারিত দেখুন।`,
+        type:"blood_donor",
+        url:itemId ? `https://voiceofgoila.pages.dev/?item=${encodeURIComponent(itemId)}` : "https://voiceofgoila.pages.dev"
+    };
+}
+
+async function sendAdminNotification(payload){
+    if(!payload) return {ok:false,skipped:true,message:"Notification payload unavailable"};
+    try{
+        const {data,error}=await window.supabaseClient.functions.invoke("send-notification",{
+            body:payload
+        });
+        if(error) throw error;
+        if(!data || data.success!==true){
+            throw new Error(data?.error || data?.message || "Notification send failed");
+        }
+        return {ok:true,data};
+    }catch(error){
+        console.error("Notification send error:",error);
+        return {ok:false,error,message:error?.message || String(error)};
+    }
+}
+
+function pendingNotificationChecked(id){
+    const el=document.getElementById(`notifySubmission-${id}`);
+    return !!(el && el.checked);
+}
+
+function updateDirectoryNotificationOption(){
+    const cat=document.getElementById("addDirCat")?.value||"";
+    const subcat=document.getElementById("addDirSubcat")?.value||"";
+    const wrap=document.getElementById("addDirNotifyWrap");
+    const checkbox=document.getElementById("addDirNotify");
+    const show=shouldOfferBloodNotification(cat,subcat);
+
+    if(wrap) wrap.style.display=show ? "block" : "none";
+
+    if(checkbox){
+        checkbox.disabled=!show;
+
+        if(show && checkbox.dataset.userChanged!=="1"){
+            checkbox.checked=true;
+        }
+
+        if(!show){
+            checkbox.checked=false;
+            delete checkbox.dataset.userChanged;
+        }
+    }
+}
+
+document.addEventListener("change",function(event){
+    if(event.target?.id==="addDirNotify"){
+        event.target.dataset.userChanged="1";
+    }
+});
+
 // ===============================
 // LOAD PENDING
 // ===============================
@@ -888,7 +970,14 @@ ${item.phone || ""}
 ${item.address || ""}
 </p>
 
-
+${shouldOfferBloodNotification(item.cat,item.subcat) ? `
+<div class="cms-note" style="margin:12px 0 4px;border-left-color:#7e19b4;">
+<label style="display:flex;align-items:center;gap:8px;font-weight:800;color:#4e1f6d;">
+<input id="notifySubmission-${item.id}" type="checkbox" checked style="width:auto;margin:0;">
+🔔 Approve করার সাথে Notification পাঠাবেন
+</label>
+<div style="margin-top:5px;font-size:12px;color:#75677d;">${bloodGroupLabel(item.subcat)} group-এর নতুন donor notification যাবে।</div>
+</div>` : ""}
 
 
 <button
@@ -940,174 +1029,96 @@ Reject
 
 async function approveSubmission(id){
 
+    const {data:item,error}=
+    await window.supabaseClient
+    .from("submissions")
+    .select("*")
+    .eq("id",id)
+    .single();
 
+    if(error){
+        console.log(error);
+        alert("Submission load করা যায়নি: "+error.message);
+        return;
+    }
 
-const {data:item,error}=
+    const sendNotification=
+        shouldOfferBloodNotification(item.cat,item.subcat) &&
+        pendingNotificationChecked(id);
 
-await window.supabaseClient
+    let imageUrl="";
 
-.from("submissions")
+    if(selectedImageFile){
+        imageUrl=await uploadImage(selectedImageFile)||"";
+        if(!imageUrl) return;
+    }
 
-.select("*")
+    const {data:inserted,error:insertError}=
+    await window.supabaseClient
+    .from("directory_items")
+    .insert({
+        name:item.name,
+        cat:item.cat,
+        subcat:item.subcat,
+        phone:item.phone,
+        address:item.address,
+        map_url:item.map_url,
+        description:item.description,
+        image_url:imageUrl
+    })
+    .select("id")
+    .single();
 
-.eq("id",id)
+    if(insertError){
+        if(imageUrl) await deleteDirectoryStorageImageByUrl(imageUrl);
+        alert(insertError.message);
+        console.log(insertError);
+        return;
+    }
 
-.single();
+    const {error:approveError}=
+    await window.supabaseClient
+    .from("submissions")
+    .update({
+        status:"approved",
+        reviewed_at:new Date().toISOString()
+    })
+    .eq("id",id);
 
+    if(approveError){
+        console.error("Submission status update error:",approveError);
+        alert("Directory-তে তথ্য যোগ হয়েছে, কিন্তু Submission status update হয়নি: "+approveError.message);
+        return;
+    }
 
+    let notificationResult=null;
 
+    if(sendNotification){
+        notificationResult=await sendAdminNotification(
+            bloodDonorNotificationPayload(item.subcat,inserted?.id)
+        );
+    }
 
+    selectedImageFile=null;
 
+    const submissionImage=document.getElementById("submissionImage");
+    if(submissionImage) submissionImage.value="";
 
-if(error){
+    const imagePreview=document.getElementById("imagePreview");
+    if(imagePreview) imagePreview.style.display="none";
 
+    await loadAll();
 
-console.log(error);
-
-return;
-
-
+    if(sendNotification){
+        if(notificationResult?.ok){
+            alert(`Approved Successfully\n🔔 ${bloodGroupLabel(item.subcat)} donor notification পাঠানো হয়েছে।`);
+        }else{
+            alert("Approved Successfully\n⚠️ Donor publish হয়েছে, কিন্তু notification পাঠানো যায়নি। Edge Function logs দেখুন।");
+        }
+    }else{
+        alert("Approved Successfully");
+    }
 }
-
-
-
-
-
-
-
-let imageUrl = "";
-
-
-
-
-
-
-if(selectedImageFile){
-
-
-imageUrl =
-
-await uploadImage(selectedImageFile)
-
-|| "";
-
-
-
-}
-
-
-
-
-
-
-
-
-const {error:insertError}=
-
-await window.supabaseClient
-
-.from("directory_items")
-
-.insert({
-
-
-
-name:item.name,
-
-
-cat:item.cat,
-
-
-subcat:item.subcat,
-
-
-phone:item.phone,
-
-
-address:item.address,
-
-
-map_url:item.map_url,
-
-
-description:item.description,
-
-
-image_url:imageUrl
-
-
-
-});
-
-
-
-
-
-
-
-if(insertError){
-
-
-alert(insertError.message);
-
-console.log(insertError);
-
-return;
-
-
-}
-
-
-
-
-
-
-await window.supabaseClient
-
-.from("submissions")
-
-.update({
-
-status:"approved",
-
-reviewed_at:new Date()
-
-})
-
-.eq("id",id);
-
-
-
-
-
-
-
-alert("Approved Successfully");
-
-
-
-selectedImageFile=null;
-
-
-
-const submissionImage=document.getElementById("submissionImage");
-if(submissionImage) submissionImage.value="";
-const imagePreview=document.getElementById("imagePreview");
-if(imagePreview) imagePreview.style.display="none";
-
-
-
-loadAll();
-
-
-
-}
-
-
-
-
-
-
 
 
 
@@ -3052,35 +3063,123 @@ async function changeAddSubCategory(){
     const cat=document.getElementById("addDirCat")?.value||"";
     const box=document.getElementById("addDirSubcat");if(!box)return;
     box.innerHTML='<option value="">Select Sub Category</option>';
-    if(!cat)return;
+
+    if(!cat){
+        updateDirectoryNotificationOption();
+        return;
+    }
+
     const {data:catRow,error}=await window.supabaseClient.from("categories").select("id").eq("name",cat).maybeSingle();
-    if(error||!catRow)return;
+
+    if(error||!catRow){
+        updateDirectoryNotificationOption();
+        return;
+    }
+
     const {data}=await window.supabaseClient.from("sub_categories").select("name").eq("category_id",catRow.id).order("id");
+
     box.innerHTML+=[...(data||[])].map(s=>`<option value="${cmsEscape(s.name)}">${cmsEscape(adminSubcategoryLabel(s.name))}</option>`).join("");
+
+    updateDirectoryNotificationOption();
 }
 async function openDirectoryAdd(){
     ["addDirName","addDirPhone","addDirAddress","addDirMap","addDirDescription"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
     const sort=document.getElementById("addDirSort");if(sort)sort.value="0";
     const active=document.getElementById("addDirActive");if(active)active.checked=true;
     const featured=document.getElementById("addDirFeatured");if(featured)featured.checked=false;
+
+    const notify=document.getElementById("addDirNotify");
+    if(notify){
+        notify.checked=true;
+        notify.disabled=true;
+        delete notify.dataset.userChanged;
+    }
+
+    const notifyWrap=document.getElementById("addDirNotifyWrap");
+    if(notifyWrap) notifyWrap.style.display="none";
+
     const file=document.getElementById("addDirImage");if(file)file.value="";
     const prev=document.getElementById("addDirImagePreview");if(prev){prev.removeAttribute("src");prev.style.display="none";}
+
     await fillDirectoryAddCategories();
+    updateDirectoryNotificationOption();
+
     const modal=document.getElementById("directoryAddModal");if(modal)modal.style.display="flex";
 }
 function closeDirectoryAdd(){const m=document.getElementById("directoryAddModal");if(m)m.style.display="none";}
 function previewAddDirectoryImage(event){const file=event.target.files?.[0],img=document.getElementById("addDirImagePreview");if(file&&img){img.src=URL.createObjectURL(file);img.style.display="block";}}
 async function saveNewDirectoryItem(){
+
     const name=String(document.getElementById("addDirName")?.value||"").trim();
     const cat=String(document.getElementById("addDirCat")?.value||"").trim();
-    if(!name||!cat){alert("Name এবং Category প্রয়োজন");return;}
+    const subcat=String(document.getElementById("addDirSubcat")?.value||"").trim();
+
+    if(!name||!cat){
+        alert("Name এবং Category প্রয়োজন");
+        return;
+    }
+
+    const wantsNotification=
+        shouldOfferBloodNotification(cat,subcat) &&
+        !!document.getElementById("addDirActive")?.checked &&
+        !!document.getElementById("addDirNotify")?.checked;
+
     const file=document.getElementById("addDirImage")?.files?.[0];
     let imageUrl="";
-    if(file){imageUrl=await uploadImage(file)||"";if(!imageUrl)return;}
-    const payload={name,cat,subcat:String(document.getElementById("addDirSubcat")?.value||""),phone:String(document.getElementById("addDirPhone")?.value||"").trim(),address:String(document.getElementById("addDirAddress")?.value||"").trim(),map_url:String(document.getElementById("addDirMap")?.value||"").trim(),description:String(document.getElementById("addDirDescription")?.value||"").trim(),image_url:imageUrl,active:!!document.getElementById("addDirActive")?.checked,featured:!!document.getElementById("addDirFeatured")?.checked,sort_order:Number(document.getElementById("addDirSort")?.value||0)};
-    const {error}=await window.supabaseClient.from("directory_items").insert(payload);
-    if(error){if(imageUrl)await deleteDirectoryStorageImageByUrl(imageUrl);alert("Add হয়নি: "+error.message);return;}
-    closeDirectoryAdd();await loadDirectory();await loadStats();alert("Directory item added successfully");
+
+    if(file){
+        imageUrl=await uploadImage(file)||"";
+        if(!imageUrl) return;
+    }
+
+    const payload={
+        name,
+        cat,
+        subcat,
+        phone:String(document.getElementById("addDirPhone")?.value||"").trim(),
+        address:String(document.getElementById("addDirAddress")?.value||"").trim(),
+        map_url:String(document.getElementById("addDirMap")?.value||"").trim(),
+        description:String(document.getElementById("addDirDescription")?.value||"").trim(),
+        image_url:imageUrl,
+        active:!!document.getElementById("addDirActive")?.checked,
+        featured:!!document.getElementById("addDirFeatured")?.checked,
+        sort_order:Number(document.getElementById("addDirSort")?.value||0)
+    };
+
+    const {data:inserted,error}=
+    await window.supabaseClient
+    .from("directory_items")
+    .insert(payload)
+    .select("id")
+    .single();
+
+    if(error){
+        if(imageUrl) await deleteDirectoryStorageImageByUrl(imageUrl);
+        alert("Add হয়নি: "+error.message);
+        return;
+    }
+
+    let notificationResult=null;
+
+    if(wantsNotification){
+        notificationResult=await sendAdminNotification(
+            bloodDonorNotificationPayload(subcat,inserted?.id)
+        );
+    }
+
+    closeDirectoryAdd();
+    await loadDirectory();
+    await loadStats();
+
+    if(wantsNotification){
+        if(notificationResult?.ok){
+            alert(`Directory item added successfully\n🔔 ${bloodGroupLabel(subcat)} donor notification পাঠানো হয়েছে।`);
+        }else{
+            alert("Directory item added successfully\n⚠️ Donor publish হয়েছে, কিন্তু notification পাঠানো যায়নি।");
+        }
+    }else{
+        alert("Directory item added successfully");
+    }
 }
 
 // ===============================
