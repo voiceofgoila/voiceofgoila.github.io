@@ -8,6 +8,10 @@
     "কোচিং / হোম টিউটর":"coaching",
     "কোচিং সেন্টার / হোম টিউটর":"coaching",
     "সামাজিক সংগঠন":"social",
+    "গুরুত্বপূর্ণ ব্যক্তিবর্গ":"people",
+    "ডাকঘর":"post",
+    "অ্যাম্বুলেন্স":"ambulance",
+    "ডাক্তার":"doctor",
     "স্বাস্থ্য":"health",
     "স্বাস্থ্যসেবা":"health",
     "সরকারি সেবা":"government",
@@ -16,7 +20,6 @@
     "আইন-শৃংখলা":"police",
     "ব্যবসা ও বাণিজ্য":"business",
     "ব্যবসা ও দোকান":"business",
-    "কৃষি":"agriculture",
     "ধর্মীয় প্রতিষ্ঠান":"religion",
     "ধর্মীয় প্রতিষ্ঠান":"religion",
     "পরিবহন":"transport",
@@ -69,7 +72,6 @@
       "হাসপাতাল":"hospital",
       "ক্লিনিক":"hospital",
       "ডাক্তার":"doctor",
-      "ফার্মেসি":"pharmacy",
       "ডায়াগনস্টিক/ল্যাব":"diagnostic",
       "ডায়াগনস্টিক/ল্যাব":"diagnostic",
       "ডায়াগনস্টিক":"diagnostic",
@@ -102,7 +104,9 @@
       "ফার্নিচার":"furniture",
       "সেলুন/পার্লার":"salon",
       "কৃষি উপকরণ":"agri",
-      "অন্যান্য ব্যবসা/সেবা":"service"
+      "অন্যান্য ব্যবসা/সেবা":"service",
+      "ফার্মেসি":"pharmacy",
+      "pharmacy":"pharmacy"
     },
     banking:{
       "ব্যাংক শাখা":"bank",
@@ -118,11 +122,18 @@
       "অন্যান্য ধর্মীয় প্রতিষ্ঠান":"other",
       "অন্যান্য ধর্মীয় প্রতিষ্ঠান":"other"
     },
+    people:{
+      "দেশ-বিদেশে বিশ্ববিদ্যালয়ের শিক্ষার্থী":"university-student",
+      "বিদেশে পড়াশোনা করা শিক্ষার্থী":"university-student",
+      "পাবলিক বিশ্ববিদ্যালয়ের শিক্ষার্থী":"university-student",
+      "abroad-student":"university-student",
+      "public-university":"university-student",
+      "উদ্ভাবক":"innovator",
+      "innovator":"innovator"
+    },
     post:{
       "ডাকঘর":"post-office",
-      "পোস্ট অফিস":"post-office",
-      "কুরিয়ার/ডেলিভারি":"courier",
-      "কুরিয়ার/ডেলিভারি":"courier"
+      "পোস্ট অফিস":"post-office"
     },
     transport:{
       "বাস/গণপরিবহন":"bus",
@@ -131,13 +142,6 @@
       "ডাক/কুরিয়ার":"courier",
       "গ্যারেজ/মেরামত":"garage",
       "অন্যান্য যোগাযোগ সেবা":"other"
-    },
-    agriculture:{
-      "কৃষি অফিস/কর্মকর্তা":"agri-office",
-      "কৃষি সেবা":"service",
-      "প্রাণিসম্পদ":"livestock",
-      "মৎস্য":"fisheries",
-      "বীজ/সার/কৃষি উপকরণ":"shop"
     },
     social:{
       "সামাজিক সংগঠন":"social-org",
@@ -174,6 +178,7 @@
     for(const c of catRows){
       const raw=clean(c.name); if(!raw)continue;
       let slug=knownCatNameMap[raw]||raw;
+      if(slug==="agriculture" || lower(raw)==="কৃষি" || lower(raw)==="কৃষি ও স্থানীয় সেবা") continue;
       if(!existingCatSlugs.has(slug)) slug=`cms-${c.id}`;
       catSlugById.set(String(c.id),slug);catSlugByRaw.set(lower(raw),slug);
       if(!catRawCandidates.has(slug))catRawCandidates.set(slug,[]);catRawCandidates.get(slug).push(raw);
@@ -225,18 +230,24 @@
 
     const mapped=(dirRes.data||[]).map(r=>{
       const rawCat=clean(r.cat), rawSub=clean(r.subcat);
-      const catSlug=catSlugByRaw.get(lower(rawCat))||knownCatNameMap[rawCat]||rawCat;
-      const subSlug=subSlugByRawKey.get(lower(rawCat)+"::"+lower(rawSub))||knownSubNameMap[rawSub]||rawSub;
+      let catSlug=catSlugByRaw.get(lower(rawCat))||knownCatNameMap[rawCat]||rawCat;
+      let subSlug=subSlugByRawKey.get(lower(rawCat)+"::"+lower(rawSub))||knownSubNameMap[rawSub]||rawSub;
+
+      // Public taxonomy compatibility without destructive DB migration.
+      if(catSlug==="people" && ["abroad-student","public-university"].includes(String(subSlug))) subSlug="university-student";
+      if(catSlug==="health" && (subSlug==="pharmacy" || ["pharmacy","ফার্মেসি"].includes(lower(rawSub)))){catSlug="business";subSlug="pharmacy";}
+      if(catSlug==="post" && ["courier","কুরিয়ার/ডেলিভারি","কুরিয়ার/ডেলিভারি"].includes(lower(rawSub))) subSlug="courier";
+
       return {id:r.id,cat:catSlug,subcat:subSlug,name:r.name||"",phone:r.phone||"",map:r.map_url||"",address:r.address||"",desc:r.description||"",image:r.image_url||"",image_url:r.image_url||"",active:r.active!==false,featured:!!r.featured,sort_order:Number(r.sort_order||0)};
-    });
+    }).filter(x=>x.cat!=="agriculture" && !(x.cat==="post" && x.subcat==="courier"));
 
     try{
       if(typeof data!=="undefined"&&Array.isArray(data)) data.splice(0,data.length,...mapped);
-      if(typeof homeRecentData!=="undefined") homeRecentData=mapped.slice(0,8);
+      if(typeof homeRecentData!=="undefined") homeRecentData=mapped.slice(0,2);
       window.allDirectory=mapped;
       if(typeof renderCats==="function")renderCats();
       if(typeof renderMenu==="function")renderMenu();
-      if(typeof renderCards==="function")renderCards(mapped.slice(0,8),"সাম্প্রতিক তথ্য");
+      if(typeof renderCards==="function")renderCards(mapped.slice(0,2),"সাম্প্রতিক তথ্য");
       const count=document.getElementById("count");if(count&&typeof visibleCategories==="function")count.textContent=visibleCategories().length+"+";
     }catch(e){console.warn("Directory UI refresh skipped",e);}
   }

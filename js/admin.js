@@ -1184,14 +1184,80 @@ loadAll();
 
 function adminCategoryLabel(value){
     const v=String(value||"");
-    const map={coaching:"কোচিং / হোম টিউটর"};
+    const map={
+        government:"সরকারি ও ইউনিয়ন সেবা",
+        education:"শিক্ষা প্রতিষ্ঠান",
+        coaching:"কোচিং / হোম টিউটর",
+        health:"স্বাস্থ্যসেবা",
+        business:"ব্যবসা ও দোকান",
+        banking:"ব্যাংক",
+        religion:"ধর্মীয় প্রতিষ্ঠান",
+        blood:"ব্লাড ডোনার্স",
+        police:"পুলিশ",
+        fire:"ফায়ার সার্ভিস",
+        ambulance:"অ্যাম্বুলেন্স",
+        doctor:"ডাক্তার",
+        electricity:"বিদ্যুৎ",
+        places:"গুরুত্বপূর্ণ স্থান",
+        people:"গুরুত্বপূর্ণ ব্যক্তিবর্গ",
+        post:"ডাকঘর",
+        transport:"যাতায়াত ও যোগাযোগ",
+        social:"সামাজিক সংগঠন",
+        coaching:"কোচিং / হোম টিউটর"
+    };
     return map[v]||v;
 }
 function adminSubcategoryLabel(value){
     const v=String(value||"");
-    const map={"coaching-center":"কোচিং সেন্টার","home-tutor":"হোম টিউটর","subject-tutor":"বিষয়ভিত্তিক শিক্ষক","admission":"ভর্তি / এডমিশন কোচিং"};
+    const map={
+        "coaching-center":"কোচিং সেন্টার",
+        "home-tutor":"হোম টিউটর",
+        "subject-tutor":"বিষয়ভিত্তিক শিক্ষক",
+        "admission":"ভর্তি / এডমিশন কোচিং",
+        "university-student":"দেশ-বিদেশে বিশ্ববিদ্যালয়ের শিক্ষার্থী",
+        "abroad-student":"দেশ-বিদেশে বিশ্ববিদ্যালয়ের শিক্ষার্থী",
+        "public-university":"দেশ-বিদেশে বিশ্ববিদ্যালয়ের শিক্ষার্থী",
+        "innovator":"উদ্ভাবক",
+        "pharmacy":"ফার্মেসি"
+    };
     return map[v]||v;
 }
+
+const ADMIN_DIRECTORY_CATEGORIES=[
+    ["government","সরকারি ও ইউনিয়ন সেবা"],
+    ["education","শিক্ষা প্রতিষ্ঠান"],
+    ["coaching","কোচিং / হোম টিউটর"],
+    ["health","স্বাস্থ্যসেবা"],
+    ["business","ব্যবসা ও দোকান"],
+    ["banking","ব্যাংক"],
+    ["religion","ধর্মীয় প্রতিষ্ঠান"],
+    ["blood","ব্লাড ডোনার্স"],
+    ["police","পুলিশ"],
+    ["fire","ফায়ার সার্ভিস"],
+    ["ambulance","অ্যাম্বুলেন্স"],
+    ["doctor","ডাক্তার"],
+    ["electricity","বিদ্যুৎ"],
+    ["places","গুরুত্বপূর্ণ স্থান"],
+    ["people","গুরুত্বপূর্ণ ব্যক্তিবর্গ"],
+    ["post","ডাকঘর"],
+    ["transport","যাতায়াত ও যোগাযোগ"],
+    ["social","সামাজিক সংগঠন"]
+];
+
+const ADMIN_DIRECTORY_SUBCATEGORIES={
+    government:[["union","ইউনিয়ন পরিষদ"],["upazila","উপজেলা সরকারি কর্মকর্তা"],["govt-office","অন্যান্য সরকারি অফিস"],["public-service","সরকারি সেবা"]],
+    education:[["primary","প্রাথমিক বিদ্যালয়"],["secondary","মাধ্যমিক বিদ্যালয়"],["college","কলেজ"],["madrasa","মাদ্রাসা"],["teachers","শিক্ষক ও কর্মচারী"],["other","অন্যান্য শিক্ষা প্রতিষ্ঠান"]],
+    coaching:[["coaching-center","কোচিং সেন্টার"],["home-tutor","হোম টিউটর"],["subject-tutor","বিষয়ভিত্তিক শিক্ষক"],["admission","ভর্তি / এডমিশন কোচিং"],["other","অন্যান্য"]],
+    health:[["hospital","হাসপাতাল/ক্লিনিক"],["doctor","ডাক্তার"],["diagnostic","ডায়াগনস্টিক/ল্যাব"],["ambulance","অ্যাম্বুলেন্স"]],
+    business:[["grocery","মুদি দোকান"],["restaurant","হোটেল/রেস্টুরেন্ট"],["pharmacy","ফার্মেসি"],["sweets","মিষ্টান্ন ভান্ডার/বেকারি"],["library","লাইব্রেরি/স্টেশনারি"],["mfs","বিকাশ/নগদ/রকেট এজেন্ট"],["fashion","কাপড় ও ফ্যাশন"],["tailor","টেইলার্স"],["cosmetics","কসমেটিকস"],["mobile","মোবাইল/ইলেকট্রনিক্স"],["mobile-service","মোবাইল সার্ভিসিং"],["computer","কম্পিউটার/ফটোকপি/অনলাইন সেবা"],["hardware","হার্ডওয়্যার/নির্মাণ সামগ্রী"],["raw-material","কাঁচামাল/পাইকারি"],["furniture","ফার্নিচার"],["salon","সেলুন/পার্লার"],["agri","কৃষি উপকরণ"],["service","অন্যান্য ব্যবসা/সেবা"]],
+    banking:[["bank","ব্যাংক শাখা"],["atm","ATM"],["agent","ব্যাংক এজেন্ট"],["mfs","বিকাশ/নগদ/রকেট"]],
+    religion:[["mosque","মসজিদ"],["madrasa","ধর্মীয় শিক্ষা"],["other","অন্যান্য ধর্মীয় প্রতিষ্ঠান"]],
+    blood:[["a+","A+"],["a-","A-"],["b+","B+"],["b-","B-"],["o+","O+"],["o-","O-"],["ab+","AB+"],["ab-","AB-"]],
+    people:[["entrepreneur","উদ্যোক্তা"],["notable","বিশিষ্ট ব্যক্তিবর্গ"],["university-student","দেশ-বিদেশে বিশ্ববিদ্যালয়ের শিক্ষার্থী"],["innovator","উদ্ভাবক"],["social-worker","সমাজসেবক"],["professional","অন্যান্য কৃতী/পেশাজীবী"]],
+    post:[["post-office","ডাকঘর"]],
+    transport:[["bus","বাস/গণপরিবহন"],["courier","ডাক/কুরিয়ার"],["garage","গ্যারেজ/মেরামত"],["other","অন্যান্য যোগাযোগ সেবা"]],
+    social:[["social-org","সামাজিক সংগঠন"],["club","ক্লাব/যুব সংগঠন"],["ngo","এনজিও/স্বেচ্ছাসেবী সংগঠন"]]
+};
 
 // ===============================
 // LOAD DIRECTORY
@@ -1993,7 +2059,11 @@ function renderManagedCategories(){
         return;
     }
 
-    box.innerHTML=managedCategories.map(cat=>{
+    const visibleManaged=managedCategories.filter(cat=>{
+        const n=String(cat.name||"").trim().toLowerCase();
+        return !["agriculture","কৃষি","কৃষি ও স্থানীয় সেবা"].includes(n);
+    });
+    box.innerHTML=visibleManaged.map(cat=>{
         const childCount=managedSubCategories.filter(sub=>String(sub.category_id)===String(cat.id)).length;
         return `
         <div class="cms-row">
@@ -2018,7 +2088,21 @@ function renderManagedSubcategories(){
 
     const categoryMap=new Map(managedCategories.map(cat=>[String(cat.id),cat.name]));
 
-    box.innerHTML=managedSubCategories.map(sub=>`
+    const hiddenLegacySubNames=new Set([
+        "কুরিয়ার/ডেলিভারি","কুরিয়ার/ডেলিভারি",
+        "বিদেশে পড়াশোনা করা শিক্ষার্থী","পাবলিক বিশ্ববিদ্যালয়ের শিক্ষার্থী",
+        "abroad-student","public-university"
+    ]);
+    const visibleSubs=managedSubCategories.filter(sub=>{
+        const parent=String(categoryMap.get(String(sub.category_id))||"").trim().toLowerCase();
+        const name=String(sub.name||"").trim();
+        if(["agriculture","কৃষি","কৃষি ও স্থানীয় সেবা"].includes(parent))return false;
+        if(hiddenLegacySubNames.has(name))return false;
+        if((parent==="health"||parent==="স্বাস্থ্য"||parent==="স্বাস্থ্যসেবা") && (name==="ফার্মেসি"||name==="pharmacy"))return false;
+        return true;
+    });
+
+    box.innerHTML=visibleSubs.map(sub=>`
         <div class="cms-row">
             <div>
                 <strong>${cmsEscape(adminSubcategoryLabel(sub.name))}</strong>
@@ -3054,32 +3138,16 @@ async function deleteReview(id){
 // ===============================
 async function fillDirectoryAddCategories(){
     const box=document.getElementById("addDirCat");if(!box)return;
-    const {data,error}=await window.supabaseClient.from("categories").select("id,name").order("id");
-    if(error){alert("Category load হয়নি: "+error.message);return;}
-    box.innerHTML='<option value="">Select Category</option>'+(data||[]).map(c=>`<option value="${cmsEscape(c.name)}">${cmsEscape(adminCategoryLabel(c.name))}</option>`).join("");
+    box.innerHTML='<option value="">Select Category</option>'+
+        ADMIN_DIRECTORY_CATEGORIES.map(c=>`<option value="${cmsEscape(c[0])}">${cmsEscape(c[1])}</option>`).join("");
     await changeAddSubCategory();
 }
 async function changeAddSubCategory(){
-    const cat=document.getElementById("addDirCat")?.value||"";
+    const cat=String(document.getElementById("addDirCat")?.value||"");
     const box=document.getElementById("addDirSubcat");if(!box)return;
-    box.innerHTML='<option value="">Select Sub Category</option>';
-
-    if(!cat){
-        updateDirectoryNotificationOption();
-        return;
-    }
-
-    const {data:catRow,error}=await window.supabaseClient.from("categories").select("id").eq("name",cat).maybeSingle();
-
-    if(error||!catRow){
-        updateDirectoryNotificationOption();
-        return;
-    }
-
-    const {data}=await window.supabaseClient.from("sub_categories").select("name").eq("category_id",catRow.id).order("id");
-
-    box.innerHTML+=[...(data||[])].map(s=>`<option value="${cmsEscape(s.name)}">${cmsEscape(adminSubcategoryLabel(s.name))}</option>`).join("");
-
+    const list=ADMIN_DIRECTORY_SUBCATEGORIES[cat]||[];
+    box.innerHTML='<option value="">Select Sub Category</option>'+
+        list.map(s=>`<option value="${cmsEscape(s[0])}">${cmsEscape(s[1])}</option>`).join("");
     updateDirectoryNotificationOption();
 }
 async function openDirectoryAdd(){
