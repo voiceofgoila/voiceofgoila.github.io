@@ -142,9 +142,30 @@ html.vog-live-loading #vogFreshBoot{
   animation:vogFreshSpin .75s linear infinite;
 }
 @keyframes vogFreshSpin{to{transform:rotate(360deg)}}
+
+/* Android app already has its own native WebView loading indicator.
+   Do not show a second website spinner inside the app.
+   Keep live-data areas hidden until the same fresh-data gate finishes. */
+html.vog-live-loading.vog-android-app body > :not(#vogFreshBoot){
+  visibility:visible!important;
+}
+html.vog-live-loading.vog-android-app #vogFreshBoot{
+  display:none!important;
+}
+html.vog-live-loading.vog-android-app #cards,
+html.vog-live-loading.vog-android-app #emergencyGrid,
+html.vog-live-loading.vog-android-app #reviewList,
+html.vog-live-loading.vog-android-app #noticeCmsList{
+  visibility:hidden!important;
+}
 </style>
 <script>
 window.__vogBootReady={settings:false,cms:false,public:false};
+try{
+  if(new URLSearchParams(location.search).get("app")==="android"){
+    document.documentElement.classList.add("vog-android-app");
+  }
+}catch(_){}
 </script>
 
 </head>
