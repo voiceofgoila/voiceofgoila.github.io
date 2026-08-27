@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="bn">
+<html lang="bn" class="vog-live-loading">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -117,8 +117,40 @@ overscroll-behavior:contain;
 
 .hero h2 .hero-normal{color:inherit}
 </style>
+
+
+<!-- Voice of Goila: fresh-data boot gate. Prevents built-in fallback data from flashing before live Supabase data is ready. -->
+<style id="vogFreshBootStyle">
+html.vog-live-loading body > :not(#vogFreshBoot){visibility:hidden!important}
+#vogFreshBoot{display:none}
+html.vog-live-loading #vogFreshBoot{
+  display:flex;
+  position:fixed;
+  inset:0;
+  z-index:2147483647;
+  align-items:center;
+  justify-content:center;
+  background:#fff;
+  visibility:visible!important;
+}
+#vogFreshBoot .vog-fresh-loader{
+  width:34px;
+  height:34px;
+  border:3px solid rgba(107,44,145,.18);
+  border-top-color:#6B2C91;
+  border-radius:50%;
+  animation:vogFreshSpin .75s linear infinite;
+}
+@keyframes vogFreshSpin{to{transform:rotate(360deg)}}
+</style>
+<script>
+window.__vogBootReady={settings:false,cms:false,public:false};
+</script>
+
 </head>
 <body>
+<div id="vogFreshBoot" aria-hidden="true"><div class="vog-fresh-loader"></div></div>
+
 <div id="categoryModal" class="modal" onclick="if(event.target===this)closeModal('categoryModal')"><div class="modal-box"><div class="modal-head"><h3 id="categoryModalTitle">তথ্য</h3><button class="modal-close" onclick="closeModal('categoryModal')" aria-label="বন্ধ করুন">✕</button></div><div id="categoryModalContent"></div></div></div>
 
 <div id="itemDetailModal" class="modal" onclick="if(event.target===this)closeModal('itemDetailModal')"><div class="modal-box"><div class="modal-head"><h3>তথ্যের বিস্তারিত</h3><button class="modal-close" onclick="closeModal('itemDetailModal')" aria-label="বন্ধ করুন">✕</button></div><div id="itemDetailContent"></div></div></div>
@@ -557,7 +589,7 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
         if(data && data[0]) applySettings(data[0]);
     }
 
-    loadPublicWebsiteSettings();
+    Promise.resolve(loadPublicWebsiteSettings()).finally(()=>{window.__vogBootReady=window.__vogBootReady||{};window.__vogBootReady.settings=true;});
 })();
 
 </script>
@@ -609,7 +641,7 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
             if(typeof renderMenu==="function")renderMenu();
         }
     }
-    Promise.all([loadHomepage(),loadAnnouncements()]);
+    Promise.all([loadHomepage(),loadAnnouncements()]).finally(()=>{window.__vogBootReady=window.__vogBootReady||{};window.__vogBootReady.cms=true;});
 })();
 </script>
 
@@ -737,8 +769,7 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
         syncReviewFormState();
     };
 
-    loadPublicEmergencyNumbers();
-    loadApprovedReviews();
+    Promise.allSettled([loadPublicEmergencyNumbers(),loadApprovedReviews()]).finally(()=>{window.__vogBootReady=window.__vogBootReady||{};window.__vogBootReady.public=true;});
 })();
 </script>
 
@@ -848,5 +879,51 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
 </script>
 
 <!-- Phase 2 Part 6: Analytics Tracking -->
+
+
+
+<script id="vogFreshBootGate">
+(function(){
+  const root=document.documentElement;
+  const started=Date.now();
+  let finished=false;
+
+  function directoryIsFresh(){
+    const rows=window.allDirectory;
+    if(Array.isArray(rows) && rows.some(row=>row && row.id!=null)) return true;
+    const cards=document.getElementById("cards");
+    return !!(cards && cards.querySelector(".item .details"));
+  }
+
+  function finish(){
+    if(finished)return;
+    finished=true;
+    root.classList.remove("vog-live-loading");
+    const gate=document.getElementById("vogFreshBoot");
+    if(gate)gate.remove();
+  }
+
+  function check(){
+    const flags=window.__vogBootReady||{};
+    const uiReady=flags.settings===true && flags.cms===true && flags.public===true;
+    const liveReady=directoryIsFresh();
+
+    if(uiReady && liveReady){
+      requestAnimationFrame(()=>requestAnimationFrame(finish));
+      return;
+    }
+
+    // Never trap the visitor on the loader if the network/Supabase is unavailable.
+    if(Date.now()-started>=7000){
+      finish();
+      return;
+    }
+
+    setTimeout(check,50);
+  }
+
+  check();
+})();
+</script>
 
 </body></html>
