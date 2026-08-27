@@ -167,7 +167,12 @@ html.vog-android-app #vogAppDownloadWrap{
 <script>
 window.__vogBootReady={settings:false,cms:false,public:false};
 try{
-  if(new URLSearchParams(location.search).get("app")==="android"){
+  const vogParams=new URLSearchParams(location.search);
+  const vogIsNativeApp=
+    vogParams.get("app")==="android" ||
+    /VoiceOfGoilaApp\//i.test(navigator.userAgent || "");
+
+  if(vogIsNativeApp){
     document.documentElement.classList.add("vog-android-app");
   }
 }catch(_){}
@@ -1096,8 +1101,14 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
 
   const params=new URLSearchParams(location.search);
 
-  // Never show inside the Android WebView app.
-  if(params.get("app")==="android"){
+  // Never show inside the Android app.
+  // Check both the URL flag and the app-specific WebView user-agent token.
+  const isNativeAndroidApp=
+    params.get("app")==="android" ||
+    /VoiceOfGoilaApp\//i.test(navigator.userAgent || "") ||
+    document.documentElement.classList.contains("vog-android-app");
+
+  if(isNativeAndroidApp){
     prompt.remove();
     return;
   }
