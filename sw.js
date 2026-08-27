@@ -1,6 +1,6 @@
 // Voice of Goila - App/WebView Fresh Cache Fix v5
 // Always prefer the live network while online. Cache is fallback only.
-const CACHE = "voice-of-goila-v5-app-fresh";
+const CACHE = "voice-of-goila-v6-fresh-data";
 const CORE = ["./", "./index.html", "./manifest.json"];
 
 async function freshFetch(request) {
