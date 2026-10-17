@@ -496,7 +496,14 @@ body:not(.vog-category-view) #categories .cat{animation:vog27-card .7s cubic-bez
 .vog42-count small{display:block;font-size:10px;color:#ffffffc9;margin-top:3px}
 .vog-category-view .vog-category-hero p{margin-top:6px!important;font-size:12px!important;color:#ffffffbd!important}
 @media(max-width:420px){.vog42-heading-line h1{font-size:23px!important}.vog42-count{min-width:56px;padding:6px}.vog42-count strong{font-size:22px}}
-</style></head>
+</style><style id="vog46-stable-render">
+/* Hide CMS-controlled content until the initial remote settings have settled. */
+html:not(.vog46-boot-ready) header .brand,html:not(.vog46-boot-ready) .hero-grid>div:first-child,html:not(.vog46-boot-ready) .footer-brand{visibility:hidden}
+.vog-category-view #subcategoryArea[hidden],.vog-category-view #resultsSection[hidden]{display:none!important}
+.menu-quick .vog-admin-menu{display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;border-radius:11px;padding:10px 8px;font-size:11px;font-weight:800;background:#f1ebf5;color:#6b2c91}
+</style>
+<script id="vog46-boot-reveal">(function(){var started=Date.now();function check(){var b=window.__vogBootReady||{};if((b.settings&&b.cms)||Date.now()-started>4500){document.documentElement.classList.add('vog46-boot-ready');return;}setTimeout(check,50);}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',check,{once:true});else check();})();</script>
+</head>
 <body>
 
 <div id="vogBrowserAppPrompt" role="dialog" aria-label="Voice of Goila অ্যাপ ডাউনলোড">
@@ -522,7 +529,7 @@ body:not(.vog-category-view) #categories .cat{animation:vog27-card .7s cubic-bez
 <section class="hero"><div class="container hero-grid"><div><span class="badge" id="homeBadge">গৈলা ইউনিয়ন • ডিজিটাল তথ্য প্ল্যাটফর্ম</span><h2><span class="hero-normal" id="homeHeroLead">গৈলার প্রয়োজনীয়</span> <span id="homeHeroHighlight">তথ্য ও সেবা</span><br><span class="hero-normal" id="homeHeroTail">এখন এক জায়গায়</span></h2><p id="homeHeroDescription">স্থানীয় প্রতিষ্ঠান, জরুরি সেবা, শিক্ষা, স্বাস্থ্য, ব্যবসা, সরকারি সেবা ও গুরুত্বপূর্ণ স্থান সহজে খুঁজে নিন।</p><div class="search-wrap"><div class="search"><input id="search" autocomplete="off" placeholder="প্রতিষ্ঠান, সেবা বা জায়গার নাম লিখুন..."><button onclick="doSearch()">খুঁজুন</button></div><div id="searchPanel" class="search-panel" hidden><div id="suggestions" class="suggestions"></div><div id="searchResults"></div></div></div></div><div class="hero-card"><small>Voice of Goila</small><strong id="count">0+</strong><span>তথ্য ও সেবার বিভাগ</span><div class="mini"><div>📞 জরুরি সেবা<br><b>এক ক্লিকে কল</b></div><div>📍 লোকেশন<br><b>Google Maps</b></div></div></div></div></section>
 <section id="categorySection"><div class="container"><div class="section-head"><h3 id="homeCategoryTitle">সেবার বিভাগ</h3><span id="homeCategorySubtitle">প্রয়োজনীয় বিভাগ বেছে নিন</span></div><div id="categories" class="categories"></div><div id="subcategoryArea" class="subcategory-panel" hidden></div></div></section>
 <section><div class="container"><div class="section-head"><h3 id="homeEmergencyTitle">🚨 জরুরি সেবা</h3><span id="homeEmergencySubtitle">দ্রুত যোগাযোগ</span></div><div class="emergency"><div id="emergencyGrid" class="emergency-grid"></div></div></div></section>
-<section id="resultsSection"><div class="container"><div class="section-head"><h3 id="listTitle">সাম্প্রতিক তথ্য</h3><span id="resultCount"></span></div><div id="cards" class="cards"></div></div></section><section id="inlineAdSection" class="inline-ad-section" hidden><div class="container"><div class="inline-ad-wrap"><button id="inlineAdClose" class="inline-ad-close" type="button" aria-label="বিজ্ঞাপন বন্ধ করুন">×</button><a id="inlineAdLink" href="#" target="_blank" rel="noopener sponsored"><img id="inlineAdImage" alt="Sponsored advertisement"></a><span class="inline-ad-label">SPONSORED</span></div></div></section>
+<section id="resultsSection" hidden><div class="container"><div class="section-head"><h3 id="listTitle">সাম্প্রতিক তথ্য</h3><span id="resultCount"></span></div><div id="cards" class="cards"></div></div></section><section id="inlineAdSection" class="inline-ad-section" hidden><div class="container"><div class="inline-ad-wrap"><button id="inlineAdClose" class="inline-ad-close" type="button" aria-label="বিজ্ঞাপন বন্ধ করুন">×</button><a id="inlineAdLink" href="#" target="_blank" rel="noopener sponsored"><img id="inlineAdImage" alt="Sponsored advertisement"></a><span class="inline-ad-label">SPONSORED</span></div></div></section>
 <section id="announcementSection" hidden><div class="container"><div class="section-head"><h3 id="homeAnnouncementTitle">📢 গুরুত্বপূর্ণ ঘোষণা</h3><span id="homeAnnouncementSubtitle">প্রয়োজনীয় তথ্য ও জনসচেতনতা</span></div><div id="announcementList" class="notice"></div></div></section>
 
 <section id="noticeCmsSection" class="notice-cms" hidden><div class="container"><div class="section-head"><h3>📰 নোটিশ ও আপডেট</h3><span>সর্বশেষ স্থানীয় তথ্য</span></div><div id="noticeCmsList" class="notice-cms-grid"></div></div></section>
@@ -547,16 +554,8 @@ const categories=[
 const coachingPosition=categories.findIndex(c=>c[2]==="coaching");
 if(coachingPosition>=0)categories.push(...categories.splice(coachingPosition,1));
 const subcategories={government:[["union","ইউনিয়ন পরিষদ"],["upazila","উপজেলা সরকারি কর্মকর্তা"],["govt-office","অন্যান্য সরকারি অফিস"],["public-service","সরকারি সেবা"]],education:[["primary","প্রাথমিক বিদ্যালয়"],["secondary","মাধ্যমিক বিদ্যালয়"],["college","কলেজ"],["madrasa","মাদ্রাসা"],["teachers","শিক্ষক ও কর্মচারী"],["other","অন্যান্য শিক্ষা প্রতিষ্ঠান"]],coaching:[["coaching-center","কোচিং সেন্টার"],["home-tutor","হোম টিউটর"],["subject-tutor","বিষয়ভিত্তিক শিক্ষক"],["admission","ভর্তি / এডমিশন কোচিং"],["other","অন্যান্য"]],health:[["hospital","হাসপাতাল/ক্লিনিক"],["doctor","ডাক্তার"],["diagnostic","ডায়াগনস্টিক/ল্যাব"],["ambulance","অ্যাম্বুলেন্স"]],business:[["grocery","মুদি দোকান"],["restaurant","হোটেল/রেস্টুরেন্ট"],["pharmacy","ফার্মেসি"],["sweets","মিষ্টান্ন ভান্ডার/বেকারি"],["library","লাইব্রেরি/স্টেশনারি"],["mfs","বিকাশ/নগদ/রকেট এজেন্ট"],["fashion","কাপড় ও ফ্যাশন"],["tailor","টেইলার্স"],["cosmetics","কসমেটিকস"],["mobile","মোবাইল/ইলেকট্রনিক্স"],["mobile-service","মোবাইল সার্ভিসিং"],["computer","কম্পিউটার/ফটোকপি/অনলাইন সেবা"],["hardware","হার্ডওয়্যার/নির্মাণ সামগ্রী"],["raw-material","কাঁচামাল/পাইকারি"],["furniture","ফার্নিচার"],["salon","সেলুন/পার্লার"],["agri","কৃষি উপকরণ"],["service","অন্যান্য ব্যবসা/সেবা"]],banking:[["bank","ব্যাংক শাখা"],["atm","ATM"],["agent","ব্যাংক এজেন্ট"],["mfs","বিকাশ/নগদ/রকেট"]],religion:[["mosque","মসজিদ"],["madrasa","ধর্মীয় শিক্ষা"],["other","অন্যান্য ধর্মীয় প্রতিষ্ঠান"]],blood:[["all","সব ব্লাড ডোনার"],["a+","A+"],["a-","A-"],["b+","B+"],["b-","B-"],["o+","O+"],["o-","O-"],["ab+","AB+"],["ab-","AB-"]],people:[["entrepreneur","উদ্যোক্তা"],["notable","বিশিষ্ট ব্যক্তিবর্গ"],["university-student","দেশ-বিদেশে বিশ্ববিদ্যালয়ের শিক্ষার্থী"],["innovator","উদ্ভাবক"],["social-worker","সমাজসেবক"],["professional","অন্যান্য কৃতী/পেশাজীবী"]],post:[["post-office","ডাকঘর"]],transport:[["bus","বাস/গণপরিবহন"],["courier","ডাক/কুরিয়ার"],["garage","গ্যারেজ/মেরামত"],["other","অন্যান্য যোগাযোগ সেবা"]],social:[["social-org","সামাজিক সংগঠন"],["club","ক্লাব/যুব সংগঠন"],["ngo","এনজিও/স্বেচ্ছাসেবী সংগঠন"]],news:[]};
-let data=[
-{cat:"government",subcat:"union",name:"গৈলা ইউনিয়ন পরিষদ",address:"ঠিকানা যোগ করুন",phone:"",map:"",desc:"চেয়ারম্যান, সচিব ও অফিসের তথ্য যোগ করুন।"},
-{cat:"health",subcat:"hospital",name:"স্বাস্থ্যকেন্দ্রের নাম",address:"ঠিকানা যোগ করুন",phone:"",map:"",desc:"সেবার সময় ও যোগাযোগ যোগ করুন।"},
-{cat:"education",subcat:"secondary",name:"বিদ্যালয়ের নাম",address:"ঠিকানা যোগ করুন",phone:"",map:"",desc:"প্রধান শিক্ষক ও যোগাযোগ যোগ করুন।"},
-{cat:"education",subcat:"college",name:"কলেজের নাম",address:"ঠিকানা যোগ করুন",phone:"",map:"",desc:"অফিস ও যোগাযোগের তথ্য যোগ করুন।"},
-{cat:"health",subcat:"pharmacy",name:"ফার্মেসির নাম",address:"ঠিকানা যোগ করুন",phone:"",map:"",desc:"খোলার সময় যোগ করুন।"},
-{cat:"police",subcat:"police",name:"পুলিশ সেবা",address:"আগৈলঝাড়া, বরিশাল",phone:"",map:"",desc:"স্থানীয় যোগাযোগ নম্বর যাচাই করে যোগ করুন।"},
-{cat:"emergency",subcat:"national",name:"জাতীয় জরুরি সেবা",address:"বাংলাদেশ",phone:"999",map:"",desc:"পুলিশ, ফায়ার সার্ভিস ও অ্যাম্বুলেন্স।"},
-{cat:"emergency",subcat:"health",name:"স্বাস্থ্য বাতায়ন",address:"বাংলাদেশ",phone:"16263",map:"",desc:"স্বাস্থ্য সংক্রান্ত সরকারি সহায়তা।"}];
-let homeRecentData=data.slice(0,2);
+let data=[];
+let homeRecentData=[];
 const emergencyNumbers=[{icon:"🚔",name:"জাতীয় জরুরি সেবা",note:"পুলিশ • ফায়ার • অ্যাম্বুলেন্স",phone:"999"},{icon:"🏥",name:"স্বাস্থ্য বাতায়ন",note:"সরকারি স্বাস্থ্য সহায়তা",phone:"16263"},{icon:"⚡",name:"বিদ্যুৎ সহায়তা",note:"বিদ্যুৎ সংক্রান্ত সহায়তা",phone:"16123"}];
 const importantAnnouncements=[];
 const $=id=>document.getElementById(id);
@@ -776,12 +775,12 @@ function openAdLink(url){if(!url)return;try{window.open(url,"_blank","noopener")
 function showAdPopupFromConfig(cfg){const ad={...(cfg.popup||{}),position:"popup"};if(!cfg.enabled||!ad.enabled||!ad.image||!canShowAd(ad))return;const img=$("adImage");img.src=ad.image;img.alt=ad.alt||"Sponsored advertisement";img.style.display="block";$("adPlaceholder").style.display="none";if(ad.link){img.classList.add("ad-clickable");img.onclick=()=>openAdLink(ad.link)}else{img.classList.remove("ad-clickable");img.onclick=null}$("adOverlay").classList.add("show");markAdShown(ad);let sec=adDuration(ad);$("adTimer").textContent=`${sec} সেকেন্ড পর বন্ধ হবে`;clearInterval(adTimerHandle);adTimerHandle=setInterval(()=>{sec--;if(sec>0)$("adTimer").textContent=`${sec} সেকেন্ড পর বন্ধ হবে`;else closeAdPopup()},1000)}
 function renderInlineAd(cfg){const ad={...(cfg.inline||{}),position:"inline"},section=$("inlineAdSection");if(!section)return;clearTimeout(inlineAdTimerHandle);if(!cfg.enabled||!ad.enabled||!ad.image||!canShowAd(ad)){section.hidden=true;return}const img=$("inlineAdImage"),link=$("inlineAdLink");img.src=ad.image;img.alt=ad.alt||"Sponsored advertisement";if(ad.link){link.href=ad.link;link.style.pointerEvents="auto";link.setAttribute("aria-label",ad.alt||"Sponsored advertisement")}else{link.href="#";link.style.pointerEvents="none"}section.hidden=false;markAdShown(ad);inlineAdTimerHandle=setTimeout(()=>{section.hidden=true},adDuration(ad)*1000)}
 async function initAds(){const cfg=await loadAdsConfig();renderInlineAd(cfg);setTimeout(()=>showAdPopupFromConfig(cfg),250)}
-$("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();renderEmergency();renderAnnouncements();renderReview();setupContactLinks();$("menuBtn").addEventListener("click",toggleSideMenu);$("search").addEventListener("input",e=>renderLiveResults(e.target.value));$("search").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();doSearch()}});document.querySelectorAll("#starPicker button").forEach(b=>b.addEventListener("click",()=>{selectedRating=Number(b.dataset.rating);paintStarPicker()}));document.addEventListener("click",e=>{if(!e.target.closest(".search-wrap"))$("searchPanel").hidden=true});$("adClose").addEventListener("click",closeAdPopup);$("adOverlay").addEventListener("click",e=>{if(e.target===e.currentTarget)closeAdPopup()});document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeAdPopup();closeSideMenu();closeModal("categoryModal");closeModal("submissionModal")}});$("inlineAdClose").addEventListener("click",()=>{$("inlineAdSection").hidden=true});window.addEventListener("load",initAds);if("serviceWorker" in navigator&&location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js?v=20260826-app-cache-v5",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{}))}
+$("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();renderEmergency();renderAnnouncements();renderReview();setupContactLinks();$("menuBtn").addEventListener("click",toggleSideMenu);$("search").addEventListener("input",e=>renderLiveResults(e.target.value));$("search").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();doSearch()}});document.querySelectorAll("#starPicker button").forEach(b=>b.addEventListener("click",()=>{selectedRating=Number(b.dataset.rating);paintStarPicker()}));document.addEventListener("click",e=>{if(!e.target.closest(".search-wrap"))$("searchPanel").hidden=true});$("adClose").addEventListener("click",closeAdPopup);$("adOverlay").addEventListener("click",e=>{if(e.target===e.currentTarget)closeAdPopup()});document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeAdPopup();closeSideMenu();closeModal("categoryModal");closeModal("submissionModal")}});$("inlineAdClose").addEventListener("click",()=>{$("inlineAdSection").hidden=true});window.addEventListener("load",initAds);if("serviceWorker" in navigator&&location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js?v=20261017-v46",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{}))}
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js?v=20260819-1625"></script>
-<script src="js/directory.js?v=20260827-fresh-data-1"></script>
+<script src="js/directory.js?v=20261017-category-sync-v46"></script>
 <script>
 // Voice of Goila - Public Website Settings CMS
 // Reads the existing public.website_settings table and applies values without changing the page layout.
@@ -1583,6 +1582,7 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
   document.getElementById('vogTopBack').href=chosen?catUrl:'index.html';
   document.getElementById('vogTopBack').textContent=chosen?'← '+info[1]+' বিভাগে ফিরে যান':'← হোমপেজে ফিরে যান';
   const area=document.getElementById('subcategoryArea');area.hidden=false;
+  function setupCategoryContents(){
   if(chosen){area.innerHTML='';}
   else if(slug==='emergency'){
     const em=typeof emergencyNumbers!=='undefined'?emergencyNumbers:[];
@@ -1590,6 +1590,8 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
   }else if(subs.length){
     area.innerHTML='<div class="panel"><div class="subcategory-grid">'+subs.map((x,i)=>'<a class="subcat" style="--vog-order:'+i+'" href="'+catUrl+'&sub='+encodeURIComponent(x[0])+'"><b>'+esc(x[1])+'</b><small>'+countFor(x[0])+'টি তথ্য →</small></a>').join('')+(orphanRows().length?'<a class="subcat" href="'+catUrl+'&sub=__other"><b>অন্যান্য তথ্য</b><small>'+orphanRows().length+'টি তথ্য →</small></a>':'')+'</div></div>';
   }else{area.innerHTML='';}
+  }
+  setupCategoryContents();
   actions.innerHTML=(chosen?'<a href="'+catUrl+'">← '+esc(info[1])+' বিভাগে ফিরে যান</a>':'')+'<button type="button" class="vog-add" id="vogContextAdd">＋ তথ্য যোগ করুন</button><a href="index.html">⌂ হোমপেজে ফিরে যান</a>';
   document.getElementById('vogContextAdd').addEventListener('click',addInfo);
   if(slug==='news'){const announcements=document.getElementById('announcementSection');if(announcements){announcements.style.display='block';announcements.hidden=false;}}
@@ -1603,8 +1605,13 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
     renderCards(rows,heading);
     const empty=result.querySelector('.empty button');if(empty){empty.textContent='＋ তথ্য যোগ করুন';empty.onclick=addInfo;}
   }
-  showRows();
-  let n=0;const timer=setInterval(()=>{showRows();if(++n>=8)clearInterval(timer);},1000);
+  if(window.__vogDirectoryLoaded)showRows();
+  else { result.hidden=true; area.hidden=true; }
+  window.addEventListener('vog:directory-ready',()=>{
+    area.hidden=false;
+    setupCategoryContents();
+    showRows();
+  });
   return true;
  }
  let tries=0;const ready=setInterval(()=>{if(setup()||++tries>=40)clearInterval(ready);},75);
