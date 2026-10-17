@@ -780,7 +780,7 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js?v=20260819-1625"></script>
-<script src="js/directory.js?v=20261017-category-sync-v48"></script>
+<script src="js/directory.js?v=20261017-category-sync-v49"></script>
 <script>
 // Voice of Goila - Public Website Settings CMS
 // Reads the existing public.website_settings table and applies values without changing the page layout.
@@ -1547,89 +1547,72 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
 @media(max-width:760px){.vog-page-actions{gap:10px}.vog-page-actions a,.vog-page-actions button{min-height:44px}.vog-category-view .subcat{min-height:80px}}
 @media(prefers-reduced-motion:reduce){.vog-category-view #subcategoryArea,.vog-category-view #resultsSection{animation:none!important}.vog-category-view .subcat,.vog-page-actions a,.vog-page-actions button,.vog-back-top{transition:none!important}.vog-page-actions .vog-add::after{display:none}}
 </style>
-<script id="vog-category-22-script">
+<script id="vog49-category-renderer">
 (function(){
- const params=new URLSearchParams(location.search),slug=params.get('section'),sub=params.get('sub');
- if(!slug){location.replace('index.html');return;}
+ const query=new URLSearchParams(location.search),section=query.get('section'),sub=query.get('sub');
+ if(!section){location.replace('index.html');return;}
  document.body.classList.add('vog-category-view');
- const main=document.querySelector('main'),section=document.getElementById('categorySection');
+ const root=document.querySelector('main');
  const hero=document.createElement('div');hero.className='vog-category-hero';
- hero.innerHTML='<div class="container"><a class="vog-back-top" id="vogTopBack" href="index.html">← হোমপেজে ফিরে যান</a><div class="vog42-heading-line"><h1 id="vogCategoryHeading"></h1><div class="vog42-count" aria-live="polite"><strong id="vog42Counter">0</strong><small>টি তথ্য</small></div></div><p>গৈলার প্রয়োজনীয় তথ্য ও সেবা</p></div>';
- main.insertBefore(hero,main.firstChild);
- const actions=document.createElement('div');actions.className='vog-page-actions container';main.appendChild(actions);
- const old=document.getElementById('vog-category-old-deeplink');if(old)old.remove();
- const esc=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const catUrl='category.html?section='+encodeURIComponent(slug);
- function addInfo(){
-   if(typeof openSubmission!=='function')return;
-   openSubmission(slug);
-   if(sub&&typeof updateSubmitSubcategories==='function'){
-     const el=document.getElementById('submitSubcategory');
-     if(el&&[...el.options].some(o=>o.value===sub)){el.value=sub;if(typeof updateSubmissionFields==='function')updateSubmissionFields();}
-   }
+ hero.innerHTML='<div class="container"><a class="vog-back-top" id="vogTopBack" href="index.html">← হোমপেজে ফিরে যান</a><div class="vog42-heading-line"><h1 id="vogCategoryHeading"></h1><div class="vog42-count"><strong id="vog42Counter">—</strong><small>টি তথ্য</small></div></div><p>গৈলার প্রয়োজনীয় তথ্য ও সেবা</p></div>';
+ root.insertBefore(hero,root.firstChild);
+ const actions=document.createElement('div');actions.className='vog-page-actions container';root.appendChild(actions);
+ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const url='category.html?section='+encodeURIComponent(section);
+ const area=document.getElementById('subcategoryArea'),results=document.getElementById('resultsSection');
+ const headingEl=document.getElementById('vogCategoryHeading'),counter=document.getElementById('vog42Counter');
+ let lastSignature='',loaded=false,latestRows=[];
+ const normal=v=>String(v??'').normalize('NFC').trim().toLowerCase().replace(/[\s\u200c\u200d]+/g,'').replace(/[য়য়]/g,'য়').replace(/[িী]/g,'ি').replace(/[ুূ]/g,'ু').replace(/[–—]/g,'-');
+ function getRows(){
+  if(window.__vogDirectoryLoaded){loaded=true;return Array.isArray(window.allDirectory)?window.allDirectory:(typeof data!=='undefined'?data:[]);}
+  return [];
  }
- function setup(){
-  if(typeof catInfo!=='function'||typeof renderCards!=='function'||typeof data==='undefined'||typeof subcategories==='undefined')return false;
-  const info=catInfo(slug),subs=subcategories[slug]||[],chosen=sub==='__other'?['__other','অন্যান্য তথ্য']:subs.find(x=>x[0]===sub);
-  if(sub&&!chosen){location.replace(catUrl);return true;}
-  const heading=chosen?chosen[1]:info[1];
-  const countFor=(key)=>data.filter(x=>itemMatchesSubcategory(x,slug,key)).length;
-  const categoryTotal=()=>data.filter(x=>itemMatchesCategory(x,slug)).length;
-  const orphanRows=()=>data.filter(x=>itemMatchesCategory(x,slug)&&!subs.some(k=>itemMatchesSubcategory(x,slug,k[0])));
-  document.getElementById('vogCategoryHeading').textContent=(chosen?'':info[0]+' ')+heading;
-  let totalBadge=document.getElementById('vog42Counter');
-  document.title=heading+' | Voice of Goila';
-  document.getElementById('vogTopBack').href=chosen?catUrl:'index.html';
-  document.getElementById('vogTopBack').textContent=chosen?'← '+info[1]+' বিভাগে ফিরে যান':'← হোমপেজে ফিরে যান';
-  const area=document.getElementById('subcategoryArea');area.hidden=false;area.removeAttribute('hidden');
-  function setupCategoryContents(){
-  if(chosen){area.innerHTML='';}
-  else if(slug==='emergency'){
-    const em=typeof emergencyNumbers!=='undefined'?emergencyNumbers:[];
-    area.innerHTML='<div class="panel"><div class="emergency-list">'+em.map(x=>'<div class="emergency-row"><div class="emergency-info"><b>'+esc(x.icon)+' '+esc(x.name)+'</b><span>'+esc(x.note)+'</span></div><a class="emergency-call" href="tel:'+esc(x.phone)+'">📞 '+esc(x.phone)+'</a><button class="vog-em-share" type="button" data-name="'+esc(x.name)+'" data-phone="'+esc(x.phone)+'" onclick="shareEmergencyInfo(this)">↗ শেয়ার</button></div>').join('')+'</div></div>';
-  }else if(subs.length){
-    area.innerHTML='<div class="panel"><div class="subcategory-grid">'+subs.map((x,i)=>'<a class="subcat" style="--vog-order:'+i+'" href="'+catUrl+'&sub='+encodeURIComponent(x[0])+'"><b>'+esc(x[1])+'</b><small>'+countFor(x[0])+'টি তথ্য →</small></a>').join('')+(orphanRows().length?'<a class="subcat" href="'+catUrl+'&sub=__other"><b>অন্যান্য তথ্য</b><small>'+orphanRows().length+'টি তথ্য →</small></a>':'')+'</div></div>';
-  }else{area.innerHTML='';}
+ function matchCategory(row){return typeof itemMatchesCategory==='function'&&itemMatchesCategory(row,section);}
+ function matchSub(row,entry){
+  if(typeof itemMatchesSubcategory==='function'&&itemMatchesSubcategory(row,section,entry[0]))return true;
+  if(!matchCategory(row))return false;
+  const val=normal(row.subcat),key=normal(entry[0]),label=normal(entry[1]);
+  if(val===key||val===label)return true;
+  const raw=(window.vogSubcategoryRawBySlug||{})[section+'::'+entry[0]];
+  return !!raw&&val===normal(raw);
+ }
+ function addInfo(){if(typeof openSubmission!=='function')return;openSubmission(section);if(sub&&typeof updateSubmitSubcategories==='function'){const sel=document.getElementById('submitSubcategory');if(sel&&[...sel.options].some(o=>o.value===sub)){sel.value=sub;if(typeof updateSubmissionFields==='function')updateSubmissionFields();}}}
+ function render(){
+  if(typeof subcategories==='undefined'||typeof catInfo!=='function'||typeof renderCards!=='function')return;
+  const info=catInfo(section),subs=subcategories[section]||[];
+  const chosen=sub==='__other'?['__other','অন্যান্য তথ্য']:subs.find(x=>x[0]===sub);
+  const label=chosen?chosen[1]:info[1];headingEl.textContent=(chosen?'':info[0]+' ')+label;
+  document.title=label+' | Voice of Goila';
+  const back=document.getElementById('vogTopBack');back.href=chosen?url:'index.html';back.textContent=chosen?'← '+info[1]+' বিভাগে ফিরে যান':'← হোমপেজে ফিরে যান';
+  const rows=getRows();latestRows=rows;
+  if(!loaded&&window.__vogDirectoryError){
+   area.hidden=false;area.innerHTML='<div class="panel" role="alert">তথ্য সার্ভার থেকে লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন। <button type="button" id="vogRetryDirectory">আবার চেষ্টা করুন</button></div>';
+   document.getElementById('vogRetryDirectory').onclick=()=>{window.__vogDirectoryError='';if(typeof window.loadPublicDirectory==='function')window.loadPublicDirectory();};
   }
-  setupCategoryContents();
-  actions.innerHTML=(chosen?'<a href="'+catUrl+'">← '+esc(info[1])+' বিভাগে ফিরে যান</a>':'')+'<button type="button" class="vog-add" id="vogContextAdd">＋ তথ্য যোগ করুন</button><a href="index.html">⌂ হোমপেজে ফিরে যান</a>';
-  document.getElementById('vogContextAdd').addEventListener('click',addInfo);
-  if(slug==='news'){const announcements=document.getElementById('announcementSection');if(announcements){announcements.style.display='block';announcements.hidden=false;}}
-  const result=document.getElementById('resultsSection');
-  function showRows(){
-    if(slug==='emergency'){result.hidden=true;return;}
-    const rows=chosen?(sub==='__other'?orphanRows():data.filter(x=>itemMatchesSubcategory(x,slug,sub))):data.filter(x=>itemMatchesCategory(x,slug));
-    const target=chosen?rows.length:categoryTotal();if(Number(totalBadge.dataset.target)!==target){totalBadge.dataset.target=target;const start=performance.now(),duration=600;function tick(now){const t=Math.min(1,(now-start)/duration);totalBadge.textContent=String(Math.round(target*(1-Math.pow(1-t,3))));if(t<1)requestAnimationFrame(tick);}if(matchMedia('(prefers-reduced-motion: reduce)').matches)totalBadge.textContent=String(target);else requestAnimationFrame(tick);}
-    if(!chosen&&subs.length){result.hidden=true;return;}
-    result.hidden=false;
-    renderCards(rows,heading);
-    const empty=result.querySelector('.empty button');if(empty){empty.textContent='＋ তথ্য যোগ করুন';empty.onclick=addInfo;}
-  }
-  // Always show the taxonomy immediately. The previous version hid the
-  // subcategory container until an asynchronous event; a missed event left
-  // the entire category page blank even though categories existed.
+  const inCategory=rows.filter(matchCategory);
+  const others=inCategory.filter(x=>!subs.some(e=>matchSub(x,e)));
+  const relevant=chosen?(sub==='__other'?others:rows.filter(x=>matchSub(x,chosen))):inCategory;
+  const signature=[loaded,section,sub||'',rows.length,JSON.stringify(subs),inCategory.map(x=>String(x.id)+':'+x.subcat).join('|')].join('~');
+  if(signature===lastSignature)return;lastSignature=signature;
+  counter.textContent=loaded?String(relevant.length):'—';
   area.hidden=false;area.removeAttribute('hidden');
-  setupCategoryContents();
-  if(window.__vogDirectoryLoaded)showRows();
-  else result.hidden=true;
-  function refreshLiveCategory(){
-    area.hidden=false;area.removeAttribute('hidden');
-    setupCategoryContents();
-    if(window.__vogDirectoryLoaded)showRows();
+  if(!chosen&&subs.length&&!window.__vogDirectoryError){
+   area.innerHTML='<div class="panel"><div class="subcategory-grid">'+subs.map((entry,i)=>{
+    const count=rows.filter(x=>matchSub(x,entry)).length;
+    return '<a class="subcat" style="--vog-order:'+i+'" href="'+url+'&sub='+encodeURIComponent(entry[0])+'"><b>'+esc(entry[1])+'</b><small>'+(loaded?count+'টি তথ্য':'তথ্য লোড হচ্ছে…')+' →</small></a>';
+   }).join('')+(loaded&&others.length?'<a class="subcat" href="'+url+'&sub=__other"><b>অন্যান্য তথ্য</b><small>'+others.length+'টি তথ্য →</small></a>':'')+'</div></div>';
+   results.hidden=true;
+  }else{
+   area.innerHTML='';
+   if(!loaded){results.hidden=true;}
+   else{results.hidden=false;renderCards(relevant,label);const btn=results.querySelector('.empty button');if(btn){btn.textContent='＋ তথ্য যোগ করুন';btn.onclick=addInfo;}}
   }
-  window.addEventListener('vog:directory-ready',refreshLiveCategory);
-  // Recover if the directory event happened before this script attached.
-  // Poll only until the first successful live load; no repeated animations.
-  if(!window.__vogDirectoryLoaded){
-    let checks=0;
-    const waiter=setInterval(()=>{
-      if(window.__vogDirectoryLoaded){clearInterval(waiter);refreshLiveCategory();}
-      else if(++checks>=120)clearInterval(waiter);
-    },100);
-  }
-  return true;
+  actions.innerHTML=(chosen?'<a href="'+url+'">← '+esc(info[1])+' বিভাগে ফিরে যান</a>':'')+'<button type="button" class="vog-add" id="vogContextAdd">＋ তথ্য যোগ করুন</button><a href="index.html">⌂ হোমপেজে ফিরে যান</a>';
+  document.getElementById('vogContextAdd').addEventListener('click',addInfo);
  }
- let tries=0;const ready=setInterval(()=>{if(setup()||++tries>=40)clearInterval(ready);},75);
+ window.addEventListener('vog:directory-ready',()=>{lastSignature='';render()});
+ let attempts=0;const poll=setInterval(()=>{render();if(++attempts>=160)clearInterval(poll)},150);
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();
 })();
 </script><script id="vog24-touch-feedback">(function(){document.addEventListener('pointerdown',function(e){var el=e.target.closest('.vog-category-view .subcat,.vog-category-view .vog-page-actions a,.vog-category-view .vog-page-actions button');if(!el)return;el.classList.remove('vog24-pressed');void el.offsetWidth;el.classList.add('vog24-pressed');setTimeout(function(){el.classList.remove('vog24-pressed')},300)},{passive:true});})();</script><script>
 /* Search placeholder typing only when empty and unfocused. Restores configured placeholder on focus. */
@@ -1670,42 +1653,5 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
 
 </script>
 <script id="vog29-brand-nav">document.addEventListener('DOMContentLoaded',function(){var a=document.querySelector('header a.brand');if(a){a.setAttribute('href','index.html');a.addEventListener('click',function(){try{sessionStorage.setItem('vog29-home-return','1')}catch(e){}},{passive:true})}});</script>
-<script id="vog48-category-resilience">
-(function(){
- const params=new URLSearchParams(location.search),section=params.get('section'),sub=params.get('sub');
- if(!section)return;
- function start(){
-  const area=document.getElementById('subcategoryArea');
-  if(!area)return;
-  document.body.classList.add('vog-category-view');
-  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const url='category.html?section='+encodeURIComponent(section);
-  function draw(){
-   if(typeof subcategories==='undefined'||typeof data==='undefined')return;
-   const list=subcategories[section]||[];
-   area.hidden=false;area.removeAttribute('hidden');
-   if(!sub&&list.length&&!area.querySelector('.subcategory-grid')){
-    area.innerHTML='<div class="panel"><div class="subcategory-grid">'+list.map((entry,i)=>'<a class="subcat" style="--vog-order:'+i+'" href="'+url+'&sub='+encodeURIComponent(entry[0])+'"><b>'+esc(entry[1])+'</b><small>তথ্য লোড হচ্ছে…</small></a>').join('')+'</div></div>';
-   }
-   if(!window.__vogDirectoryLoaded)return;
-   if(typeof itemMatchesSubcategory!=='function'||typeof itemMatchesCategory!=='function')return;
-   if(!sub&&list.length){
-    // Reconcile cards with the current taxonomy, including CMS additions.
-    const grid=area.querySelector('.subcategory-grid');
-    if(!grid)return;
-    grid.innerHTML=list.map((entry,i)=>{
-      const n=data.filter(row=>itemMatchesSubcategory(row,section,entry[0])).length;
-      return '<a class="subcat" style="--vog-order:'+i+'" href="'+url+'&sub='+encodeURIComponent(entry[0])+'"><b>'+esc(entry[1])+'</b><small>'+n+'টি তথ্য →</small></a>';
-    }).join('');
-   }
-   const badge=document.getElementById('vog42Counter');
-   if(badge){const count=sub?data.filter(row=>itemMatchesSubcategory(row,section,sub)).length:data.filter(row=>itemMatchesCategory(row,section)).length;badge.textContent=String(count);badge.dataset.target=String(count);}
-  }
-  draw();window.addEventListener('vog:directory-ready',draw);
-  // When CMS category metadata arrives after the page's initial render.
-  let checks=0;const timer=setInterval(()=>{draw();if(++checks>=35||window.__vogDirectoryLoaded)clearInterval(timer)},150);
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-})();
-</script>
+
 </body></html>
