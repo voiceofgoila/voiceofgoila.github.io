@@ -1586,8 +1586,12 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
   const back=document.getElementById('vogTopBack');back.href=chosen?url:'index.html';back.textContent=chosen?'← '+info[1]+' বিভাগে ফিরে যান':'← হোমপেজে ফিরে যান';
   const rows=getRows();latestRows=rows;
   if(!loaded&&window.__vogDirectoryError){
-   area.hidden=false;area.innerHTML='<div class="panel" role="alert">তথ্য সার্ভার থেকে লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন। <button type="button" id="vogRetryDirectory">আবার চেষ্টা করুন</button></div>';
-   document.getElementById('vogRetryDirectory').onclick=()=>{window.__vogDirectoryError='';if(typeof window.loadPublicDirectory==='function')window.loadPublicDirectory();};
+   counter.textContent='—';
+   area.hidden=false;
+   area.innerHTML='<div class="panel" role="alert">সার্ভার থেকে তথ্য আনা যায়নি। <button type="button" id="vogRetryDirectory">আবার চেষ্টা করুন</button><p style="font-size:12px;overflow-wrap:anywhere">'+esc(window.__vogDirectoryError)+'</p></div>';
+   results.hidden=true;
+   document.getElementById('vogRetryDirectory').onclick=()=>{window.__vogDirectoryError='';lastSignature='';render();if(typeof window.loadPublicDirectory==='function')window.loadPublicDirectory();};
+   return;
   }
   const inCategory=rows.filter(matchCategory);
   const others=inCategory.filter(x=>!subs.some(e=>matchSub(x,e)));
@@ -1612,6 +1616,7 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
  }
  window.addEventListener('vog:directory-ready',()=>{lastSignature='';render()});
  let attempts=0;const poll=setInterval(()=>{render();if(++attempts>=160)clearInterval(poll)},150);
+ setTimeout(()=>{if(!window.__vogDirectoryLoaded&&!window.__vogDirectoryError){window.__vogDirectoryError='Connection timed out. Check Supabase or browser network.';lastSignature='';render();}},12000);
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();
 })();
 </script><script id="vog24-touch-feedback">(function(){document.addEventListener('pointerdown',function(e){var el=e.target.closest('.vog-category-view .subcat,.vog-category-view .vog-page-actions a,.vog-category-view .vog-page-actions button');if(!el)return;el.classList.remove('vog24-pressed');void el.offsetWidth;el.classList.add('vog24-pressed');setTimeout(function(){el.classList.remove('vog24-pressed')},300)},{passive:true});})();</script><script>
