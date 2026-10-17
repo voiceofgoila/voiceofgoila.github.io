@@ -775,12 +775,12 @@ function openAdLink(url){if(!url)return;try{window.open(url,"_blank","noopener")
 function showAdPopupFromConfig(cfg){const ad={...(cfg.popup||{}),position:"popup"};if(!cfg.enabled||!ad.enabled||!ad.image||!canShowAd(ad))return;const img=$("adImage");img.src=ad.image;img.alt=ad.alt||"Sponsored advertisement";img.style.display="block";$("adPlaceholder").style.display="none";if(ad.link){img.classList.add("ad-clickable");img.onclick=()=>openAdLink(ad.link)}else{img.classList.remove("ad-clickable");img.onclick=null}$("adOverlay").classList.add("show");markAdShown(ad);let sec=adDuration(ad);$("adTimer").textContent=`${sec} সেকেন্ড পর বন্ধ হবে`;clearInterval(adTimerHandle);adTimerHandle=setInterval(()=>{sec--;if(sec>0)$("adTimer").textContent=`${sec} সেকেন্ড পর বন্ধ হবে`;else closeAdPopup()},1000)}
 function renderInlineAd(cfg){const ad={...(cfg.inline||{}),position:"inline"},section=$("inlineAdSection");if(!section)return;clearTimeout(inlineAdTimerHandle);if(!cfg.enabled||!ad.enabled||!ad.image||!canShowAd(ad)){section.hidden=true;return}const img=$("inlineAdImage"),link=$("inlineAdLink");img.src=ad.image;img.alt=ad.alt||"Sponsored advertisement";if(ad.link){link.href=ad.link;link.style.pointerEvents="auto";link.setAttribute("aria-label",ad.alt||"Sponsored advertisement")}else{link.href="#";link.style.pointerEvents="none"}section.hidden=false;markAdShown(ad);inlineAdTimerHandle=setTimeout(()=>{section.hidden=true},adDuration(ad)*1000)}
 async function initAds(){const cfg=await loadAdsConfig();renderInlineAd(cfg);setTimeout(()=>showAdPopupFromConfig(cfg),250)}
-$("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();renderEmergency();renderAnnouncements();renderReview();setupContactLinks();$("menuBtn").addEventListener("click",toggleSideMenu);$("search").addEventListener("input",e=>renderLiveResults(e.target.value));$("search").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();doSearch()}});document.querySelectorAll("#starPicker button").forEach(b=>b.addEventListener("click",()=>{selectedRating=Number(b.dataset.rating);paintStarPicker()}));document.addEventListener("click",e=>{if(!e.target.closest(".search-wrap"))$("searchPanel").hidden=true});$("adClose").addEventListener("click",closeAdPopup);$("adOverlay").addEventListener("click",e=>{if(e.target===e.currentTarget)closeAdPopup()});document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeAdPopup();closeSideMenu();closeModal("categoryModal");closeModal("submissionModal")}});$("inlineAdClose").addEventListener("click",()=>{$("inlineAdSection").hidden=true});window.addEventListener("load",initAds);if("serviceWorker" in navigator&&location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js?v=20261017-v47",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{}))}
+$("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();renderEmergency();renderAnnouncements();renderReview();setupContactLinks();$("menuBtn").addEventListener("click",toggleSideMenu);$("search").addEventListener("input",e=>renderLiveResults(e.target.value));$("search").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();doSearch()}});document.querySelectorAll("#starPicker button").forEach(b=>b.addEventListener("click",()=>{selectedRating=Number(b.dataset.rating);paintStarPicker()}));document.addEventListener("click",e=>{if(!e.target.closest(".search-wrap"))$("searchPanel").hidden=true});$("adClose").addEventListener("click",closeAdPopup);$("adOverlay").addEventListener("click",e=>{if(e.target===e.currentTarget)closeAdPopup()});document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeAdPopup();closeSideMenu();closeModal("categoryModal");closeModal("submissionModal")}});$("inlineAdClose").addEventListener("click",()=>{$("inlineAdSection").hidden=true});window.addEventListener("load",initAds);if("serviceWorker" in navigator&&location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js?v=20261017-v48",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{}))}
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js?v=20260819-1625"></script>
-<script src="js/directory.js?v=20261017-category-sync-v47"></script>
+<script src="js/directory.js?v=20261017-category-sync-v48"></script>
 <script>
 // Voice of Goila - Public Website Settings CMS
 // Reads the existing public.website_settings table and applies values without changing the page layout.
@@ -1581,7 +1581,7 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
   document.title=heading+' | Voice of Goila';
   document.getElementById('vogTopBack').href=chosen?catUrl:'index.html';
   document.getElementById('vogTopBack').textContent=chosen?'← '+info[1]+' বিভাগে ফিরে যান':'← হোমপেজে ফিরে যান';
-  const area=document.getElementById('subcategoryArea');area.hidden=false;
+  const area=document.getElementById('subcategoryArea');area.hidden=false;area.removeAttribute('hidden');
   function setupCategoryContents(){
   if(chosen){area.innerHTML='';}
   else if(slug==='emergency'){
@@ -1608,12 +1608,12 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
   // Always show the taxonomy immediately. The previous version hid the
   // subcategory container until an asynchronous event; a missed event left
   // the entire category page blank even though categories existed.
-  area.hidden=false;
+  area.hidden=false;area.removeAttribute('hidden');
   setupCategoryContents();
   if(window.__vogDirectoryLoaded)showRows();
   else result.hidden=true;
   function refreshLiveCategory(){
-    area.hidden=false;
+    area.hidden=false;area.removeAttribute('hidden');
     setupCategoryContents();
     if(window.__vogDirectoryLoaded)showRows();
   }
@@ -1669,4 +1669,43 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
 })();
 
 </script>
-<script id="vog29-brand-nav">document.addEventListener('DOMContentLoaded',function(){var a=document.querySelector('header a.brand');if(a){a.setAttribute('href','index.html');a.addEventListener('click',function(){try{sessionStorage.setItem('vog29-home-return','1')}catch(e){}},{passive:true})}});</script></body></html>
+<script id="vog29-brand-nav">document.addEventListener('DOMContentLoaded',function(){var a=document.querySelector('header a.brand');if(a){a.setAttribute('href','index.html');a.addEventListener('click',function(){try{sessionStorage.setItem('vog29-home-return','1')}catch(e){}},{passive:true})}});</script>
+<script id="vog48-category-resilience">
+(function(){
+ const params=new URLSearchParams(location.search),section=params.get('section'),sub=params.get('sub');
+ if(!section)return;
+ function start(){
+  const area=document.getElementById('subcategoryArea');
+  if(!area)return;
+  document.body.classList.add('vog-category-view');
+  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const url='category.html?section='+encodeURIComponent(section);
+  function draw(){
+   if(typeof subcategories==='undefined'||typeof data==='undefined')return;
+   const list=subcategories[section]||[];
+   area.hidden=false;area.removeAttribute('hidden');
+   if(!sub&&list.length&&!area.querySelector('.subcategory-grid')){
+    area.innerHTML='<div class="panel"><div class="subcategory-grid">'+list.map((entry,i)=>'<a class="subcat" style="--vog-order:'+i+'" href="'+url+'&sub='+encodeURIComponent(entry[0])+'"><b>'+esc(entry[1])+'</b><small>তথ্য লোড হচ্ছে…</small></a>').join('')+'</div></div>';
+   }
+   if(!window.__vogDirectoryLoaded)return;
+   if(typeof itemMatchesSubcategory!=='function'||typeof itemMatchesCategory!=='function')return;
+   if(!sub&&list.length){
+    // Reconcile cards with the current taxonomy, including CMS additions.
+    const grid=area.querySelector('.subcategory-grid');
+    if(!grid)return;
+    grid.innerHTML=list.map((entry,i)=>{
+      const n=data.filter(row=>itemMatchesSubcategory(row,section,entry[0])).length;
+      return '<a class="subcat" style="--vog-order:'+i+'" href="'+url+'&sub='+encodeURIComponent(entry[0])+'"><b>'+esc(entry[1])+'</b><small>'+n+'টি তথ্য →</small></a>';
+    }).join('');
+   }
+   const badge=document.getElementById('vog42Counter');
+   if(badge){const count=sub?data.filter(row=>itemMatchesSubcategory(row,section,sub)).length:data.filter(row=>itemMatchesCategory(row,section)).length;badge.textContent=String(count);badge.dataset.target=String(count);}
+  }
+  draw();window.addEventListener('vog:directory-ready',draw);
+  // When CMS category metadata arrives after the page's initial render.
+  let checks=0;const timer=setInterval(()=>{draw();if(++checks>=35||window.__vogDirectoryLoaded)clearInterval(timer)},150);
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+</script>
+</body></html>
