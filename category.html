@@ -780,7 +780,7 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js?v=20260819-1625"></script>
-<script src="js/directory.js?v=20261017-original-mapper-v50"></script>
+<script src="js/directory.js?v=20261017-v52-independent-requests"></script>
 <script>
 // Voice of Goila - Public Website Settings CMS
 // Reads the existing public.website_settings table and applies values without changing the page layout.
@@ -1616,7 +1616,7 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
  }
  window.addEventListener('vog:directory-ready',()=>{lastSignature='';render()});
  let attempts=0;const poll=setInterval(()=>{render();if(++attempts>=160)clearInterval(poll)},150);
- setTimeout(()=>{if(!window.__vogDirectoryLoaded&&!window.__vogDirectoryError){window.__vogDirectoryError='Connection timed out. Check Supabase or browser network.';lastSignature='';render();}},12000);
+ setTimeout(()=>{if(!window.__vogDirectoryLoaded&&!window.__vogDirectoryError){window.__vogDirectoryError='Directory loading timed out. Please retry.';lastSignature='';render();}},14000);
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',render,{once:true});else render();
 })();
 </script><script id="vog24-touch-feedback">(function(){document.addEventListener('pointerdown',function(e){var el=e.target.closest('.vog-category-view .subcat,.vog-category-view .vog-page-actions a,.vog-category-view .vog-page-actions button');if(!el)return;el.classList.remove('vog24-pressed');void el.offsetWidth;el.classList.add('vog24-pressed');setTimeout(function(){el.classList.remove('vog24-pressed')},300)},{passive:true});})();</script><script>
