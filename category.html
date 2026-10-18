@@ -533,7 +533,24 @@ html:not(.vog46-boot-ready) header .brand,html:not(.vog46-boot-ready) .hero-grid
 .item-detail-actions .btn,.item .actions .btn,.category-actions a{display:inline-flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1.35!important}
 @media(max-width:420px){.menu-em-item .vog-em-number{width:100%;margin-bottom:3px}.menu-em-item .vog-em-share,.menu-em-item .vog-em-call{flex:1}}
 </style>
-<style id="vog-review-compact-final">#reviewSection{padding:10px 0 12px!important}#reviewSection .section-head{margin-bottom:7px!important}#reviewSection .review-box{gap:8px!important}#reviewSection .rating-summary,#reviewSection .review-form-card{padding:10px 12px!important;border-radius:13px!important}#reviewSection .review-form-card h4{margin-bottom:4px!important}#reviewSection .review-input,#reviewSection .review-textarea{padding:7px 9px!important}#reviewSection .review-textarea{min-height:40px!important}#reviewSection .star-picker{margin-bottom:5px!important}#reviewSection .rating-score strong{font-size:27px!important}#reviewSection .review-note{font-size:10px!important}@media(max-width:760px){#reviewSection .review-box{grid-template-columns:1fr!important}}</style></head>
+<style id="vog-review-compact-final">#reviewSection{padding:10px 0 12px!important}#reviewSection .section-head{margin-bottom:7px!important}#reviewSection .review-box{gap:8px!important}#reviewSection .rating-summary,#reviewSection .review-form-card{padding:10px 12px!important;border-radius:13px!important}#reviewSection .review-form-card h4{margin-bottom:4px!important}#reviewSection .review-input,#reviewSection .review-textarea{padding:7px 9px!important}#reviewSection .review-textarea{min-height:40px!important}#reviewSection .star-picker{margin-bottom:5px!important}#reviewSection .rating-score strong{font-size:27px!important}#reviewSection .review-note{font-size:10px!important}@media(max-width:760px){#reviewSection .review-box{grid-template-columns:1fr!important}}</style>
+<style id="vog-final-compact-menu">
+.side-menu{width:min(88vw,350px)!important;padding:12px!important}
+.menu-emergency{gap:7px!important}
+.menu-emergency .menu-em-item{padding:9px 10px!important;border-radius:11px!important;box-shadow:none!important}
+.menu-emergency .menu-em-item b{font-size:12px!important;line-height:1.35!important}
+.menu-emergency .menu-em-item small{font-size:10px!important;line-height:1.35!important;margin-top:2px!important}
+.menu-emergency .menu-em-item .vog-em-actions{gap:5px!important;margin-top:6px!important;flex-wrap:wrap!important}
+.menu-emergency .menu-em-item .vog-em-number{font-size:12px!important;width:auto!important;margin:0 4px 0 0!important}
+.menu-emergency .menu-em-item .vog-em-share,.menu-emergency .menu-em-item .vog-em-call{min-height:29px!important;padding:4px 7px!important;font-size:10px!important;border-radius:8px!important;flex:0 0 auto!important}
+@media(max-width:420px){.menu-emergency .menu-em-item .vog-em-number{width:100%!important}}
+</style>
+
+<style id="vog-final-category-emergency-visibility">
+body.vog-category-view #resultsSection.vog-category-results-ready{display:block!important;visibility:visible!important;opacity:1!important}
+body.vog-category-view #resultsSection.vog-category-results-ready #cards{display:grid!important;visibility:visible!important;opacity:1!important}
+</style>
+</head>
 <body>
 
 <div id="vogBrowserAppPrompt" role="dialog" aria-label="Voice of Goila অ্যাপ ডাউনলোড">
@@ -1659,7 +1676,7 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
   didRender=true;lastSignature=signature;
   heading.textContent=(chosen?'':info[0]+' ')+label;document.title=label+' | Voice of Goila';
   const back=document.getElementById('vogTopBack');back.href=chosen?url:'index.html';back.textContent=chosen?'← '+info[1]+' বিভাগে ফিরে যান':'← হোমপেজে ফিরে যান';
-  if(hasRows()||section==='emergency'||isNews)animateVogCount(isNews?newsRows.length:(section==='emergency'?emergencyRows.length:relevant.length));else count.textContent='—';
+  if(hasRows()||section==='emergency'||isNews)animateVogCount(isNews?newsRows.length:(section==='emergency'?Math.max(emergencyRows.length,relevant.length):relevant.length));else count.textContent='—';
   area.hidden=false;area.removeAttribute('hidden');
   if(!chosen&&subs.length){
    area.innerHTML='<div class="panel"><div class="subcategory-grid">'+subs.map((e,i)=>'<a class="subcat" style="--vog-order:'+i+'" href="'+url+'&sub='+encodeURIComponent(e[0])+'"><b>'+esc(e[1])+'</b><small>'+(hasRows()?all.filter(x=>matchesSub(x,e)).length+'টি তথ্য':'তথ্য লোড হচ্ছে…')+' →</small></a>').join('')+(other.length?'<a class="subcat" href="'+url+'&sub=__other"><b>অন্যান্য তথ্য</b><small>'+other.length+'টি তথ্য →</small></a>':'')+'</div></div>';
@@ -1674,10 +1691,11 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
      }
      if(section==='emergency'){
        const holder=document.getElementById('cards');
-       const numbers=emergencyRows.filter(x=>x.phone).map(x=>'<div class="item"><h4>'+esc(x.icon||'☎️')+' '+esc(x.name)+'</h4><p>'+esc(x.note||'')+'</p><div class="actions"><a class="btn call" href="tel:'+esc(String(x.phone).replace(/[^0-9+]/g,''))+'">📞 '+esc(x.phone)+' — কল করুন</a></div></div>').join('');
+       const combinedEmergency=[...emergencyRows,...relevant.map(x=>({icon:'☎️',name:x.name,note:x.desc||x.description||'',phone:x.phone}))];const seenEmergency=new Set();const numbers=combinedEmergency.filter(x=>{const k=String(x.name||'')+'|'+String(x.phone||'');if(!x.phone||seenEmergency.has(k))return false;seenEmergency.add(k);return true;}).map(x=>'<div class="item"><h4>'+esc(x.icon||'☎️')+' '+esc(x.name)+'</h4><p>'+esc(x.note||'')+'</p><div class="actions"><a class="btn call" href="tel:'+esc(String(x.phone).replace(/[^0-9+]/g,''))+'">📞 '+esc(x.phone)+' — কল করুন</a></div></div>').join('');
        if(holder){holder.innerHTML=numbers||'<div class="empty">জরুরি সেবার নম্বর পাওয়া যায়নি।</div>';}
      }
    }
+   if(section==='emergency'||isNews||hasRows()){results.hidden=false;results.removeAttribute('hidden');results.classList.add('vog-category-results-ready');results.style.removeProperty('display');}
   }
   actions.innerHTML=(chosen?'<a href="'+url+'">← '+esc(info[1])+' বিভাগে ফিরে যান</a>':'')+(isNews?'':'<button type="button" class="vog-add" id="vogContextAdd">＋ তথ্য যোগ করুন</button>')+'<a class="vog-home-action" href="index.html">⌂ হোমপেজে ফিরে যান</a>';
   if(isNews){document.querySelectorAll('.vog-category-view .info-submit,.vog-category-view #submitSection,.vog-category-view .add-info,.vog-category-view [data-open-submission]').forEach(el=>el.style.setProperty('display','none','important'));} const addButton=document.getElementById('vogContextAdd');if(addButton)addButton.onclick=()=>{if(typeof openSubmission==='function')openSubmission(section);};
