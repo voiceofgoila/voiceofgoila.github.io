@@ -91,11 +91,8 @@ return;
 }
 
 
-document.getElementById("loginBox").style.display="none";
-
-document.getElementById("dashboard").style.display="block";
-
-loadAll();
+// Never display the dashboard before the administrator role is verified.
+await checkAdmin(data.user);
 
 
 }
@@ -151,7 +148,9 @@ return;
 if(!data){
 
 alert("Admin Access Denied");
-
+await window.supabaseClient.auth.signOut();
+document.getElementById("loginBox").style.display="block";
+document.getElementById("dashboard").style.display="none";
 return;
 
 }

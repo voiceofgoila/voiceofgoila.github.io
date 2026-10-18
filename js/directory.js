@@ -267,7 +267,7 @@
       // Clear previously rendered legacy recent cards
       // if the renderer is already available.
       if(
-        typeof renderCards==="function"
+        !location.pathname.endsWith("category.html") && typeof renderCards==="function"
       ){
 
         renderCards(
@@ -315,10 +315,12 @@
 
 
       window.allDirectory=fallback;
+      window.__vogDirectoryLoaded=true;
+      window.dispatchEvent(new Event('vog:directory-ready'));
 
 
       if(
-        typeof renderCards==="function"
+        !location.pathname.endsWith("category.html") && typeof renderCards==="function"
       ){
 
         renderCards(
@@ -883,6 +885,9 @@
 
       window.allDirectory=
         mapped;
+      window.__vogDirectoryLoaded=true;
+      window.__vogDirectoryError='';
+      window.dispatchEvent(new Event('vog:directory-ready'));
 
 
       if(
@@ -900,7 +905,7 @@
 
 
       if(
-        typeof renderCards==="function"
+        !location.pathname.endsWith("category.html") && typeof renderCards==="function"
       ){
 
         renderCards(
