@@ -797,7 +797,13 @@ body:not(.vog-category-view) .hero p{line-height:1.7!important;max-width:60ch}
 .menu-emergency .menu-em-item .vog-em-share,.menu-emergency .menu-em-item .vog-em-call{min-height:29px!important;padding:4px 7px!important;font-size:10px!important;border-radius:8px!important;flex:0 0 auto!important}
 @media(max-width:420px){.menu-emergency .menu-em-item .vog-em-number{width:100%!important}}
 </style>
-</head>
+<style id="vog-centered-category-cards">
+/* Center the icon, label and count as one balanced group. */
+#categories .cat{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;gap:10px!important;padding:22px 12px!important}
+#categories .cat .ico{margin:0 auto 2px!important}
+#categories .cat b{margin:0!important;text-align:center!important}
+#categories .cat small{margin:0!important;text-align:center!important}
+</style></head>
 <body>
 
 <div id="vogBrowserAppPrompt" role="dialog" aria-label="Voice of Goila অ্যাপ ডাউনলোড">

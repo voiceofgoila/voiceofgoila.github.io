@@ -550,7 +550,13 @@ html:not(.vog46-boot-ready) header .brand,html:not(.vog46-boot-ready) .hero-grid
 body.vog-category-view #resultsSection.vog-category-results-ready{display:block!important;visibility:visible!important;opacity:1!important}
 body.vog-category-view #resultsSection.vog-category-results-ready #cards{display:grid!important;visibility:visible!important;opacity:1!important}
 </style>
-</head>
+<style id="vog-centered-category-cards">
+/* Center the icon, label and count as one balanced group. */
+#categories .cat{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;gap:10px!important;padding:22px 12px!important}
+#categories .cat .ico{margin:0 auto 2px!important}
+#categories .cat b{margin:0!important;text-align:center!important}
+#categories .cat small{margin:0!important;text-align:center!important}
+</style></head>
 <body>
 
 <div id="vogBrowserAppPrompt" role="dialog" aria-label="Voice of Goila অ্যাপ ডাউনলোড">
@@ -1753,5 +1759,45 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
 <script id="vog-emergency-menu-actions">
 window.shareEmergencyNumber=async function(name,phone){const message=String(name||'জরুরি সেবা')+' — '+String(phone||'')+' | Voice of Goila';try{if(navigator.share){await navigator.share({title:name,text:message,url:location.origin+'/category.html?section=emergency'});return;}}catch(e){if(e.name==='AbortError')return;}try{await navigator.clipboard.writeText(message);alert('নম্বর কপি হয়েছে');}catch(e){prompt('নম্বর কপি করুন:',message);}};
 window.addEventListener('load',function(){if(location.hash==='#reviewSection'){setTimeout(function(){document.getElementById('reviewSection')?.scrollIntoView({behavior:'smooth',block:'start'});},200);}});
+</script>
+
+<style id="vog-emergency-direct-list-style">
+body.vog-category-view.vog-emergency-page #resultsSection,body.vog-category-view.vog-emergency-page #subcategoryArea{display:none!important}
+#vogEmergencyDirect{padding:20px 0 8px}
+#vogEmergencyDirect .vog-emergency-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:14px}
+#vogEmergencyDirect .vog-emergency-card{background:#fff;border:1px solid #e8dce9;border-radius:20px;padding:18px;box-shadow:0 7px 20px rgba(60,20,80,.05)}
+#vogEmergencyDirect h3{font-size:18px;margin:0 0 7px;color:#301c38}
+#vogEmergencyDirect p{color:#73677a;margin:0 0 12px;font-size:14px}
+#vogEmergencyDirect .vog-emergency-phone{font-size:20px;font-weight:800;color:#6b2c91;margin-bottom:12px}
+#vogEmergencyDirect .vog-emergency-buttons{display:flex;gap:8px}
+#vogEmergencyDirect .vog-emergency-buttons a{flex:1;text-align:center;padding:10px 8px;border-radius:11px;background:#e3f6eb;color:#17633e;text-decoration:none;font-weight:700}
+#vogEmergencyDirect .vog-emergency-buttons button{flex:1;border:1px solid #e4d8e9;border-radius:11px;background:#f7f0fa;color:#6b2c91;font-weight:700}
+</style>
+<script id="vog-emergency-direct-list-script">
+(function(){
+ const params=new URLSearchParams(location.search);
+ if(params.get('section')!=='emergency')return;
+ document.body.classList.add('vog-emergency-page');
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const fallback=[{icon:'🚔',name:'জাতীয় জরুরি সেবা',note:'পুলিশ • ফায়ার • অ্যাম্বুলেন্স',phone:'999'},{icon:'🏥',name:'জাতীয় স্বাস্থ্য সহায়তা',note:'সরকারি স্বাস্থ্য সহায়তা',phone:'16263'}];
+ const direct=document.createElement('section');direct.id='vogEmergencyDirect';direct.innerHTML='<div class="container"><div class="vog-emergency-list" id="vogEmergencyDirectCards"><p>জরুরি সেবার তথ্য লোড হচ্ছে…</p></div></div>';
+ const anchor=document.getElementById('resultsSection');anchor.parentNode.insertBefore(direct,anchor);
+ const clean=x=>String(x||'').replace(/[^0-9+]/g,'');
+ function paint(records){
+  const unique=new Set(),items=(records||[]).filter(x=>{const k=clean(x.phone);if(!k||unique.has(k))return false;unique.add(k);return true;});
+  document.getElementById('vogEmergencyDirectCards').innerHTML=items.length?items.map(x=>'<article class="vog-emergency-card"><h3>'+esc(x.icon||'☎️')+' '+esc(x.name||'জরুরি সেবা')+'</h3><p>'+esc(x.note||'')+'</p><div class="vog-emergency-phone">📞 '+esc(x.phone)+'</div><div class="vog-emergency-buttons"><a href="tel:'+esc(clean(x.phone))+'">📞 কল করুন</a><button type="button" data-phone="'+esc(x.phone)+'" data-name="'+esc(x.name||'জরুরি সেবা')+'">↗ শেয়ার</button></div></article>').join(''):'<p>এখনো জরুরি সেবার নম্বর পাওয়া যায়নি।</p>';
+  document.getElementById('vogEmergencyDirectCards').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{const msg=btn.dataset.name+' — '+btn.dataset.phone; if(navigator.share){navigator.share({title:btn.dataset.name,text:msg,url:location.href}).catch(()=>{});}else if(navigator.clipboard){navigator.clipboard.writeText(msg).then(()=>alert('নম্বর কপি হয়েছে')).catch(()=>prompt('নম্বর কপি করুন',msg));}else prompt('নম্বর কপি করুন',msg);});
+  const n=document.getElementById('vog42Counter');if(n)n.textContent=String(items.length);
+ }
+ paint(typeof emergencyNumbers!=='undefined'&&emergencyNumbers.length?emergencyNumbers:fallback);
+ async function fetchEmergency(){
+  if(!window.supabaseClient)return;
+  try{const r=await window.supabaseClient.from('emergency_numbers').select('*').eq('active',true).order('sort_order',{ascending:true});if(!r.error&&Array.isArray(r.data)&&r.data.length){paint(r.data);return;}}catch(e){console.warn('Emergency fetch failed',e);}
+  // Preserve working homepage fallback if table cannot be read.
+  if(typeof emergencyNumbers!=='undefined'&&emergencyNumbers.length)paint(emergencyNumbers);
+ }
+ fetchEmergency();window.addEventListener('vog:emergency-ready',fetchEmergency);
+ const actions=document.querySelector('.vog-page-actions');if(actions){const obs=new MutationObserver(()=>{const add=actions.querySelector('#vogContextAdd');if(add)add.remove();});obs.observe(actions,{childList:true});const add=actions.querySelector('#vogContextAdd');if(add)add.remove();}
+})();
 </script>
 </body></html>
