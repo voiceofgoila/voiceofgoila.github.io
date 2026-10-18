@@ -812,6 +812,22 @@ body:not(.vog-category-view) #categories .cat small{
 @media(prefers-reduced-motion:reduce){.vog-em-share{transition:none!important}}
 </style>
 <style id="vog-rebuilt-hero">.hero{background-image:linear-gradient(110deg,rgba(23,12,38,.65),rgba(23,12,38,.25)),url("assets/goila-drone.webp");background-position:center;background-size:cover}</style>
+<style id="vog-separated-page-styles">
+body.vog-category-page main>.hero,body.vog-category-page #categorySection,body.vog-category-page #announcementSection,body.vog-category-page #noticeCmsSection,body.vog-category-page #reviewSection,body.vog-category-page .info-submit,body.vog-category-page #inlineAdSection{display:none!important}
+body.vog-category-page main>section:not(#resultsSection):not(#vogDedicatedCategory){display:none!important}
+body.vog-category-page #resultsSection{padding-top:10px}
+.vog-category-hero{background:linear-gradient(115deg,#29183b,#693482 72%,#9c6b35);color:white;padding:26px 0 23px}
+.vog-category-hero h1{font-size:clamp(21px,4.5vw,31px);margin:15px 0 8px;line-height:1.3}
+.vog-category-hero p{opacity:.88;margin:0}.vog-category-back{display:inline-flex;align-items:center;color:white!important;text-decoration:none;font-weight:700;background:#ffffff23;border:1px solid #ffffff44;padding:9px 13px;border-radius:11px}
+.vog-category-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}.vog-category-pill{background:#ffffff22;padding:7px 12px;border-radius:30px;font-weight:750}
+#vogDedicatedCategory{padding:18px 0 4px}#vogDedicatedCategory .vog-subgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:11px;margin:14px 0}
+#vogDedicatedCategory .vog-subgrid a{display:block;text-decoration:none;background:#fff;color:#342143;border:1px solid #e8dcef;border-radius:15px;padding:17px 14px;box-shadow:0 3px 12px #26113509;font-weight:700;min-height:70px}
+#vogDedicatedCategory .vog-subgrid a small{display:block;color:#79588a;margin-top:8px;font-weight:500}
+#vogDedicatedCategory .vog-subgrid a.active{border-color:#8c53ad;background:#f7effb}
+.vog-page-actions{display:flex;gap:9px;flex-wrap:wrap;margin:10px 0 4px}.vog-page-actions button,.vog-page-actions a{border:1px solid #e5d8ee;border-radius:10px;padding:10px 13px;background:white;color:#5f247f;text-decoration:none;font-weight:700;cursor:pointer}
+body.vog-category-page #resultsSection .cards{margin-bottom:22px}
+@media(max-width:600px){.vog-category-hero{padding:20px 0}.vog-category-hero h1{font-size:22px}#vogDedicatedCategory .vog-subgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
 </head>
 <body>
 
@@ -1089,7 +1105,7 @@ function openAdLink(url){if(!url)return;try{window.open(url,"_blank","noopener")
 function showAdPopupFromConfig(cfg){const ad={...(cfg.popup||{}),position:"popup"};if(!cfg.enabled||!ad.enabled||!ad.image||!canShowAd(ad))return;const img=$("adImage");img.src=ad.image;img.alt=ad.alt||"Sponsored advertisement";img.style.display="block";$("adPlaceholder").style.display="none";if(ad.link){img.classList.add("ad-clickable");img.onclick=()=>openAdLink(ad.link)}else{img.classList.remove("ad-clickable");img.onclick=null}$("adOverlay").classList.add("show");markAdShown(ad);let sec=adDuration(ad);$("adTimer").textContent=`${sec} সেকেন্ড পর বন্ধ হবে`;clearInterval(adTimerHandle);adTimerHandle=setInterval(()=>{sec--;if(sec>0)$("adTimer").textContent=`${sec} সেকেন্ড পর বন্ধ হবে`;else closeAdPopup()},1000)}
 function renderInlineAd(cfg){const ad={...(cfg.inline||{}),position:"inline"},section=$("inlineAdSection");if(!section)return;clearTimeout(inlineAdTimerHandle);if(!cfg.enabled||!ad.enabled||!ad.image||!canShowAd(ad)){section.hidden=true;return}const img=$("inlineAdImage"),link=$("inlineAdLink");img.src=ad.image;img.alt=ad.alt||"Sponsored advertisement";if(ad.link){link.href=ad.link;link.style.pointerEvents="auto";link.setAttribute("aria-label",ad.alt||"Sponsored advertisement")}else{link.href="#";link.style.pointerEvents="none"}section.hidden=false;markAdShown(ad);inlineAdTimerHandle=setTimeout(()=>{section.hidden=true},adDuration(ad)*1000)}
 async function initAds(){const cfg=await loadAdsConfig();renderInlineAd(cfg);setTimeout(()=>showAdPopupFromConfig(cfg),250)}
-$("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();renderEmergency();renderAnnouncements();renderReview();setupContactLinks();$("menuBtn").addEventListener("click",toggleSideMenu);$("search").addEventListener("input",e=>renderLiveResults(e.target.value));$("search").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();doSearch()}});document.querySelectorAll("#starPicker button").forEach(b=>b.addEventListener("click",()=>{selectedRating=Number(b.dataset.rating);paintStarPicker()}));document.addEventListener("click",e=>{if(!e.target.closest(".search-wrap"))$("searchPanel").hidden=true});$("adClose").addEventListener("click",closeAdPopup);$("adOverlay").addEventListener("click",e=>{if(e.target===e.currentTarget)closeAdPopup()});document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeAdPopup();closeSideMenu();closeModal("categoryModal");closeModal("submissionModal")}});$("inlineAdClose").addEventListener("click",()=>{$("inlineAdSection").hidden=true});window.addEventListener("load",initAds);if("serviceWorker" in navigator&&location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js?v=20260826-app-cache-v5",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{}))}
+$("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();renderEmergency();renderAnnouncements();renderReview();setupContactLinks();$("menuBtn").addEventListener("click",toggleSideMenu);$("search").addEventListener("input",e=>renderLiveResults(e.target.value));$("search").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();doSearch()}});document.querySelectorAll("#starPicker button").forEach(b=>b.addEventListener("click",()=>{selectedRating=Number(b.dataset.rating);paintStarPicker()}));document.addEventListener("click",e=>{if(!e.target.closest(".search-wrap"))$("searchPanel").hidden=true});$("adClose").addEventListener("click",closeAdPopup);$("adOverlay").addEventListener("click",e=>{if(e.target===e.currentTarget)closeAdPopup()});document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeAdPopup();closeSideMenu();closeModal("categoryModal");closeModal("submissionModal")}});$("inlineAdClose").addEventListener("click",()=>{$("inlineAdSection").hidden=true});window.addEventListener("load",initAds);if(false&&"serviceWorker" in navigator&&location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js?v=20260826-app-cache-v5",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{}))}
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1821,19 +1837,39 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
 })();
 </script>
 
-<script id="vog-original-category-bridge">(function(){
- var params=new URLSearchParams(location.search),section=params.get('section'),sub=params.get('sub');
- if(!section)return;
- function show(){
-   if(typeof window.openCategory!=='function'||typeof window.showSubcategories!=='function')return;
-   try{
-     if(sub&&typeof window.filterSub==='function')window.filterSub(section,sub);
-     else window.openCategory(section);
-   }catch(e){console.warn('Original category view:',e)}
+<script id="vog-clean-old-cache">(function(){if(!('serviceWorker' in navigator))return;navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})}).catch(function(){});if('caches' in window)caches.keys().then(function(keys){keys.filter(function(k){return /vog|goila|app-cache/i.test(k)}).forEach(function(k){caches.delete(k)})}).catch(function(){})})();</script>
+
+<script id="vog-original-category-page">(function(){
+ document.body.classList.add('vog-category-page');
+ var q=new URLSearchParams(location.search), section=q.get('section')||'education', sub=q.get('sub')||'';
+ var origOpen=window.openCategory;
+ window.openCategory=function(slug){if(['map','news','emergency'].includes(slug))return origOpen(slug);location.href='category.html?section='+encodeURIComponent(slug)};
+ window.filterSub=function(main,s){location.href='category.html?section='+encodeURIComponent(main)+'&sub='+encodeURIComponent(s)};
+ var main=document.querySelector('main');
+ var hero=document.createElement('section');hero.className='vog-category-hero';hero.id='vogCategoryHero';
+ hero.innerHTML='<div class="container"><a class="vog-category-back" href="index.html">← হোমপেজে ফিরে যান</a><h1 id="vogPageHeading">সেবার বিভাগ</h1><p>গৈলা ইউনিয়নের প্রয়োজনীয় তথ্য ও সেবা</p><div class="vog-category-meta"><span class="vog-category-pill" id="vogPageCount">তথ্য প্রস্তুত হচ্ছে…</span></div></div>';
+ main.insertBefore(hero,main.firstChild);
+ var dedicated=document.createElement('section');dedicated.id='vogDedicatedCategory';dedicated.innerHTML='<div class="container"><div class="vog-page-actions"><button type="button" id="vogPageAdd">＋ তথ্য যোগ করুন</button><button type="button" id="vogPageShare">↗ শেয়ার করুন</button></div><div id="vogPageSubgrid" class="vog-subgrid"></div></div>';
+ main.insertBefore(dedicated,document.getElementById('resultsSection'));
+ document.getElementById('vogPageAdd').onclick=function(){openSubmission(section)};
+ document.getElementById('vogPageShare').onclick=function(){var payload={title:document.title,url:location.href};if(navigator.share)navigator.share(payload).catch(function(){});else if(navigator.clipboard)navigator.clipboard.writeText(location.href).then(function(){alert('লিংক কপি হয়েছে')});else prompt('লিংক কপি করুন',location.href)};
+ function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
+ function draw(){
+  if(typeof data==='undefined'||!Array.isArray(data)||typeof itemMatchesCategory!=='function')return;
+  var info=typeof catInfo==='function'?catInfo(section):['📁',section],subs=(typeof subcategories!=='undefined'&&subcategories[section])||[];
+  var list=data.filter(function(x){return sub?itemMatchesSubcategory(x,section,sub):itemMatchesCategory(x,section)});
+  var label=sub&&typeof subName==='function'?subName(sub):info[1];
+  document.getElementById('vogPageHeading').textContent=info[0]+' '+label;
+  document.title=label+' | Voice of Goila';
+  document.getElementById('vogPageCount').textContent=list.length+'টি তথ্য';
+  var links=subs.map(function(s){var n=data.filter(function(x){return itemMatchesSubcategory(x,section,s[0])}).length;return '<a class="'+(sub===s[0]?'active':'')+'" href="category.html?section='+encodeURIComponent(section)+'&sub='+encodeURIComponent(s[0])+'">'+esc(s[1])+'<small>'+n+'টি তথ্য →</small></a>'}).join('');
+  document.getElementById('vogPageSubgrid').innerHTML=(sub?'<a href="category.html?section='+encodeURIComponent(section)+'">← সব '+esc(info[1])+'</a>':'')+links;
+  if(typeof renderCards==='function')renderCards(list,label);
  }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(show,150)},{once:true});else setTimeout(show,150);
- // Repeat after async directory load to refresh original counts and approved entries.
- window.addEventListener('vog:directory-ready',show);
- setTimeout(show,1800);
-})();</script>
+ // Original loader emits this event on successfully mapping the live records.
+ window.addEventListener('vog:directory-ready',function(){setTimeout(draw,0)});
+ window.addEventListener('load',draw);
+ draw();
+ })();</script>
+<script id="vog-clean-old-cache">(function(){if(!('serviceWorker' in navigator))return;navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})}).catch(function(){});if('caches' in window)caches.keys().then(function(keys){keys.filter(function(k){return /vog|goila|app-cache/i.test(k)}).forEach(function(k){caches.delete(k)})}).catch(function(){})})();</script>
 </body></html>
