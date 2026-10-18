@@ -744,7 +744,10 @@ html:not(.vog46-boot-ready) header .brand,html:not(.vog46-boot-ready) .hero-grid
 .menu-quick .vog-admin-menu{display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;border-radius:11px;padding:10px 8px;font-size:11px;font-weight:800;background:#f1ebf5;color:#6b2c91}
 </style>
 <script id="vog46-boot-reveal">(function(){var started=Date.now();function check(){var b=window.__vogBootReady||{};if((b.settings&&b.cms)||Date.now()-started>4500){document.documentElement.classList.add('vog46-boot-ready');return;}setTimeout(check,50);}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',check,{once:true});else check();})();</script>
-</head>
+<style id="vog-home-stability">
+@media(prefers-reduced-motion:no-preference){body:not(.vog-category-view) .hero,body:not(.vog-category-view) .categories,body:not(.vog-category-view) .section{animation:none!important}}
+body:not(.vog-category-view) .cat{transition:box-shadow .22s ease,transform .22s ease}
+</style></head>
 <body>
 
 <div id="vogBrowserAppPrompt" role="dialog" aria-label="Voice of Goila অ্যাপ ডাউনলোড">
@@ -794,7 +797,7 @@ const categories=[
 // Keep coaching last in home categories, quick menu and category selectors.
 const coachingPosition=categories.findIndex(c=>c[2]==="coaching");
 if(coachingPosition>=0)categories.push(...categories.splice(coachingPosition,1));
-const subcategories={government:[["union","ইউনিয়ন পরিষদ"],["upazila","উপজেলা সরকারি কর্মকর্তা"],["govt-office","অন্যান্য সরকারি অফিস"],["public-service","সরকারি সেবা"]],education:[["primary","প্রাথমিক বিদ্যালয়"],["secondary","মাধ্যমিক বিদ্যালয়"],["college","কলেজ"],["madrasa","মাদ্রাসা"],["teachers","শিক্ষক ও কর্মচারী"],["other","অন্যান্য শিক্ষা প্রতিষ্ঠান"]],coaching:[["coaching-center","কোচিং সেন্টার"],["home-tutor","হোম টিউটর"],["subject-tutor","বিষয়ভিত্তিক শিক্ষক"],["admission","ভর্তি / এডমিশন কোচিং"],["other","অন্যান্য"]],health:[["hospital","হাসপাতাল/ক্লিনিক"],["doctor","ডাক্তার"],["diagnostic","ডায়াগনস্টিক/ল্যাব"],["ambulance","অ্যাম্বুলেন্স"]],business:[["grocery","মুদি দোকান"],["restaurant","হোটেল/রেস্টুরেন্ট"],["pharmacy","ফার্মেসি"],["sweets","মিষ্টান্ন ভান্ডার/বেকারি"],["library","লাইব্রেরি/স্টেশনারি"],["mfs","বিকাশ/নগদ/রকেট এজেন্ট"],["fashion","কাপড় ও ফ্যাশন"],["tailor","টেইলার্স"],["cosmetics","কসমেটিকস"],["mobile","মোবাইল/ইলেকট্রনিক্স"],["mobile-service","মোবাইল সার্ভিসিং"],["computer","কম্পিউটার/ফটোকপি/অনলাইন সেবা"],["hardware","হার্ডওয়্যার/নির্মাণ সামগ্রী"],["raw-material","কাঁচামাল/পাইকারি"],["furniture","ফার্নিচার"],["salon","সেলুন/পার্লার"],["agri","কৃষি উপকরণ"],["service","অন্যান্য ব্যবসা/সেবা"]],banking:[["bank","ব্যাংক শাখা"],["atm","ATM"],["agent","ব্যাংক এজেন্ট"],["mfs","বিকাশ/নগদ/রকেট"]],religion:[["mosque","মসজিদ"],["madrasa","ধর্মীয় শিক্ষা"],["other","অন্যান্য ধর্মীয় প্রতিষ্ঠান"]],blood:[["all","সব ব্লাড ডোনার"],["a+","A+"],["a-","A-"],["b+","B+"],["b-","B-"],["o+","O+"],["o-","O-"],["ab+","AB+"],["ab-","AB-"]],people:[["entrepreneur","উদ্যোক্তা"],["notable","বিশিষ্ট ব্যক্তিবর্গ"],["university-student","দেশ-বিদেশে বিশ্ববিদ্যালয়ের শিক্ষার্থী"],["innovator","উদ্ভাবক"],["social-worker","সমাজসেবক"],["professional","অন্যান্য কৃতী/পেশাজীবী"]],post:[["post-office","ডাকঘর"]],transport:[["bus","বাস/গণপরিবহন"],["courier","ডাক/কুরিয়ার"],["garage","গ্যারেজ/মেরামত"],["other","অন্যান্য যোগাযোগ সেবা"]],social:[["social-org","সামাজিক সংগঠন"],["club","ক্লাব/যুব সংগঠন"],["ngo","এনজিও/স্বেচ্ছাসেবী সংগঠন"]],news:[]};
+const subcategories={government:[["union","ইউনিয়ন পরিষদ"],["upazila","উপজেলা সরকারি কর্মকর্তা"],["govt-office","অন্যান্য সরকারি অফিস"],["public-service","সরকারি সেবা"]],education:[["primary","প্রাথমিক বিদ্যালয়"],["secondary","মাধ্যমিক বিদ্যালয়"],["college","কলেজ"],["madrasa","মাদ্রাসা"],["teachers","শিক্ষক ও কর্মচারী"],["other","অন্যান্য শিক্ষা প্রতিষ্ঠান"]],coaching:[["coaching-center","কোচিং সেন্টার"],["home-tutor","হোম টিউটর"],["subject-tutor","বিষয়ভিত্তিক শিক্ষক"],["admission","ভর্তি / এডমিশন কোচিং"],["other","অন্যান্য"]],health:[["hospital","হাসপাতাল/ক্লিনিক"],["doctor","ডাক্তার"],["diagnostic","ডায়াগনস্টিক/ল্যাব"],["ambulance","অ্যাম্বুলেন্স"]],business:[["grocery","মুদি দোকান"],["restaurant","হোটেল/রেস্টুরেন্ট"],["pharmacy","ফার্মেসি"],["sweets","মিষ্টান্ন ভান্ডার/বেকারি"],["library","লাইব্রেরি/স্টেশনারি"],["mfs","বিকাশ/নগদ/রকেট এজেন্ট"],["fashion","কাপড় ও ফ্যাশন"],["tailor","টেইলার্স"],["cosmetics","কসমেটিকস"],["mobile","মোবাইল/ইলেকট্রনিক্স"],["mobile-service","মোবাইল সার্ভিসিং"],["computer","কম্পিউটার/ফটোকপি/অনলাইন সেবা"],["hardware","হার্ডওয়্যার/নির্মাণ সামগ্রী"],["raw-material","কাঁচামাল/পাইকারি"],["furniture","ফার্নিচার"],["salon","সেলুন/পার্লার"],["agri","কৃষি উপকরণ"],["service","অন্যান্য ব্যবসা/সেবা"]],banking:[["bank","ব্যাংক শাখা"],["atm","ATM"],["agent","ব্যাংক এজেন্ট"],["mfs","বিকাশ/নগদ/রকেট"]],religion:[["mosque","মসজিদ"],["madrasa","ধর্মীয় শিক্ষা"],["other","অন্যান্য ধর্মীয় প্রতিষ্ঠান"]],blood:[["all","সব ব্লাড ডোনার"],["a+","A+"],["a-","A-"],["b+","B+"],["b-","B-"],["o+","O+"],["o-","O-"],["ab+","AB+"],["ab-","AB-"]],people:[["entrepreneur","উদ্যোক্তা"],["notable","বিশিষ্ট ব্যক্তিবর্গ"],["university-student","দেশ-বিদেশে বিশ্ববিদ্যালয়ের শিক্ষার্থী"],["innovator","উদ্ভাবক"],["social-worker","সমাজসেবক"],["professional","অন্যান্য কৃতী/পেশাজীবী"]],post:[],transport:[["bus","বাস/গণপরিবহন"],["courier","ডাক/কুরিয়ার"],["garage","গ্যারেজ/মেরামত"],["other","অন্যান্য যোগাযোগ সেবা"]],social:[["social-org","সামাজিক সংগঠন"],["club","ক্লাব/যুব সংগঠন"],["ngo","এনজিও/স্বেচ্ছাসেবী সংগঠন"]],news:[]};
 let data=[];
 let homeRecentData=[];
 const emergencyNumbers=[{icon:"🚔",name:"জাতীয় জরুরি সেবা",note:"পুলিশ • ফায়ার • অ্যাম্বুলেন্স",phone:"999"},{icon:"🏥",name:"স্বাস্থ্য বাতায়ন",note:"সরকারি স্বাস্থ্য সহায়তা",phone:"16263"},{icon:"⚡",name:"বিদ্যুৎ সহায়তা",note:"বিদ্যুৎ সংক্রান্ত সহায়তা",phone:"16123"}];
@@ -810,6 +813,7 @@ function itemMatchesCategory(x,slug){
   if(slug==="health")return (x.cat==="health"&&x.subcat!=="pharmacy")||x.cat==="doctor"||x.cat==="ambulance";
   if(slug==="business")return x.cat==="business"||(x.cat==="health"&&x.subcat==="pharmacy");
   if(slug==="post")return x.cat==="post"&&x.subcat!=="courier";
+  if(slug==="police")return x.cat==="police"&&!/ফায়ার|fire\s*service|fire\s*station/i.test([x.name,x.description,x.subcat].join(' '));
   return x.cat===slug;
 }
 function itemMatchesSubcategory(x,main,sub){
@@ -1016,7 +1020,7 @@ function openAdLink(url){if(!url)return;try{window.open(url,"_blank","noopener")
 function showAdPopupFromConfig(cfg){const ad={...(cfg.popup||{}),position:"popup"};if(!cfg.enabled||!ad.enabled||!ad.image||!canShowAd(ad))return;const img=$("adImage");img.src=ad.image;img.alt=ad.alt||"Sponsored advertisement";img.style.display="block";$("adPlaceholder").style.display="none";if(ad.link){img.classList.add("ad-clickable");img.onclick=()=>openAdLink(ad.link)}else{img.classList.remove("ad-clickable");img.onclick=null}$("adOverlay").classList.add("show");markAdShown(ad);let sec=adDuration(ad);$("adTimer").textContent=`${sec} সেকেন্ড পর বন্ধ হবে`;clearInterval(adTimerHandle);adTimerHandle=setInterval(()=>{sec--;if(sec>0)$("adTimer").textContent=`${sec} সেকেন্ড পর বন্ধ হবে`;else closeAdPopup()},1000)}
 function renderInlineAd(cfg){const ad={...(cfg.inline||{}),position:"inline"},section=$("inlineAdSection");if(!section)return;clearTimeout(inlineAdTimerHandle);if(!cfg.enabled||!ad.enabled||!ad.image||!canShowAd(ad)){section.hidden=true;return}const img=$("inlineAdImage"),link=$("inlineAdLink");img.src=ad.image;img.alt=ad.alt||"Sponsored advertisement";if(ad.link){link.href=ad.link;link.style.pointerEvents="auto";link.setAttribute("aria-label",ad.alt||"Sponsored advertisement")}else{link.href="#";link.style.pointerEvents="none"}section.hidden=false;markAdShown(ad);inlineAdTimerHandle=setTimeout(()=>{section.hidden=true},adDuration(ad)*1000)}
 async function initAds(){const cfg=await loadAdsConfig();renderInlineAd(cfg);setTimeout(()=>showAdPopupFromConfig(cfg),250)}
-$("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();renderEmergency();renderAnnouncements();renderReview();setupContactLinks();$("menuBtn").addEventListener("click",toggleSideMenu);$("search").addEventListener("input",e=>renderLiveResults(e.target.value));$("search").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();doSearch()}});document.querySelectorAll("#starPicker button").forEach(b=>b.addEventListener("click",()=>{selectedRating=Number(b.dataset.rating);paintStarPicker()}));document.addEventListener("click",e=>{if(!e.target.closest(".search-wrap"))$("searchPanel").hidden=true});$("adClose").addEventListener("click",closeAdPopup);$("adOverlay").addEventListener("click",e=>{if(e.target===e.currentTarget)closeAdPopup()});document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeAdPopup();closeSideMenu();closeModal("categoryModal");closeModal("submissionModal")}});$("inlineAdClose").addEventListener("click",()=>{$("inlineAdSection").hidden=true});window.addEventListener("load",initAds);if("serviceWorker" in navigator&&location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js?v=20261017-v48",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{}))}
+$("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();renderEmergency();renderAnnouncements();renderReview();setupContactLinks();$("menuBtn").addEventListener("click",toggleSideMenu);$("search").addEventListener("input",e=>renderLiveResults(e.target.value));$("search").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();doSearch()}});document.querySelectorAll("#starPicker button").forEach(b=>b.addEventListener("click",()=>{selectedRating=Number(b.dataset.rating);paintStarPicker()}));document.addEventListener("click",e=>{if(!e.target.closest(".search-wrap"))$("searchPanel").hidden=true});$("adClose").addEventListener("click",closeAdPopup);$("adOverlay").addEventListener("click",e=>{if(e.target===e.currentTarget)closeAdPopup()});document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeAdPopup();closeSideMenu();closeModal("categoryModal");closeModal("submissionModal")}});$("inlineAdClose").addEventListener("click",()=>{$("inlineAdSection").hidden=true});window.addEventListener("load",initAds);if("serviceWorker" in navigator&&location.protocol.startsWith("http")){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js?v=20261018-stable-ux",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{}))}
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1260,18 +1264,35 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
     const byId=id=>document.getElementById(id);
     const esc=v=>String(v??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 
-    async function loadPublicEmergencyNumbers(){
-        if(!window.supabaseClient)return;
-        const {data,error}=await window.supabaseClient.from("emergency_numbers")
-            .select("icon,name,note,phone,active,sort_order")
-            .eq("active",true)
-            .order("sort_order",{ascending:true});
-        if(error){console.warn("Emergency numbers unavailable; built-in fallback kept.",error.message);return;}
-        if(typeof emergencyNumbers!=="undefined" && Array.isArray(emergencyNumbers)){
-            emergencyNumbers.splice(0,emergencyNumbers.length,...(data||[]).map(x=>({icon:x.icon||"☎️",name:x.name||"",note:x.note||"",phone:x.phone||""})));
-            if(typeof renderEmergency==="function")renderEmergency();
-            if(typeof renderMenu==="function")renderMenu();
+    // Both emergency_numbers (admin-managed) and approved directory_items emergency records.
+    let configuredEmergency=null;
+    const builtInEmergency=typeof emergencyNumbers!=="undefined"?emergencyNumbers.map(x=>({...x})):[];
+    function syncEmergencyNumbers(){
+        if(typeof emergencyNumbers==="undefined")return;
+        const base=configuredEmergency===null?builtInEmergency:configuredEmergency;
+        const directory=Array.isArray(window.allDirectory)?window.allDirectory:[];
+        const entries=directory.filter(x=>x.cat==="emergency"&&x.phone).map(x=>({icon:"☎️",name:x.name||"জরুরি সেবা",note:x.description||x.address||"",phone:String(x.phone).trim()}));
+        const combined=[],seen=new Set();
+        for(const x of [...base,...entries]){
+            const key=String(x.phone||"").replace(/[^0-9+]/g,"")+"|"+String(x.name||"").trim().toLowerCase();
+            if(!x.phone||seen.has(key))continue;
+            seen.add(key);combined.push(x);
         }
+        emergencyNumbers.splice(0,emergencyNumbers.length,...combined);
+        if(typeof renderEmergency==="function")renderEmergency();
+        if(typeof renderMenu==="function")renderMenu();
+    }
+    window.addEventListener("vog:directory-ready",syncEmergencyNumbers);
+    async function loadPublicEmergencyNumbers(){
+        if(!window.supabaseClient){syncEmergencyNumbers();return;}
+        try{
+            const {data,error}=await window.supabaseClient.from("emergency_numbers")
+                .select("icon,name,note,phone,active,sort_order")
+                .eq("active",true).order("sort_order",{ascending:true});
+            if(error){console.warn("Emergency numbers unavailable; fallback kept.",error.message);syncEmergencyNumbers();return;}
+            configuredEmergency=(data||[]).map(x=>({icon:x.icon||"☎️",name:x.name||"",note:x.note||"",phone:x.phone||""}));
+            syncEmergencyNumbers();
+        }catch(e){console.warn("Emergency number load failed",e);syncEmergencyNumbers();}
     }
 
     function makeUuid(){
