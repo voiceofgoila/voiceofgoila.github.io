@@ -503,6 +503,22 @@ html:not(.vog46-boot-ready) header .brand,html:not(.vog46-boot-ready) .hero-grid
 .menu-quick .vog-admin-menu{display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;border-radius:11px;padding:10px 8px;font-size:11px;font-weight:800;background:#f1ebf5;color:#6b2c91}
 </style>
 <script id="vog46-boot-reveal">(function(){var started=Date.now();function check(){var b=window.__vogBootReady||{};if((b.settings&&b.cms)||Date.now()-started>4500){document.documentElement.classList.add('vog46-boot-ready');return;}setTimeout(check,50);}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',check,{once:true});else check();})();</script>
+
+<style id="vog-user-refinement-20261018">
+/* Compact category hero: preserve data renderer and navigation */
+.vog-category-view .vog-category-hero{padding:14px 0 18px!important}
+.vog-category-view .vog-back-top{display:inline-flex!important;width:max-content!important;max-width:100%;flex:0 0 auto!important;align-self:flex-start!important;white-space:normal;padding:7px 13px!important;margin:0 0 5px!important;font-size:12px!important;line-height:1.35!important;min-height:0!important}
+.vog-category-view .vog-category-hero .container{display:flex;flex-direction:column;align-items:stretch}
+.vog-category-view .vog42-heading-line{margin-top:2px!important;gap:10px!important}
+.vog-category-view .vog42-heading-line h1{margin:4px 0!important;line-height:1.24!important}
+.vog-category-view .vog-page-actions{margin-top:20px!important;margin-bottom:26px!important}
+.vog-category-view .vog-page-actions .vog-home-action{background:linear-gradient(135deg,#fff,#f2e6f9)!important;color:#672785!important;border:1px solid #d5b8e3!important;border-radius:18px!important;box-shadow:0 6px 18px rgba(89,36,115,.10)!important;font-weight:800!important;transition:transform .25s ease,box-shadow .25s ease!important}
+.vog-category-view .vog-page-actions .vog-home-action:hover{transform:translateY(-2px)!important;box-shadow:0 11px 24px rgba(89,36,115,.17)!important}
+@media(max-width:600px){.vog-category-view .vog-category-hero{padding:13px 0 16px!important}.vog-category-view .vog42-heading-line h1{font-size:clamp(21px,5.5vw,27px)!important}}
+@keyframes vog-refined-enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:no-preference){.vog-category-view .vog42-heading-line,.vog-category-view .vog-back-top{animation:vog-refined-enter .75s cubic-bezier(.16,1,.3,1) both!important}body:not(.vog-category-view) .hero h2,body:not(.vog-category-view) .hero p,body:not(.vog-category-view) .section-head{animation:vog-refined-enter .9s cubic-bezier(.16,1,.3,1) both}}
+@media(prefers-reduced-motion:reduce){.vog-category-view .vog42-heading-line,.vog-category-view .vog-back-top{animation:none!important}}
+</style>
 </head>
 <body>
 
@@ -1580,7 +1596,7 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
  if(!section){location.replace('index.html');return;}
  document.body.classList.add('vog-category-view');
  const root=document.querySelector('main'),hero=document.createElement('div');hero.className='vog-category-hero';
- hero.innerHTML='<div class="container"><a class="vog-back-top" id="vogTopBack" href="index.html">← হোমপেজে ফিরে যান</a><div class="vog42-heading-line"><h1 id="vogCategoryHeading"></h1><div class="vog42-count"><strong id="vog42Counter">—</strong><small>টি তথ্য</small></div></div><p>গৈলার প্রয়োজনীয় তথ্য ও সেবা</p></div>';
+ hero.innerHTML='<div class="container"><a class="vog-back-top" id="vogTopBack" href="index.html">← হোমপেজে ফিরে যান</a><div class="vog42-heading-line"><h1 id="vogCategoryHeading"></h1><div class="vog42-count"><strong id="vog42Counter">—</strong><small>টি তথ্য</small></div></div></div>';
  root.insertBefore(hero,root.firstChild);
  const actions=document.createElement('div');actions.className='vog-page-actions container';root.appendChild(actions);
  const area=document.getElementById('subcategoryArea'),results=document.getElementById('resultsSection');
@@ -1600,7 +1616,7 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
  function animateVogCount(target){
   if(lastCount===target)return;
   if(countFrame)cancelAnimationFrame(countFrame);
-  const start=lastCount===null?0:lastCount, duration=620, startTime=performance.now();
+  const start=lastCount===null?0:lastCount, duration=1800, startTime=performance.now();
   lastCount=target;
   if(matchMedia('(prefers-reduced-motion: reduce)').matches){count.textContent=String(target);return;}
   function tick(now){const progress=Math.min(1,(now-startTime)/duration),eased=1-Math.pow(1-progress,3);count.textContent=String(Math.round(start+(target-start)*eased));if(progress<1)countFrame=requestAnimationFrame(tick);else countFrame=0;}
@@ -1637,7 +1653,7 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
      }
    }
   }
-  actions.innerHTML=(chosen?'<a href="'+url+'">← '+esc(info[1])+' বিভাগে ফিরে যান</a>':'')+'<button type="button" class="vog-add" id="vogContextAdd">＋ তথ্য যোগ করুন</button><a href="index.html">⌂ হোমপেজে ফিরে যান</a>';
+  actions.innerHTML=(chosen?'<a href="'+url+'">← '+esc(info[1])+' বিভাগে ফিরে যান</a>':'')+'<button type="button" class="vog-add" id="vogContextAdd">＋ তথ্য যোগ করুন</button><a class="vog-home-action" href="index.html">⌂ হোমপেজে ফিরে যান ↗</a>';
   document.getElementById('vogContextAdd').onclick=()=>{if(typeof openSubmission==='function')openSubmission(section);};
   if(!hasRows()&&window.__vogDirectoryError){area.innerHTML='<div class="panel" role="alert">তথ্য লোড করা যায়নি। <button id="vogRetry" type="button">আবার চেষ্টা করুন</button></div>';document.getElementById('vogRetry').onclick=()=>window.loadPublicDirectory?.();}
  }
