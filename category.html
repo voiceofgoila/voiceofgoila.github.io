@@ -814,7 +814,7 @@ body:not(.vog-category-view) #categories .cat small{
 <style id="vog-rebuilt-hero">.hero{background-image:linear-gradient(110deg,rgba(23,12,38,.65),rgba(23,12,38,.25)),url("assets/goila-drone.webp");background-position:center;background-size:cover}</style>
 <style id="vog-separated-page-styles">
 body.vog-category-page main>.hero,body.vog-category-page #categorySection,body.vog-category-page #announcementSection,body.vog-category-page #noticeCmsSection,body.vog-category-page #reviewSection,body.vog-category-page .info-submit,body.vog-category-page #inlineAdSection{display:none!important}
-body.vog-category-page main>section:not(#resultsSection):not(#vogDedicatedCategory){display:none!important}
+body.vog-category-page main>section:not(#resultsSection):not(#vogDedicatedCategory):not(#vogCategoryHero){display:none!important}
 body.vog-category-page #resultsSection{padding-top:10px}
 .vog-category-hero{background:linear-gradient(115deg,#29183b,#693482 72%,#9c6b35);color:white;padding:26px 0 23px}
 .vog-category-hero h1{font-size:clamp(21px,4.5vw,31px);margin:15px 0 8px;line-height:1.3}
@@ -1110,7 +1110,7 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js?v=20260819-1625"></script>
-<script src="js/directory.js?v=20261018-old-core-rebuild"></script>
+<script src="js/directory.js?v=20261018-core-stable-2"></script>
 <script>
 // Voice of Goila - Public Website Settings CMS
 // Reads the existing public.website_settings table and applies values without changing the page layout.
@@ -1869,6 +1869,7 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
  // Original loader emits this event on successfully mapping the live records.
  window.addEventListener('vog:directory-ready',function(){setTimeout(draw,0)});
  window.addEventListener('load',draw);
+ window.addEventListener('pageshow',draw);
  draw();
  })();</script>
 <script id="vog-clean-old-cache">(function(){if(!('serviceWorker' in navigator))return;navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})}).catch(function(){});if('caches' in window)caches.keys().then(function(keys){keys.filter(function(k){return /vog|goila|app-cache/i.test(k)}).forEach(function(k){caches.delete(k)})}).catch(function(){})})();</script>
