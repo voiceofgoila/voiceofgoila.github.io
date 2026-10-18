@@ -747,7 +747,21 @@ html:not(.vog46-boot-ready) header .brand,html:not(.vog46-boot-ready) .hero-grid
 <style id="vog-home-stability">
 @media(prefers-reduced-motion:no-preference){body:not(.vog-category-view) .hero,body:not(.vog-category-view) .categories,body:not(.vog-category-view) .section{animation:none!important}}
 body:not(.vog-category-view) .cat{transition:box-shadow .22s ease,transform .22s ease}
-</style></head>
+</style><style id="vog-emergency-menu-unified-fix">
+.side-menu{width:min(94vw,420px)!important;padding:16px!important}
+.menu-emergency{display:grid!important;gap:12px!important}
+.menu-em-item{background:#fff!important;border:1px solid #ebdfe6!important;border-radius:17px!important;padding:16px!important;box-shadow:0 4px 14px rgba(70,30,65,.04)}
+.menu-em-item b{font-size:15px!important;line-height:1.5!important;color:#29172e!important}
+.menu-em-item small{font-size:12px!important;line-height:1.6!important}
+.menu-em-item .vog-em-actions{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important;margin-top:13px!important}
+.menu-em-item .vog-em-number{font-size:15px!important;font-weight:850!important;color:#613474!important;margin-right:auto!important;overflow-wrap:anywhere}
+.menu-em-item .vog-em-share,.menu-em-item .vog-em-call{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:40px!important;border-radius:11px!important;padding:8px 10px!important;font-size:12px!important;font-weight:800!important;white-space:nowrap!important;text-decoration:none!important;margin:0!important}
+.menu-em-item .vog-em-share{border:1px solid #e2d3e8!important;background:#f7f0fa!important;color:#693384!important;cursor:pointer}
+.menu-em-item .vog-em-call{border:1px solid #c1e3d0!important;background:#e5f6ec!important;color:#206b48!important}
+.item-detail-actions .btn,.item .actions .btn,.category-actions a{display:inline-flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;line-height:1.35!important}
+@media(max-width:420px){.menu-em-item .vog-em-number{width:100%;margin-bottom:3px}.menu-em-item .vog-em-share,.menu-em-item .vog-em-call{flex:1}}
+</style>
+</head>
 <body>
 
 <div id="vogBrowserAppPrompt" role="dialog" aria-label="Voice of Goila অ্যাপ ডাউনলোড">
@@ -989,7 +1003,7 @@ async function submitInformation(e){
     }
 }
 const REVIEW_KEY="voiceOfGoilaSingleReview";const LEGACY_REVIEW_KEY="voiceOfGoilaWebsiteReviews";let selectedRating=0;function getReview(){try{const r=JSON.parse(localStorage.getItem(REVIEW_KEY)||"null");if(r)return r;const old=JSON.parse(localStorage.getItem(LEGACY_REVIEW_KEY)||"[]");if(Array.isArray(old)&&old.length){const latest=old[old.length-1];localStorage.setItem(REVIEW_KEY,JSON.stringify(latest));return latest}}catch(e){}return null}function saveReview(r){try{localStorage.setItem(REVIEW_KEY,JSON.stringify(r))}catch(e){}}
-function paintStarPicker(){document.querySelectorAll("#starPicker button").forEach(b=>b.classList.toggle("active",Number(b.dataset.rating)<=selectedRating))}function renderReview(){const r=getReview(),btn=$("reviewSubmitBtn"),list=$("reviewList");if(!r){$("avgRating").textContent="0.0";$("avgStars").textContent="☆☆☆☆☆";$("ratingMeta").textContent="এখনও কোনো রেটিং নেই";list.innerHTML="";btn.disabled=false;return}const rating=Number(r.rating||0);$("avgRating").textContent=rating.toFixed(1);$("avgStars").textContent="★".repeat(rating)+"☆".repeat(5-rating);$("ratingMeta").textContent="এই browser/device-এর রেটিং";list.innerHTML=`<article class="review-card"><div class="review-card-top"><b>${escapeHtml(r.name||"একজন ব্যবহারকারী")}</b><span class="stars">${"★".repeat(rating)}${"☆".repeat(5-rating)}</span></div>${r.text?`<p>${escapeHtml(r.text)}</p>`:""}</article>`;btn.disabled=true;btn.textContent="রিভিউ দেওয়া হয়েছে";$("reviewName").disabled=true;$("reviewText").disabled=true;document.querySelectorAll("#starPicker button").forEach(b=>b.disabled=true)}function submitReview(){if(getReview()){showReviewMessage("আপনি ইতোমধ্যে একটি রিভিউ দিয়েছেন।");return}if(!selectedRating){alert("অনুগ্রহ করে ১ থেকে ৫ স্টারের মধ্যে একটি রেটিং নির্বাচন করুন।");return}saveReview({rating:selectedRating,name:$("reviewName").value.trim(),text:$("reviewText").value.trim(),time:Date.now()});renderReview()}function showReviewMessage(t){const m=$("reviewMessage");m.textContent=t;m.style.display="block"}function scrollToReview(){closeSideMenu();$("reviewSection").scrollIntoView({behavior:"smooth",block:"start"})}
+function paintStarPicker(){document.querySelectorAll("#starPicker button").forEach(b=>b.classList.toggle("active",Number(b.dataset.rating)<=selectedRating))}function renderReview(){const r=getReview(),btn=$("reviewSubmitBtn"),list=$("reviewList");if(!r){$("avgRating").textContent="0.0";$("avgStars").textContent="☆☆☆☆☆";$("ratingMeta").textContent="এখনও কোনো রেটিং নেই";list.innerHTML="";btn.disabled=false;return}const rating=Number(r.rating||0);$("avgRating").textContent=rating.toFixed(1);$("avgStars").textContent="★".repeat(rating)+"☆".repeat(5-rating);$("ratingMeta").textContent="এই browser/device-এর রেটিং";list.innerHTML=`<article class="review-card"><div class="review-card-top"><b>${escapeHtml(r.name||"একজন ব্যবহারকারী")}</b><span class="stars">${"★".repeat(rating)}${"☆".repeat(5-rating)}</span></div>${r.text?`<p>${escapeHtml(r.text)}</p>`:""}</article>`;btn.disabled=true;btn.textContent="রিভিউ দেওয়া হয়েছে";$("reviewName").disabled=true;$("reviewText").disabled=true;document.querySelectorAll("#starPicker button").forEach(b=>b.disabled=true)}function submitReview(){if(getReview()){showReviewMessage("আপনি ইতোমধ্যে একটি রিভিউ দিয়েছেন।");return}if(!selectedRating){alert("অনুগ্রহ করে ১ থেকে ৫ স্টারের মধ্যে একটি রেটিং নির্বাচন করুন।");return}saveReview({rating:selectedRating,name:$("reviewName").value.trim(),text:$("reviewText").value.trim(),time:Date.now()});renderReview()}function showReviewMessage(t){const m=$("reviewMessage");m.textContent=t;m.style.display="block"}function scrollToReview(){closeSideMenu();if(document.body.classList.contains("vog-category-view")){location.href="index.html#reviewSection";return;}const section=$("reviewSection");if(section){section.scrollIntoView({behavior:"smooth",block:"start"});}else{location.href="index.html#reviewSection";}}
 function setupContactLinks(){const f=$("facebookLink"),e=$("emailLink");if(SITE_CONFIG.facebook){f.href=SITE_CONFIG.facebook;f.target="_blank";f.rel="noopener"}else f.addEventListener("click",ev=>{ev.preventDefault();alert("Facebook Page link এখনো সেট করা হয়নি।")});if(SITE_CONFIG.email){e.href="mailto:"+SITE_CONFIG.email}else e.addEventListener("click",ev=>{ev.preventDefault();alert("Email address এখনো সেট করা হয়নি।")})}
 function escapeHtml(text){return String(text||"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]||ch))}function escapeAttr(text){return escapeHtml(text).replace(/`/g,"&#96;")}
 const AD_HISTORY_PREFIX="voiceOfGoilaAdHistoryV2:";let adTimerHandle=null;let inlineAdTimerHandle=null;let ADS_CONFIG={enabled:false,popup:{enabled:false,id:null,image:"",link:"",alt:"Sponsored advertisement",views24h:1,durationSeconds:8},inline:{enabled:false,id:null,image:"",link:"",alt:"Sponsored advertisement",views24h:1,durationSeconds:8}};
@@ -1844,5 +1858,9 @@ window.shareEmergencyInfo=async function(button){
  else if(navigator.clipboard){await navigator.clipboard.writeText(payload.text+'\n'+payload.url);if(typeof toast==='function')toast('তথ্য কপি হয়েছে');}
  else prompt('তথ্য কপি করুন',payload.text+'\n'+payload.url);}catch(e){}
 };
+</script>
+<script id="vog-emergency-menu-actions">
+window.shareEmergencyNumber=async function(name,phone){const message=String(name||'জরুরি সেবা')+' — '+String(phone||'')+' | Voice of Goila';try{if(navigator.share){await navigator.share({title:name,text:message,url:location.origin+'/category.html?section=emergency'});return;}}catch(e){if(e.name==='AbortError')return;}try{await navigator.clipboard.writeText(message);alert('নম্বর কপি হয়েছে');}catch(e){prompt('নম্বর কপি করুন:',message);}};
+window.addEventListener('load',function(){if(location.hash==='#reviewSection'){setTimeout(function(){document.getElementById('reviewSection')?.scrollIntoView({behavior:'smooth',block:'start'});},200);}});
 </script>
 </body></html>
