@@ -1645,34 +1645,43 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
   const matchesSub=(x,e)=>typeof itemMatchesSubcategory==='function'&&itemMatchesSubcategory(x,section,e[0]);
   const within=all.filter(matches),other=within.filter(x=>!subs.some(e=>matchesSub(x,e)));
   const relevant=chosen?(sub==='__other'?other:within.filter(x=>matchesSub(x,chosen))):within;
+  const isNews=section==='news';
+  const newsRows=isNews&&typeof importantAnnouncements!=='undefined'?importantAnnouncements:[];
+  const emergencyRows=section==='emergency'&&typeof emergencyNumbers!=='undefined'?emergencyNumbers:[];
   // Skip DOM replacement if the same dataset is already visible.
-  const signature=JSON.stringify([section,sub,hasRows(),!!window.__vogDirectoryError,within.map(x=>[x.id,x.cat,x.subcat,x.name]),relevant.map(x=>x.id),emergencyConfigured]);
+  const signature=JSON.stringify([section,sub,hasRows(),!!window.__vogDirectoryError,within.map(x=>[x.id,x.cat,x.subcat,x.name]),relevant.map(x=>x.id),emergencyConfigured,newsRows,emergencyRows]);
   if(!force&&didRender&&signature===lastSignature)return;
   didRender=true;lastSignature=signature;
   heading.textContent=(chosen?'':info[0]+' ')+label;document.title=label+' | Voice of Goila';
   const back=document.getElementById('vogTopBack');back.href=chosen?url:'index.html';back.textContent=chosen?'← '+info[1]+' বিভাগে ফিরে যান':'← হোমপেজে ফিরে যান';
-  if(hasRows()||section==='emergency')animateVogCount(relevant.length+(section==='emergency'?(emergencyConfigured.length||emergencyNumbers.length):0));else count.textContent='—';
+  if(hasRows()||section==='emergency'||isNews)animateVogCount(isNews?newsRows.length:(section==='emergency'?emergencyRows.length:relevant.length));else count.textContent='—';
   area.hidden=false;area.removeAttribute('hidden');
   if(!chosen&&subs.length){
    area.innerHTML='<div class="panel"><div class="subcategory-grid">'+subs.map((e,i)=>'<a class="subcat" style="--vog-order:'+i+'" href="'+url+'&sub='+encodeURIComponent(e[0])+'"><b>'+esc(e[1])+'</b><small>'+(hasRows()?all.filter(x=>matchesSub(x,e)).length+'টি তথ্য':'তথ্য লোড হচ্ছে…')+' →</small></a>').join('')+(other.length?'<a class="subcat" href="'+url+'&sub=__other"><b>অন্যান্য তথ্য</b><small>'+other.length+'টি তথ্য →</small></a>':'')+'</div></div>';
    results.hidden=true;
   }else{
-   area.innerHTML='';results.hidden=!(hasRows()||section==='emergency');
-   if(hasRows()||section==='emergency'){
+   area.innerHTML='';results.hidden=!(hasRows()||section==='emergency'||isNews);
+   if(hasRows()||section==='emergency'||isNews){
      renderCards(relevant,label);
-     if(section==='emergency'&&(emergencyConfigured.length||emergencyNumbers.length)){
+     if(isNews){
        const holder=document.getElementById('cards');
-       const numbers=(emergencyConfigured.length?emergencyConfigured:emergencyNumbers).filter(x=>x.phone).map(x=>'<div class="item"><h4>'+esc(x.icon||'☎️')+' '+esc(x.name)+'</h4><p>'+esc(x.note||'')+'</p><div class="actions"><a class="btn call" href="tel:'+esc(String(x.phone).replace(/[^0-9+]/g,''))+'">📞 '+esc(x.phone)+' — কল করুন</a></div></div>').join('');
-       if(holder){if(!relevant.length)holder.innerHTML='';holder.insertAdjacentHTML('afterbegin',numbers);}
+       if(holder){holder.innerHTML=newsRows.length?newsRows.map(a=>'<article class="item"><h4>📢 '+esc(a.title||'গুরুত্বপূর্ণ ঘোষণা')+'</h4><p>'+esc(a.date||'')+'</p><p>'+esc(a.text||'')+'</p>'+(a.link&&/^https?:\/\//i.test(a.link)?'<div class="actions"><a class="btn map" href="'+esc(a.link)+'" target="_blank" rel="noopener">বিস্তারিত দেখুন</a></div>':'')+'</article>').join(''):'<div class="empty">এখনো কোনো গুরুত্বপূর্ণ ঘোষণা প্রকাশিত হয়নি।</div>';}
+     }
+     if(section==='emergency'&&emergencyRows.length){
+       const holder=document.getElementById('cards');
+       const numbers=emergencyRows.filter(x=>x.phone).map(x=>'<div class="item"><h4>'+esc(x.icon||'☎️')+' '+esc(x.name)+'</h4><p>'+esc(x.note||'')+'</p><div class="actions"><a class="btn call" href="tel:'+esc(String(x.phone).replace(/[^0-9+]/g,''))+'">📞 '+esc(x.phone)+' — কল করুন</a></div></div>').join('');
+       if(holder){holder.innerHTML=numbers;}
      }
    }
   }
-  actions.innerHTML=(chosen?'<a href="'+url+'">← '+esc(info[1])+' বিভাগে ফিরে যান</a>':'')+'<button type="button" class="vog-add" id="vogContextAdd">＋ তথ্য যোগ করুন</button><a class="vog-home-action" href="index.html">⌂ হোমপেজে ফিরে যান</a>';
-  document.getElementById('vogContextAdd').onclick=()=>{if(typeof openSubmission==='function')openSubmission(section);};
-  if(!hasRows()&&window.__vogDirectoryError){area.innerHTML='<div class="panel" role="alert">তথ্য লোড করা যায়নি। <button id="vogRetry" type="button">আবার চেষ্টা করুন</button></div>';document.getElementById('vogRetry').onclick=()=>window.loadPublicDirectory?.();}
+  actions.innerHTML=(chosen?'<a href="'+url+'">← '+esc(info[1])+' বিভাগে ফিরে যান</a>':'')+(isNews?'':'<button type="button" class="vog-add" id="vogContextAdd">＋ তথ্য যোগ করুন</button>')+'<a class="vog-home-action" href="index.html">⌂ হোমপেজে ফিরে যান</a>';
+  const addButton=document.getElementById('vogContextAdd');if(addButton)addButton.onclick=()=>{if(typeof openSubmission==='function')openSubmission(section);};
+  if(!hasRows()&&!isNews&&window.__vogDirectoryError){area.innerHTML='<div class="panel" role="alert">তথ্য লোড করা যায়নি। <button id="vogRetry" type="button">আবার চেষ্টা করুন</button></div>';document.getElementById('vogRetry').onclick=()=>window.loadPublicDirectory?.();}
  }
  window.addEventListener('vog:directory-ready',()=>render());
  window.addEventListener('vog:directory-error',()=>render());
+ window.addEventListener('vog:emergency-ready',()=>render());
+ window.addEventListener('vog:announcements-ready',()=>render());
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>render(),{once:true});else render();
  // A single late reconciliation, not a repeating interval that replays animations.
  window.addEventListener('load',()=>render(),{once:true});
