@@ -1693,7 +1693,7 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
   const signature=JSON.stringify([section,sub,hasRows(),!!window.__vogDirectoryError,within.map(x=>[x.id,x.cat,x.subcat,x.name]),relevant.map(x=>x.id),emergencyConfigured,newsRows,emergencyRows]);
   if(!force&&didRender&&signature===lastSignature)return;
   didRender=true;lastSignature=signature;
-  heading.textContent=(chosen?'':info[0]+' ')+label;document.title=label+' | Voice of Goila';
+  heading.textContent=section==='emergency'?'🚨 জরুরি সেবা':(chosen?'':info[0]+' ')+label;document.title=(section==='emergency'?'জরুরি সেবা':label)+' | Voice of Goila';
   const back=document.getElementById('vogTopBack');back.href=chosen?url:'index.html';back.textContent=chosen?'← '+info[1]+' বিভাগে ফিরে যান':'← হোমপেজে ফিরে যান';
   if(hasRows()||section==='emergency'||isNews)animateVogCount(isNews?newsRows.length:(section==='emergency'?Math.max(emergencyRows.length,relevant.length):relevant.length));else count.textContent='—';
   area.hidden=false;area.removeAttribute('hidden');
@@ -1776,6 +1776,9 @@ window.addEventListener('load',function(){if(location.hash==='#reviewSection'){s
 
 <style id="vog-emergency-direct-list-style">
 body.vog-category-view.vog-emergency-page #resultsSection,body.vog-category-view.vog-emergency-page #subcategoryArea{display:none!important}
+/* The generic category-page rule hides all main > section elements except two IDs.
+   The emergency cards are a third section and must explicitly remain visible. */
+body.vog-category-view.vog-emergency-page main > section#vogEmergencyDirect{display:block!important;visibility:visible!important;opacity:1!important}
 #vogEmergencyDirect{padding:20px 0 8px}
 #vogEmergencyDirect .vog-emergency-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:14px}
 #vogEmergencyDirect .vog-emergency-card{background:#fff;border:1px solid #e8dce9;border-radius:20px;padding:18px;box-shadow:0 7px 20px rgba(60,20,80,.05)}
