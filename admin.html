@@ -760,6 +760,17 @@ table{border-collapse:separate;border-spacing:0;width:100%}th{background:#f5eef9
 <style>.vog-admin-access-note{color:#716579;font-size:14px;line-height:1.65;margin:0 0 18px;max-width:520px}</style><style id="vog-admin-auth-header">
 body:not(.vog-admin-authenticated) .container > .header,body:not(.vog-admin-authenticated) .container > #menu,body:not(.vog-admin-authenticated) .container > .menu{display:none!important}
 body:not(.vog-admin-authenticated) #loginBox{margin-top:24px!important}
+</style><style id="vog-admin-dashboard-usability-20261019">
+/* Layout only: retain all existing admin actions and authentication. */
+#dashboard .stats{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+#dashboard .stat{min-height:110px!important;padding:18px 12px!important;border-radius:17px!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:9px!important}
+#dashboard .stat h3{font-size:13px!important;line-height:1.35!important;margin:0!important;color:#776581!important}
+#dashboard .stat h2{font-size:32px!important;line-height:1.1!important;margin:0!important;color:#6b2c91!important}
+#dashboard .card{border-radius:18px!important}
+#dashboard button,#menu button{min-height:42px;cursor:pointer}
+#menu button{text-align:left!important;padding:11px 15px!important;border-radius:10px!important}
+body:not(.vog-admin-authenticated) .container>.header,body:not(.vog-admin-authenticated) .container>#menu{display:none!important}
+@media(min-width:700px){#dashboard .stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 </style></head>
 
 

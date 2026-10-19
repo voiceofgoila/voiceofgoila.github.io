@@ -1774,46 +1774,56 @@ window.shareEmergencyNumber=async function(name,phone){const message=String(name
 window.addEventListener('load',function(){if(location.hash==='#reviewSection'){setTimeout(function(){document.getElementById('reviewSection')?.scrollIntoView({behavior:'smooth',block:'start'});},200);}});
 </script>
 
-<style id="vog-emergency-direct-list-style">
+<style id="vog-emergency-reliable-v2-style">
+/* Dedicated DIV: cannot be hidden by legacy main > section rules. */
+#vogEmergencyReliable{display:block!important;visibility:visible!important;opacity:1!important;padding:20px 0 8px}
+#vogEmergencyReliable[hidden]{display:none!important}
 body.vog-category-view.vog-emergency-page #resultsSection,body.vog-category-view.vog-emergency-page #subcategoryArea{display:none!important}
-/* The generic category-page rule hides all main > section elements except two IDs.
-   The emergency cards are a third section and must explicitly remain visible. */
-body.vog-category-view.vog-emergency-page main > section#vogEmergencyDirect{display:block!important;visibility:visible!important;opacity:1!important}
-#vogEmergencyDirect{padding:20px 0 8px}
-#vogEmergencyDirect .vog-emergency-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:14px}
-#vogEmergencyDirect .vog-emergency-card{background:#fff;border:1px solid #e8dce9;border-radius:20px;padding:18px;box-shadow:0 7px 20px rgba(60,20,80,.05)}
-#vogEmergencyDirect h3{font-size:18px;margin:0 0 7px;color:#301c38}
-#vogEmergencyDirect p{color:#73677a;margin:0 0 12px;font-size:14px}
-#vogEmergencyDirect .vog-emergency-phone{font-size:20px;font-weight:800;color:#6b2c91;margin-bottom:12px}
-#vogEmergencyDirect .vog-emergency-buttons{display:flex;gap:8px}
-#vogEmergencyDirect .vog-emergency-buttons a{flex:1;text-align:center;padding:10px 8px;border-radius:11px;background:#e3f6eb;color:#17633e;text-decoration:none;font-weight:700}
-#vogEmergencyDirect .vog-emergency-buttons button{flex:1;border:1px solid #e4d8e9;border-radius:11px;background:#f7f0fa;color:#6b2c91;font-weight:700}
+#vogEmergencyReliable .vog-er-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:12px}
+#vogEmergencyReliable .vog-er-card{background:#fff;border:1px solid #e7dce9;border-radius:17px;padding:16px;box-shadow:0 5px 17px #30153b0a}
+#vogEmergencyReliable .vog-er-card h3{font-size:17px;color:#321b3e;margin:0 0 5px}
+#vogEmergencyReliable .vog-er-card p{font-size:13px;color:#73677a;margin:0 0 8px}
+#vogEmergencyReliable .vog-er-phone{font-weight:800;color:#6b2c91;font-size:19px;margin:0 0 10px}
+#vogEmergencyReliable .vog-er-actions{display:flex;gap:8px}
+#vogEmergencyReliable .vog-er-actions a,#vogEmergencyReliable .vog-er-actions button{flex:1;min-height:40px;border-radius:10px;font:inherit;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer}
+#vogEmergencyReliable .vog-er-actions a{background:#e5f6ec;color:#186c43;border:1px solid #c8e7d4}
+#vogEmergencyReliable .vog-er-actions button{background:#f7f0fa;color:#6b2c91;border:1px solid #e4d8e9}
 </style>
-<script id="vog-emergency-direct-list-script">
+<script id="vog-emergency-reliable-v2-script">
 (function(){
- const params=new URLSearchParams(location.search);
- if(params.get('section')!=='emergency')return;
- document.body.classList.add('vog-emergency-page');
+ 'use strict';
+ const section=new URLSearchParams(location.search).get('section');
+ if(section!=='emergency')return;
+ document.body.classList.add('vog-emergency-page','vog-category-view');
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const fallback=[{icon:'🚔',name:'জাতীয় জরুরি সেবা',note:'পুলিশ • ফায়ার • অ্যাম্বুলেন্স',phone:'999'},{icon:'🏥',name:'জাতীয় স্বাস্থ্য সহায়তা',note:'সরকারি স্বাস্থ্য সহায়তা',phone:'16263'}];
- const direct=document.createElement('section');direct.id='vogEmergencyDirect';direct.innerHTML='<div class="container"><div class="vog-emergency-list" id="vogEmergencyDirectCards"><p>জরুরি সেবার তথ্য লোড হচ্ছে…</p></div></div>';
- const anchor=document.getElementById('resultsSection');anchor.parentNode.insertBefore(direct,anchor);
- const clean=x=>String(x||'').replace(/[^0-9+]/g,'');
- function paint(records){
-  const unique=new Set(),items=(records||[]).filter(x=>{const k=clean(x.phone);if(!k||unique.has(k))return false;unique.add(k);return true;});
-  document.getElementById('vogEmergencyDirectCards').innerHTML=items.length?items.map(x=>'<article class="vog-emergency-card"><h3>'+esc(x.icon||'☎️')+' '+esc(x.name||'জরুরি সেবা')+'</h3><p>'+esc(x.note||'')+'</p><div class="vog-emergency-phone">📞 '+esc(x.phone)+'</div><div class="vog-emergency-buttons"><a href="tel:'+esc(clean(x.phone))+'">📞 কল করুন</a><button type="button" data-phone="'+esc(x.phone)+'" data-name="'+esc(x.name||'জরুরি সেবা')+'">↗ শেয়ার</button></div></article>').join(''):'<p>এখনো জরুরি সেবার নম্বর পাওয়া যায়নি।</p>';
-  document.getElementById('vogEmergencyDirectCards').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{const msg=btn.dataset.name+' — '+btn.dataset.phone; if(navigator.share){navigator.share({title:btn.dataset.name,text:msg,url:location.href}).catch(()=>{});}else if(navigator.clipboard){navigator.clipboard.writeText(msg).then(()=>alert('নম্বর কপি হয়েছে')).catch(()=>prompt('নম্বর কপি করুন',msg));}else prompt('নম্বর কপি করুন',msg);});
-  const n=document.getElementById('vog42Counter');if(n)n.textContent=String(items.length);
+ const phone=v=>String(v||'').replace(/[^0-9+]/g,'');
+ const mount=document.createElement('div');mount.id='vogEmergencyReliable';mount.setAttribute('role','region');mount.setAttribute('aria-label','জরুরি সেবার নম্বর');
+ mount.innerHTML='<div class="container"><div class="vog-er-grid" id="vogEmergencyReliableGrid" aria-live="polite"></div></div>';
+ const main=document.querySelector('main');
+ const before=document.getElementById('categorySection');
+ if(main)main.insertBefore(mount,before||main.firstChild);
+ const grid=document.getElementById('vogEmergencyReliableGrid');
+ const known=[{icon:'🚔',name:'জাতীয় জরুরি সেবা',note:'পুলিশ • ফায়ার • অ্যাম্বুলেন্স',phone:'999'},{icon:'🏥',name:'জাতীয় স্বাস্থ্য সহায়তা',note:'সরকারি স্বাস্থ্য সহায়তা',phone:'16263'}];
+ function directoryEntries(){
+  const rows=Array.isArray(window.allDirectory)?window.allDirectory:(typeof data!=='undefined'&&Array.isArray(data)?data:[]);
+  return rows.filter(x=>x&&x.phone&&/^(emergency|police|fire|ambulance|electricity)$/i.test(String(x.cat||''))).map(x=>({icon:'☎️',name:x.name,note:x.description||x.address||'',phone:x.phone}));
  }
- paint(typeof emergencyNumbers!=='undefined'&&emergencyNumbers.length?emergencyNumbers:fallback);
- async function fetchEmergency(){
-  if(!window.supabaseClient)return;
-  try{const r=await window.supabaseClient.from('emergency_numbers').select('*').eq('active',true).order('sort_order',{ascending:true});if(!r.error&&Array.isArray(r.data)&&r.data.length){paint(r.data);return;}}catch(e){console.warn('Emergency fetch failed',e);}
-  // Preserve working homepage fallback if table cannot be read.
-  if(typeof emergencyNumbers!=='undefined'&&emergencyNumbers.length)paint(emergencyNumbers);
+ function configured(){try{return typeof emergencyNumbers!=='undefined'&&Array.isArray(emergencyNumbers)?emergencyNumbers:[]}catch(e){return []}}
+ let dbEntries=[];
+ function paint(){
+  const all=[...dbEntries,...configured(),...directoryEntries(),...known];const seen=new Set();
+  const rows=all.filter(x=>{const key=phone(x.phone);if(!key||seen.has(key))return false;seen.add(key);return true;});
+  grid.innerHTML=rows.map(x=>'<article class="vog-er-card"><h3>'+esc(x.icon||'☎️')+' '+esc(x.name||'জরুরি সেবা')+'</h3><p>'+esc(x.note||'')+'</p><div class="vog-er-phone">☎ '+esc(x.phone)+'</div><div class="vog-er-actions"><a href="tel:'+esc(phone(x.phone))+'">📞 কল করুন</a><button type="button" data-name="'+esc(x.name||'জরুরি সেবা')+'" data-phone="'+esc(x.phone)+'">↗ শেয়ার</button></div></article>').join('');
+  grid.querySelectorAll('button').forEach(b=>b.addEventListener('click',async()=>{const message=b.dataset.name+' — '+b.dataset.phone;try{if(navigator.share){await navigator.share({title:b.dataset.name,text:message,url:location.href});return;}}catch(e){if(e.name==='AbortError')return;}try{await navigator.clipboard.writeText(message);alert('নম্বর কপি হয়েছে');}catch(e){prompt('নম্বর কপি করুন',message)}}));
+  const count=document.getElementById('vog42Counter');if(count)count.textContent=String(rows.length);
+  const heading=document.getElementById('vogCategoryHeading');if(heading)heading.textContent='🚨 জরুরি সেবা';
  }
- fetchEmergency();window.addEventListener('vog:emergency-ready',fetchEmergency);
- const actions=document.querySelector('.vog-page-actions');if(actions){const obs=new MutationObserver(()=>{const add=actions.querySelector('#vogContextAdd');if(add)add.remove();});obs.observe(actions,{childList:true});const add=actions.querySelector('#vogContextAdd');if(add)add.remove();}
+ paint();
+ async function fetchRows(){if(!window.supabaseClient)return;try{const r=await window.supabaseClient.from('emergency_numbers').select('*').eq('active',true);if(!r.error&&Array.isArray(r.data)){dbEntries=r.data;paint();}else if(r.error)console.warn('Emergency numbers query:',r.error.message);}catch(e){console.warn('Emergency numbers query failed',e)}}
+ fetchRows();
+ window.addEventListener('vog:directory-ready',paint);
+ window.addEventListener('vog:emergency-ready',()=>{paint();fetchRows()});
+ window.addEventListener('load',()=>{paint();fetchRows()},{once:true});
 })();
 </script>
 <script id="vog-smart-multilingual-search-20261019">
