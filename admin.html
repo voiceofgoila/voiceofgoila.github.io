@@ -821,7 +821,6 @@ Categories
 Website Settings
 </button>
 
-
 <button type="button" onclick="showCreatorEditor()">নির্মাতার পরিচিতি</button>
 
 <button onclick="showHomepageCMS()">
@@ -1156,7 +1155,7 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
     </div>
   </div>
 
-
+<div hidden aria-hidden="true" id="legacyDeveloperFields"><input id="settingDeveloperCreditLabel"><input id="settingDeveloperName"><input id="settingDeveloperProfileLink"><input id="settingDeveloperSubtitle"><input id="settingFooterRightsText"></div>
 <div class="settings-assets">
     <div class="settings-asset">
       <div style="font-weight:700;margin-bottom:8px;">Website Logo</div>
@@ -1841,23 +1840,15 @@ function read(){const d={social:{}};for(const k of names)d[k]=($('creator_'+k)?.
 function cache(d){try{localStorage.setItem(CACHE,JSON.stringify(d))}catch(e){}}
 function cached(){try{return JSON.parse(localStorage.getItem(CACHE)||'null')}catch(e){return null}}
 fill({...DEFAULTS,...(cached()||{})});
+// Populate every empty editor field with the published page text, without replacing saved values.
+
 $('creatorEditor').addEventListener('input',()=>{dirty=true});
-window.showCreatorEditor=function(){if(typeof window.showWebsiteSettings==='function')window.showWebsiteSettings();document.getElementById('websiteSettingsManagement').style.display='none';$('creatorEditor').style.display='block';$('creatorEditor').scrollIntoView({behavior:'smooth',block:'start'})};
-const menu=document.getElementById('menu');if(menu)menu.addEventListener('click',e=>{if(e.target.closest('button')&&!e.target.closest('button[onclick*="showCreatorEditor"]')){const card=$('creatorEditor');card.style.display='none';document.getElementById('websiteSettingsManagement').style.display=''}});
+window.showCreatorEditor=function(){if(typeof window.showWebsiteSettings==='function')window.showWebsiteSettings();const settings=document.getElementById('websiteSettingsManagement');if(settings)settings.style.display='none';$('creatorEditor').style.display='block';$('creatorEditor').scrollIntoView({behavior:'smooth',block:'start'})};
+const menu=document.getElementById('menu');if(menu)menu.addEventListener('click',e=>{if(e.target.closest('button')&&!e.target.closest('button[onclick*="showCreatorEditor"]')){const card=$('creatorEditor');card.style.display='none';(document.getElementById('websiteSettingsManagement')||{style:{}}).style.display=''}});
 async function client(){if(window.supabaseClient)return window.supabaseClient;for(let i=0;i<8;i++){await new Promise(r=>setTimeout(r,150));if(window.supabaseClient)return window.supabaseClient}return null}
 async function load(){const c=await client();if(!c){status.textContent='অফলাইনে সংরক্ষিত তথ্য দেখানো হচ্ছে';return}try{const {data,error}=await c.from('site_settings').select('value').eq('key',KEY).maybeSingle();if(error)throw error;if(data?.value){const d=typeof data.value==='string'?JSON.parse(data.value):data.value;cache(d);if(!dirty)fill({...DEFAULTS,...d})}status.textContent=''}catch(e){status.textContent='সংরক্ষিত তথ্য দেখানো হচ্ছে; সার্ভারের তথ্য পাওয়া যায়নি'}}
 $('creatorSave').addEventListener('click',async()=>{const d=read();for(const k of socials){const v=d.social[k];if(v){try{if(!['https:','http:'].includes(new URL(v).protocol))throw Error()}catch(e){status.textContent=k+' লিংক সঠিক নয়';return}}}if(d.photo_url){try{if(!['https:','http:'].includes(new URL(d.photo_url).protocol))throw Error()}catch(e){status.textContent='ছবির URL সঠিক নয়';return}}const c=await client();if(!c){status.textContent='সার্ভার সংযোগ নেই; পরিবর্তন প্রকাশ করা যায়নি';return}status.textContent='সেভ হচ্ছে...';try{const {error}=await c.from('site_settings').upsert({key:KEY,value:d},{onConflict:'key'});if(error)throw error;cache(d);dirty=false;status.textContent='সেভ হয়েছে। নির্মাতার পেজে পরিবর্তন দেখা যাবে।'}catch(e){status.textContent='সেভ হয়নি: '+e.message}});
 load();
-})();</script><script id="creator-editor-v17-navigation">(function(){
-window.openCreatorEditor=function(){
-  if(typeof window.showWebsiteSettings==='function')window.showWebsiteSettings();
-  const target=document.getElementById('creatorEditor');
-  if(target){target.scrollIntoView({behavior:'smooth',block:'start'});target.classList.add('creator-editor-highlight');setTimeout(()=>target.classList.remove('creator-editor-highlight'),1300)}
-};
-const DEFAULTS={"hero_text": "গৈলার প্রয়োজনীয় তথ্য ও সেবা মানুষের কাছে সহজে পৌঁছে দিতে, নিজের এলাকার জন্য কিছু করার ভাবনা থেকেই Voice of Goila-এর শুরু।", "creator_name": "শাওন সরদার সোলাইমান", "creator_role": "Voice of Goila-এর নির্মাতা ও রক্ষণাবেক্ষণকারী", "creator_bio": "প্রযুক্তিকে কাজে লাগিয়ে স্থানীয় মানুষের দৈনন্দিন প্রয়োজনকে একটু সহজ করাই এই উদ্যোগের উদ্দেশ্য। তথ্য খোঁজা থেকে শুরু করে জরুরি যোগাযোগ—সবকিছু যেন হাতের কাছেই থাকে।", "story_title": "প্রয়োজনের মুহূর্তে, তথ্য যেন হাতের কাছেই থাকে।", "story_text": "হঠাৎ অ্যাম্বুলেন্স, ফায়ার সার্ভিস, পুলিশ কিংবা রক্তদাতার প্রয়োজন হলে অনেক সময় সঠিক যোগাযোগের নম্বরটি খুঁজে পাওয়া কঠিন হয়ে যায়। এই বাস্তব সমস্যা থেকেই Voice of Goila-এর ভাবনা—এলাকার প্রয়োজনীয় তথ্য এক জায়গায় রাখা, যাতে জরুরি মুহূর্তে মানুষ দ্রুত খুঁজে পায় এবং এক ক্লিকেই সরাসরি যোগাযোগ করতে পারে।", "blood_text": "জরুরি সময়ে একজন রক্তদাতার সঙ্গে দ্রুত যোগাযোগ জীবন বাঁচাতে সাহায্য করতে পারে। তাই স্বেচ্ছায় রক্তদানে আগ্রহীদের এই প্ল্যাটফর্মের সঙ্গে যুক্ত হওয়ার আহ্বান জানাই। রক্তের প্রয়োজন হলে এখান থেকে রক্তদাতার তথ্য খোঁজার চেষ্টা করা যাবে।", "future_text": "তথ্যের নির্ভরযোগ্যতা বাড়ানো, আরও প্রয়োজনীয় সেবা যুক্ত করা এবং স্থানীয় স্বেচ্ছাসেবী ও রক্তদাতাদের অংশগ্রহণ সহজ করাই আগামীর লক্ষ্য। ধাপে ধাপে প্ল্যাটফর্মটিকে আরও কার্যকর করতে চাই।", "photo_url": ""};
-function seed(){for(const [k,v] of Object.entries(DEFAULTS)){const el=document.getElementById('creator_'+k);if(el&&!el.value)el.value=v}}
-seed();
-// Defaults are only used before saved settings are loaded; database values override them.
 })();</script><style>.creator-editor-highlight{outline:2px solid #8b4eae;outline-offset:3px;transition:outline .3s}#creatorEditor{scroll-margin-top:18px}</style></body>
 
   </html>
