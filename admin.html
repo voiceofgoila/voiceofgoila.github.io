@@ -820,6 +820,7 @@ Categories
 <button onclick="showWebsiteSettings()">
 Website Settings
 </button>
+<button type="button" onclick="document.getElementById('creatorEditor')?.scrollIntoView({behavior:'smooth',block:'start'})">নির্মাতার পরিচিতি</button>
 
 <button onclick="showHomepageCMS()">
 Homepage CMS
@@ -1151,6 +1152,8 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
       <input id="settingSocialShareImageUrl" type="url" placeholder="Media Library থেকে Copy URL দিন">
       <div class="settings-help">Facebook/WhatsApp/LinkedIn preview-এর জন্য 1200×630 অনুপাতের image ভালো।</div>
     </div>
+    <!-- Legacy inputs retained invisibly for existing settings save/load compatibility. -->
+    <div hidden aria-hidden="true">
     <div class="settings-field settings-wide">
       <label for="settingDeveloperCreditLabel">Developer Credit Label</label>
       <input id="settingDeveloperCreditLabel" placeholder="Site Developed & Maintained by">
@@ -1167,6 +1170,7 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
     <div class="settings-field settings-wide">
       <label for="settingDeveloperSubtitle">Developer Subtitle</label>
       <input id="settingDeveloperSubtitle" placeholder="Innovator at Medical Assistant Robot">
+    </div>
     </div>
     <div class="settings-field settings-wide">
       <label for="settingFooterRightsText">Footer Rights Text</label>
@@ -1849,9 +1853,14 @@ document.getElementById('v10MapReset').addEventListener('click',()=>{if(!confirm
 (async()=>{if(!window.supabaseClient)return;try{let {data,error}=await window.supabaseClient.from('site_settings').select('value').eq('key','goila_map_config_v10').maybeSingle();if(!error&&data&&data.value)fill(typeof data.value==='string'?JSON.parse(data.value):data.value)}catch(e){}})();
 })();</script><script id="vog-v12-dashboard-links">(function(){var actions={"total": "showDirectory", "pendingCount": "showDirectory", "approvedCount": "showDirectory", "categoryCount": "showCategories", "subCategoryCount": "showCategories", "announcementCount": "showAnnouncements", "noticeCount": "showNotices", "adsCount": "showAds", "emergencyCount": "showEmergencyCMS", "reviewPendingCount": "showReviewsCMS"};Object.keys(actions).forEach(function(id){var count=document.getElementById(id);if(!count)return;var card=count.closest('.stat');if(!card)return;card.setAttribute('data-v12-go',id);card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAttribute('aria-label',card.querySelector('h3').textContent+' পরিচালনা করুন');function go(){var f=window[actions[id]];if(typeof f==='function'){f();return;}var button=Array.from(document.querySelectorAll('#menu button')).find(function(b){return (b.getAttribute('onclick')||'').includes(actions[id]+'(')});if(button)button.click();else alert('এই সেকশনের মূল অ্যাডমিন স্ক্রিপ্ট লোড হয়নি।');}card.addEventListener('click',go);card.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});});})();</script><script id="creator-profile-admin-script">(function(){'use strict';const KEY='creator_profile_v1';const names=["hero_text", "creator_name", "creator_role", "creator_bio", "story_title", "story_text", "blood_text", "future_text", "photo_url"];const socials=["facebook", "linkedin", "youtube", "github", "instagram", "tiktok", "whatsapp", "portfolio"];
 const $=id=>document.getElementById(id);const status=$('creatorSaveStatus');
+document.getElementById('websiteSettingsManagement')?.after(document.getElementById('creatorEditor'));
+const DEFAULTS={"hero_text": "গৈলার প্রয়োজনীয় তথ্য ও সেবা মানুষের কাছে সহজে পৌঁছে দিতে, নিজের এলাকার জন্য কিছু করার ভাবনা থেকেই Voice of Goila-এর শুরু।", "creator_name": "শাওন সরদার সোলাইমান", "creator_role": "Voice of Goila-এর নির্মাতা ও রক্ষণাবেক্ষণকারী", "creator_bio": "প্রযুক্তিকে কাজে লাগিয়ে স্থানীয় মানুষের দৈনন্দিন প্রয়োজনকে একটু সহজ করাই এই উদ্যোগের উদ্দেশ্য। তথ্য খোঁজা থেকে শুরু করে জরুরি যোগাযোগ—সবকিছু যেন হাতের কাছেই থাকে।", "story_title": "প্রয়োজনের মুহূর্তে, তথ্য যেন হাতের কাছেই থাকে।", "story_text": "হঠাৎ অ্যাম্বুলেন্স, ফায়ার সার্ভিস, পুলিশ কিংবা রক্তদাতার প্রয়োজন হলে অনেক সময় সঠিক যোগাযোগের নম্বরটি খুঁজে পাওয়া কঠিন হয়ে যায়। এই বাস্তব সমস্যা থেকেই Voice of Goila-এর ভাবনা—এলাকার প্রয়োজনীয় তথ্য এক জায়গায় রাখা, যাতে জরুরি মুহূর্তে মানুষ দ্রুত খুঁজে পায় এবং এক ক্লিকেই সরাসরি যোগাযোগ করতে পারে।", "blood_text": "জরুরি সময়ে একজন রক্তদাতার সঙ্গে দ্রুত যোগাযোগ জীবন বাঁচাতে সাহায্য করতে পারে। তাই স্বেচ্ছায় রক্তদানে আগ্রহীদের এই প্ল্যাটফর্মের সঙ্গে যুক্ত হওয়ার আহ্বান জানাই। রক্তের প্রয়োজন হলে এখান থেকে রক্তদাতার তথ্য খোঁজার চেষ্টা করা যাবে।", "future_text": "তথ্যের নির্ভরযোগ্যতা বাড়ানো, আরও প্রয়োজনীয় সেবা যুক্ত করা এবং স্থানীয় স্বেচ্ছাসেবী ও রক্তদাতাদের অংশগ্রহণ সহজ করাই আগামীর লক্ষ্য। ধাপে ধাপে প্ল্যাটফর্মটিকে আরও কার্যকর করতে চাই।"};
+fillDefaults();
+function fillDefaults(){for(const [key,value] of Object.entries(DEFAULTS)){const el=$('creator_'+key);if(el&&!el.value)el.value=value;}}
+
 function read(){const d={social:{}};names.forEach(k=>d[k]=($('creator_'+k)?.value||'').trim());socials.forEach(k=>d.social[k]=($('creator_social_'+k)?.value||'').trim());return d}
 function fill(d){if(!d)return;names.forEach(k=>{if($('creator_'+k)&&typeof d[k]==='string')$('creator_'+k).value=d[k]});socials.forEach(k=>{if($('creator_social_'+k))$('creator_social_'+k).value=d.social?.[k]||''})}
-async function client(){for(let i=0;i<35&&!window.supabaseClient;i++)await new Promise(r=>setTimeout(r,200));return window.supabaseClient}
+async function client(){for(let i=0;i<12&&!window.supabaseClient;i++)await new Promise(r=>setTimeout(r,200));return window.supabaseClient}
 async function load(){const c=await client();if(!c){status.textContent='Supabase সংযোগ পাওয়া যায়নি';return}const {data,error}=await c.from('site_settings').select('value').eq('key',KEY).maybeSingle();if(error){status.textContent='তথ্য লোড হয়নি: '+error.message;return}if(data?.value)fill(typeof data.value==='string'?JSON.parse(data.value):data.value)}
 $('creatorSave').addEventListener('click',async()=>{const c=await client();if(!c){status.textContent='Supabase সংযোগ পাওয়া যায়নি';return}const d=read();for(const k of socials){const v=d.social[k];if(v){try{if(!['https:','http:'].includes(new URL(v).protocol))throw Error()}catch(e){status.textContent=k+' লিংকটি সঠিক নয়';return}}}if(d.photo_url){try{if(!['https:','http:'].includes(new URL(d.photo_url).protocol))throw Error()}catch(e){status.textContent='ছবির URL সঠিক নয়';return}}status.textContent='সেভ হচ্ছে...';try{const {error}=await c.from('site_settings').upsert({key:KEY,value:d},{onConflict:'key'});if(error)throw error;status.textContent='সেভ হয়েছে। পেজ রিফ্রেশ করলে পরিবর্তন দেখা যাবে।'}catch(e){status.textContent='সেভ হয়নি: '+e.message}});
 load().catch(e=>status.textContent='লোড হয়নি: '+e.message);
