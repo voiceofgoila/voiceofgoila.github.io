@@ -1,82 +1,10 @@
-// Voice of Goila - App/WebView Fresh Cache Fix v5
-// Always prefer the live network while online. Cache is fallback only.
-const CACHE = "voice-of-goila-v9-stable-render";
-const CORE = ["./", "./index.html", "./manifest.json"];
-
-async function freshFetch(request) {
-  // Avoid Android WebView/HTTP cache for navigations and same-origin app files.
-  const freshRequest = new Request(request, { cache: "no-store" });
-  return fetch(freshRequest);
-}
-
-self.addEventListener("install", event => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(CACHE);
-    for (const url of CORE) {
-      try {
-        const response = await fetch(url, { cache: "no-store" });
-        if (response && response.ok) await cache.put(url, response.clone());
-      } catch (_) {}
-    }
-    await self.skipWaiting();
-  })());
-});
-
-self.addEventListener("activate", event => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(
-      keys
-        .filter(key => key.startsWith("voice-of-goila-") && key !== CACHE)
-        .map(key => caches.delete(key))
-    );
-    await self.clients.claim();
-  })());
-});
-
-self.addEventListener("fetch", event => {
-  const request = event.request;
-  if (request.method !== "GET") return;
-
-  const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return;
-
-  event.respondWith((async () => {
-    try {
-      const response = await freshFetch(request);
-      if (response && response.ok) {
-        const cache = await caches.open(CACHE);
-        cache.put(request, response.clone()).catch(() => {});
-      }
-      return response;
-    } catch (error) {
-      const cached = await caches.match(request, { ignoreSearch: true });
-      if (cached) return cached;
-
-      if (request.mode === "navigate") {
-        const fallback = await caches.match("./index.html", { ignoreSearch: true });
-        if (fallback) return fallback;
-      }
-      throw error;
-    }
-  })());
-});
-
-// Kept for browser/PWA compatibility. Native Android FCM remains separate.
-self.addEventListener("push", event => {
-  let data = { title: "Voice of Goila", body: "নতুন আপডেট এসেছে", url: "./" };
-  try { data = { ...data, ...event.data.json() }; } catch (_) {}
-  event.waitUntil(
-    self.registration.showNotification(data.title || "Voice of Goila", {
-      body: data.body || "নতুন তথ্য দেখুন",
-      icon: "/icons/icon-192.png",
-      data: { url: data.url || "./" }
-    })
-  );
-});
-
-self.addEventListener("notificationclick", event => {
-  event.notification.close();
-  const target = event.notification?.data?.url || "./";
-  event.waitUntil(clients.openWindow(target));
-});
+const CACHE='vog-public-shell-v22';
+const PAGES=['./','./index.html','./category.html','./reviews.html','./submit.html','./goila-map.html','./goila-map-preview.html','./creator.html'];
+const ASSETS=['./assets/goila-drone.png','./assets/goila-map-preview.png','./icons/icon-192.png','./icons/icon-512.png','./js/creator.js'];
+const safePath=p=>!/(^|\/)(admin|reset-password)(\.html|\/|$)/i.test(p)&&!p.startsWith('/new/');
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(async c=>{await Promise.allSettled([...PAGES,...ASSETS].map(async p=>{try{const r=await fetch(p,{cache:'no-store'});if(r.ok&&r.type==='basic')await c.put(new Request(p),r)}catch(_){}}))}).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',e=>{e.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('vog-public-shell-')&&k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim()})())});
+self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);if(u.origin!==self.location.origin||!safePath(u.pathname))return;
+const isDoc=r.mode==='navigate';const isAsset=/\.(png|jpe?g|webp|svg|ico|css|js)$/i.test(u.pathname);if(!isDoc&&!isAsset)return;
+e.respondWith((async()=>{const c=await caches.open(CACHE);if(isDoc){try{const fresh=await fetch(r,{cache:'no-store'});if(fresh.ok){await c.put(r,fresh.clone());return fresh}const old=await c.match(r,{ignoreSearch:true});return old||fresh}catch(_){return (await c.match(r,{ignoreSearch:true}))||(await c.match('./index.html'))||Response.error()}}
+const old=await c.match(r,{ignoreSearch:true});if(old){e.waitUntil(fetch(r).then(f=>{if(f.ok&&f.type==='basic')return c.put(r,f.clone())}).catch(()=>{}));return old}try{const fresh=await fetch(r);if(fresh.ok&&fresh.type==='basic')e.waitUntil(c.put(r,fresh.clone()));return fresh}catch(_){return Response.error()}})())});

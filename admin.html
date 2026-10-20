@@ -821,6 +821,9 @@ Categories
 Website Settings
 </button>
 
+
+<button type="button" onclick="showCreatorEditor()">নির্মাতার পরিচিতি</button>
+
 <button onclick="showHomepageCMS()">
 Homepage CMS
 </button>
@@ -1106,7 +1109,7 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
 <!-- WEBSITE SETTINGS MANAGEMENT -->
 <div class="card" id="websiteSettingsManagement">
   <h2>Website Settings</h2>
-  <p class="cms-note">এখান থেকে Save করলে Public Website-এর নাম, logo, favicon, contact/social এবং footer developer credit/rights Supabase থেকে automatic update হবে।</p>
+  <p class="cms-note">এখান থেকে ওয়েবসাইটের নাম, লোগো, ফেভিকন ও যোগাযোগের তথ্য পরিবর্তন করুন। নির্মাতার তথ্যের জন্য আলাদা মেনু রয়েছে।</p>
 
   <div class="settings-grid">
     <div class="settings-field settings-wide">
@@ -1151,35 +1154,9 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
       <input id="settingSocialShareImageUrl" type="url" placeholder="Media Library থেকে Copy URL দিন">
       <div class="settings-help">Facebook/WhatsApp/LinkedIn preview-এর জন্য 1200×630 অনুপাতের image ভালো।</div>
     </div>
-    <div class="settings-field settings-wide">
-      <label for="settingDeveloperCreditLabel">Developer Credit Label</label>
-      <input id="settingDeveloperCreditLabel" placeholder="Site Developed & Maintained by">
-    </div>
-    <div class="settings-field">
-      <label for="settingDeveloperName">Developer Name</label>
-      <input id="settingDeveloperName" placeholder="Shawan Sarder Solyman">
-    </div>
-    <div class="settings-field">
-      <label for="settingDeveloperProfileLink">Developer Profile Link</label>
-      <input id="settingDeveloperProfileLink" type="url" placeholder="https://www.facebook.com/ShawanSarderSolyman">
-      <div class="settings-help">Link খালি রাখলে নাম দেখা যাবে, কিন্তু clickable হবে না।</div>
-    </div>
-    <div class="settings-field settings-wide">
-      <label for="settingDeveloperSubtitle">Developer Subtitle</label>
-      <input id="settingDeveloperSubtitle" placeholder="Innovator at Medical Assistant Robot">
-    </div>
-    <div class="settings-field settings-wide">
-      <label for="settingFooterRightsText">Footer Rights Text</label>
-      <input id="settingFooterRightsText" placeholder="© Voice of Goila · All Rights Reserved">
-      <div class="settings-help">যে field খালি রাখবেন, Public footer-এ সেই line hide থাকবে।</div>
-    </div>
   </div>
 
-  <section id="creatorEditor" class="creator-editor" style="margin:24px 0;padding:20px;border:1px solid #e6d6ee;border-radius:18px;background:#fdfaff;">
-<h2 style="color:#5d237e;margin:0 0 6px">নির্মাতার পরিচিতি পেজ</h2><p style="margin:0 0 16px;color:#74677c">এই পেজের লেখা, ছবি এবং সোশ্যাল মিডিয়া লিংক পরিবর্তন করুন। খালি সোশ্যাল লিংক প্রকাশিত পেজে দেখাবে না।</p>
-<div class="creator-editor-grid"><label class="creator-field">শুরুর পরিচিতি<textarea id="creator_hero_text" rows="3"></textarea></label><label class="creator-field">নির্মাতার নাম<input id="creator_creator_name" type="text" autocomplete="off"></label><label class="creator-field">নির্মাতার পদবি<input id="creator_creator_role" type="text" autocomplete="off"></label><label class="creator-field">নিজের পরিচিতি<textarea id="creator_creator_bio" rows="3"></textarea></label><label class="creator-field">উদ্যোগের গল্পের শিরোনাম<input id="creator_story_title" type="text" autocomplete="off"></label><label class="creator-field">উদ্যোগের পেছনের ভাবনা<textarea id="creator_story_text" rows="3"></textarea></label><label class="creator-field">রক্তদান সম্পর্কে লেখা<textarea id="creator_blood_text" rows="3"></textarea></label><label class="creator-field">ভবিষ্যৎ পরিকল্পনা<textarea id="creator_future_text" rows="3"></textarea></label><label class="creator-field">প্রোফাইল ছবির URL<input id="creator_photo_url" type="text" autocomplete="off"></label></div><h3 style="color:#5d237e;margin:22px 0 8px">সোশ্যাল মিডিয়া</h3><div class="creator-editor-grid"><label class="creator-field">Facebook লিংক<input type="url" id="creator_social_facebook" placeholder="https://..."></label><label class="creator-field">Linkedin লিংক<input type="url" id="creator_social_linkedin" placeholder="https://..."></label><label class="creator-field">Youtube লিংক<input type="url" id="creator_social_youtube" placeholder="https://..."></label><label class="creator-field">Github লিংক<input type="url" id="creator_social_github" placeholder="https://..."></label><label class="creator-field">Instagram লিংক<input type="url" id="creator_social_instagram" placeholder="https://..."></label><label class="creator-field">Tiktok লিংক<input type="url" id="creator_social_tiktok" placeholder="https://..."></label><label class="creator-field">Whatsapp লিংক<input type="url" id="creator_social_whatsapp" placeholder="https://..."></label><label class="creator-field">Portfolio লিংক<input type="url" id="creator_social_portfolio" placeholder="https://..."></label></div>
-<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px"><button type="button" id="creatorSave" style="background:#6b2c91;color:white;border:0;padding:12px 22px;border-radius:10px;font-weight:700;cursor:pointer">পরিবর্তন সেভ করুন</button><a href="creator.html" target="_blank" rel="noopener noreferrer">পেজ দেখুন ↗</a><span id="creatorSaveStatus" role="status" aria-live="polite"></span></div>
-</section><style>.creator-editor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.creator-field{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:700;color:#533468}.creator-field input,.creator-field textarea{width:100%;min-width:0;border:1px solid #dacfe0;border-radius:10px;padding:10px 12px;font:inherit;font-weight:400;color:#24192d;background:white}.creator-field textarea{resize:vertical;min-height:86px}@media(max-width:680px){.creator-editor-grid{grid-template-columns:1fr}#creatorEditor{padding:14px!important}}</style>
+<div hidden aria-hidden="true" id="legacyDeveloperFields"><input id="settingDeveloperCreditLabel"><input id="settingDeveloperName"><input id="settingDeveloperProfileLink"><input id="settingDeveloperSubtitle"><input id="settingFooterRightsText"></div>
 <div class="settings-assets">
     <div class="settings-asset">
       <div style="font-weight:700;margin-bottom:8px;">Website Logo</div>
@@ -1204,6 +1181,12 @@ Existing Directory/Submission-এ ব্যবহৃত Category বা Subcateg
     <span id="websiteSettingsStatus" class="settings-status"></span>
   </div>
 </div>
+
+  <section id="creatorEditor" class="card creator-editor" style="display:none;margin:24px 0;padding:20px;border:1px solid #e6d6ee;border-radius:18px;background:#fdfaff;">
+<h2 style="color:#5d237e;margin:0 0 6px">নির্মাতার পরিচিতি — সম্পাদনা</h2><p style="margin:0 0 16px;color:#74677c">এই পেজের লেখা, ছবি এবং সোশ্যাল মিডিয়া লিংক পরিবর্তন করুন। খালি সোশ্যাল লিংক প্রকাশিত পেজে দেখাবে না।</p>
+<div class="creator-editor-grid"><label class="creator-field">শুরুর পরিচিতি<textarea id="creator_hero_text" rows="3"></textarea></label><label class="creator-field">নির্মাতার নাম<input id="creator_creator_name" type="text" autocomplete="off"></label><label class="creator-field">নির্মাতার পদবি<input id="creator_creator_role" type="text" autocomplete="off"></label><label class="creator-field">নিজের পরিচিতি<textarea id="creator_creator_bio" rows="3"></textarea></label><label class="creator-field">উদ্যোগের গল্পের শিরোনাম<input id="creator_story_title" type="text" autocomplete="off"></label><label class="creator-field">উদ্যোগের পেছনের ভাবনা<textarea id="creator_story_text" rows="3"></textarea></label><label class="creator-field">রক্তদান সম্পর্কে লেখা<textarea id="creator_blood_text" rows="3"></textarea></label><label class="creator-field">ভবিষ্যৎ পরিকল্পনা<textarea id="creator_future_text" rows="3"></textarea></label><label class="creator-field">প্রোফাইল ছবির URL<input id="creator_photo_url" type="text" autocomplete="off"></label></div><h3 style="color:#5d237e;margin:22px 0 8px">সোশ্যাল মিডিয়া</h3><div class="creator-editor-grid"><label class="creator-field">Facebook লিংক<input type="url" id="creator_social_facebook" placeholder="https://..."></label><label class="creator-field">Linkedin লিংক<input type="url" id="creator_social_linkedin" placeholder="https://..."></label><label class="creator-field">Youtube লিংক<input type="url" id="creator_social_youtube" placeholder="https://..."></label><label class="creator-field">Github লিংক<input type="url" id="creator_social_github" placeholder="https://..."></label><label class="creator-field">Instagram লিংক<input type="url" id="creator_social_instagram" placeholder="https://..."></label><label class="creator-field">Tiktok লিংক<input type="url" id="creator_social_tiktok" placeholder="https://..."></label><label class="creator-field">Whatsapp লিংক<input type="url" id="creator_social_whatsapp" placeholder="https://..."></label><label class="creator-field">Portfolio লিংক<input type="url" id="creator_social_portfolio" placeholder="https://..."></label></div>
+<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px"><button type="button" id="creatorSave" style="background:#6b2c91;color:white;border:0;padding:12px 22px;border-radius:10px;font-weight:700;cursor:pointer">পরিবর্তন সেভ করুন</button><a href="creator.html" target="_blank" rel="noopener noreferrer">পেজ দেখুন ↗</a><span id="creatorSaveStatus" role="status" aria-live="polite"></span></div>
+</section><style>.creator-editor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.creator-field{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:700;color:#533468}.creator-field input,.creator-field textarea{width:100%;min-width:0;border:1px solid #dacfe0;border-radius:10px;padding:10px 12px;font:inherit;font-weight:400;color:#24192d;background:white}.creator-field textarea{resize:vertical;min-height:86px}@media(max-width:680px){.creator-editor-grid{grid-template-columns:1fr}#creatorEditor{padding:14px!important}}</style>
 
 
 <!-- HOMEPAGE CMS -->
@@ -1847,14 +1830,26 @@ fill(read());document.getElementById('v11Zoom').addEventListener('input',e=>docu
 document.getElementById('v10MapSave').addEventListener('click',async()=>{let cfg=collect();localStorage.setItem(KEY,JSON.stringify(cfg));status.textContent='এই ব্রাউজারে সেভ হয়েছে। ডাটাবেসে সেভ যাচাই করা হচ্ছে…';if(!window.supabaseClient){status.textContent='শুধু এই ব্রাউজারে সেভ হয়েছে। লাইভ সাইটে সবার জন্য পরিবর্তন করতে Supabase client ও অনুমতি প্রয়োজন।';return}try{const {error}=await window.supabaseClient.from('site_settings').upsert({key:'goila_map_config_v10',value:cfg},{onConflict:'key'});status.textContent=error?'শুধু এই ব্রাউজারে সেভ হয়েছে; ডাটাবেসে সেভ হয়নি: '+error.message:'Supabase-এ সেভ হয়েছে। ম্যাপ পেজ রিফ্রেশ করে দেখুন।'}catch(e){status.textContent='শুধু এই ব্রাউজারে সেভ হয়েছে; ডাটাবেসে সমস্যা: '+e.message}});
 document.getElementById('v10MapReset').addEventListener('click',()=>{if(!confirm('সব ম্যাপ পরিবর্তন রিসেট করবেন?'))return;fill({});document.getElementById('v10MapSave').click()});
 (async()=>{if(!window.supabaseClient)return;try{let {data,error}=await window.supabaseClient.from('site_settings').select('value').eq('key','goila_map_config_v10').maybeSingle();if(!error&&data&&data.value)fill(typeof data.value==='string'?JSON.parse(data.value):data.value)}catch(e){}})();
-})();</script><script id="vog-v12-dashboard-links">(function(){var actions={"total": "showDirectory", "pendingCount": "showDirectory", "approvedCount": "showDirectory", "categoryCount": "showCategories", "subCategoryCount": "showCategories", "announcementCount": "showAnnouncements", "noticeCount": "showNotices", "adsCount": "showAds", "emergencyCount": "showEmergencyCMS", "reviewPendingCount": "showReviewsCMS"};Object.keys(actions).forEach(function(id){var count=document.getElementById(id);if(!count)return;var card=count.closest('.stat');if(!card)return;card.setAttribute('data-v12-go',id);card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAttribute('aria-label',card.querySelector('h3').textContent+' পরিচালনা করুন');function go(){var f=window[actions[id]];if(typeof f==='function'){f();return;}var button=Array.from(document.querySelectorAll('#menu button')).find(function(b){return (b.getAttribute('onclick')||'').includes(actions[id]+'(')});if(button)button.click();else alert('এই সেকশনের মূল অ্যাডমিন স্ক্রিপ্ট লোড হয়নি।');}card.addEventListener('click',go);card.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});});})();</script><script id="creator-profile-admin-script">(function(){'use strict';const KEY='creator_profile_v1';const names=["hero_text", "creator_name", "creator_role", "creator_bio", "story_title", "story_text", "blood_text", "future_text", "photo_url"];const socials=["facebook", "linkedin", "youtube", "github", "instagram", "tiktok", "whatsapp", "portfolio"];
-const $=id=>document.getElementById(id);const status=$('creatorSaveStatus');
-function read(){const d={social:{}};names.forEach(k=>d[k]=($('creator_'+k)?.value||'').trim());socials.forEach(k=>d.social[k]=($('creator_social_'+k)?.value||'').trim());return d}
-function fill(d){if(!d)return;names.forEach(k=>{if($('creator_'+k)&&typeof d[k]==='string')$('creator_'+k).value=d[k]});socials.forEach(k=>{if($('creator_social_'+k))$('creator_social_'+k).value=d.social?.[k]||''})}
-async function client(){for(let i=0;i<35&&!window.supabaseClient;i++)await new Promise(r=>setTimeout(r,200));return window.supabaseClient}
-async function load(){const c=await client();if(!c){status.textContent='Supabase সংযোগ পাওয়া যায়নি';return}const {data,error}=await c.from('site_settings').select('value').eq('key',KEY).maybeSingle();if(error){status.textContent='তথ্য লোড হয়নি: '+error.message;return}if(data?.value)fill(typeof data.value==='string'?JSON.parse(data.value):data.value)}
-$('creatorSave').addEventListener('click',async()=>{const c=await client();if(!c){status.textContent='Supabase সংযোগ পাওয়া যায়নি';return}const d=read();for(const k of socials){const v=d.social[k];if(v){try{if(!['https:','http:'].includes(new URL(v).protocol))throw Error()}catch(e){status.textContent=k+' লিংকটি সঠিক নয়';return}}}if(d.photo_url){try{if(!['https:','http:'].includes(new URL(d.photo_url).protocol))throw Error()}catch(e){status.textContent='ছবির URL সঠিক নয়';return}}status.textContent='সেভ হচ্ছে...';try{const {error}=await c.from('site_settings').upsert({key:KEY,value:d},{onConflict:'key'});if(error)throw error;status.textContent='সেভ হয়েছে। পেজ রিফ্রেশ করলে পরিবর্তন দেখা যাবে।'}catch(e){status.textContent='সেভ হয়নি: '+e.message}});
-load().catch(e=>status.textContent='লোড হয়নি: '+e.message);
-})();</script></body>
+})();</script><script id="vog-v12-dashboard-links">(function(){var actions={"total": "showDirectory", "pendingCount": "showDirectory", "approvedCount": "showDirectory", "categoryCount": "showCategories", "subCategoryCount": "showCategories", "announcementCount": "showAnnouncements", "noticeCount": "showNotices", "adsCount": "showAds", "emergencyCount": "showEmergencyCMS", "reviewPendingCount": "showReviewsCMS"};Object.keys(actions).forEach(function(id){var count=document.getElementById(id);if(!count)return;var card=count.closest('.stat');if(!card)return;card.setAttribute('data-v12-go',id);card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAttribute('aria-label',card.querySelector('h3').textContent+' পরিচালনা করুন');function go(){var f=window[actions[id]];if(typeof f==='function'){f();return;}var button=Array.from(document.querySelectorAll('#menu button')).find(function(b){return (b.getAttribute('onclick')||'').includes(actions[id]+'(')});if(button)button.click();else alert('এই সেকশনের মূল অ্যাডমিন স্ক্রিপ্ট লোড হয়নি।');}card.addEventListener('click',go);card.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});});})();</script><script id="creator-profile-admin-script">(function(){'use strict';
+const KEY='creator_profile_v1', CACHE='vog_creator_profile_cache_v19';
+const DEFAULTS={"hero_text": "গৈলার প্রয়োজনীয় তথ্য ও সেবা মানুষের কাছে সহজে পৌঁছে দিতে, নিজের এলাকার জন্য কিছু করার ভাবনা থেকেই Voice of Goila-এর শুরু।", "creator_name": "শাওন সরদার সোলাইমান", "creator_role": "Voice of Goila-এর নির্মাতা ও রক্ষণাবেক্ষণকারী", "creator_bio": "প্রযুক্তিকে কাজে লাগিয়ে স্থানীয় মানুষের দৈনন্দিন প্রয়োজনকে একটু সহজ করাই এই উদ্যোগের উদ্দেশ্য। তথ্য খোঁজা থেকে শুরু করে জরুরি যোগাযোগ—সবকিছু যেন হাতের কাছেই থাকে।", "story_title": "প্রয়োজনের মুহূর্তে, তথ্য যেন হাতের কাছেই থাকে।", "story_text": "হঠাৎ অ্যাম্বুলেন্স, ফায়ার সার্ভিস, পুলিশ কিংবা রক্তদাতার প্রয়োজন হলে অনেক সময় সঠিক যোগাযোগের নম্বরটি খুঁজে পাওয়া কঠিন হয়ে যায়। এই বাস্তব সমস্যা থেকেই Voice of Goila-এর ভাবনা—এলাকার প্রয়োজনীয় তথ্য এক জায়গায় রাখা, যাতে জরুরি মুহূর্তে মানুষ দ্রুত খুঁজে পায় এবং এক ক্লিকেই সরাসরি যোগাযোগ করতে পারে।", "blood_text": "জরুরি সময়ে একজন রক্তদাতার সঙ্গে দ্রুত যোগাযোগ জীবন বাঁচাতে সাহায্য করতে পারে। তাই স্বেচ্ছায় রক্তদানে আগ্রহীদের এই প্ল্যাটফর্মের সঙ্গে যুক্ত হওয়ার আহ্বান জানাই। রক্তের প্রয়োজন হলে এখান থেকে রক্তদাতার তথ্য খোঁজার চেষ্টা করা যাবে।", "future_text": "তথ্যের নির্ভরযোগ্যতা বাড়ানো, আরও প্রয়োজনীয় সেবা যুক্ত করা এবং স্থানীয় স্বেচ্ছাসেবী ও রক্তদাতাদের অংশগ্রহণ সহজ করাই আগামীর লক্ষ্য। ধাপে ধাপে প্ল্যাটফর্মটিকে আরও কার্যকর করতে চাই।", "photo_url": ""};
+const names=['hero_text','creator_name','creator_role','creator_bio','story_title','story_text','blood_text','future_text','photo_url'];
+const socials=['facebook','linkedin','youtube','github','instagram','tiktok','whatsapp','portfolio'];
+const $=id=>document.getElementById(id),status=$('creatorSaveStatus');let dirty=false;
+function fill(d){if(!d)return;for(const k of names){if($('creator_'+k)&&typeof d[k]==='string')$('creator_'+k).value=d[k]};for(const k of socials){if($('creator_social_'+k))$('creator_social_'+k).value=d.social?.[k]||''}}
+function read(){const d={social:{}};for(const k of names)d[k]=($('creator_'+k)?.value||'').trim();for(const k of socials)d.social[k]=($('creator_social_'+k)?.value||'').trim();return d}
+function cache(d){try{localStorage.setItem(CACHE,JSON.stringify(d))}catch(e){}}
+function cached(){try{return JSON.parse(localStorage.getItem(CACHE)||'null')}catch(e){return null}}
+fill({...DEFAULTS,...(cached()||{})});
+$('creatorEditor').addEventListener('input',()=>{dirty=true});
+window.showCreatorEditor=function(){if(typeof window.showWebsiteSettings==='function')window.showWebsiteSettings();document.getElementById('websiteSettingsManagement').style.display='none';$('creatorEditor').style.display='block';$('creatorEditor').scrollIntoView({behavior:'smooth',block:'start'})};
+const menu=document.getElementById('menu');if(menu)menu.addEventListener('click',e=>{if(e.target.closest('button')&&!e.target.closest('button[onclick*="showCreatorEditor"]')){const card=$('creatorEditor');card.style.display='none';document.getElementById('websiteSettingsManagement').style.display=''}});
+async function client(){if(window.supabaseClient)return window.supabaseClient;for(let i=0;i<8;i++){await new Promise(r=>setTimeout(r,150));if(window.supabaseClient)return window.supabaseClient}return null}
+async function load(){const c=await client();if(!c){status.textContent='অফলাইনে সংরক্ষিত তথ্য দেখানো হচ্ছে';return}try{const {data,error}=await c.from('site_settings').select('value').eq('key',KEY).maybeSingle();if(error)throw error;if(data?.value){const d=typeof data.value==='string'?JSON.parse(data.value):data.value;cache(d);if(!dirty)fill({...DEFAULTS,...d})}status.textContent=''}catch(e){status.textContent='সংরক্ষিত তথ্য দেখানো হচ্ছে; সার্ভারের তথ্য পাওয়া যায়নি'}}
+$('creatorSave').addEventListener('click',async()=>{const d=read();for(const k of socials){const v=d.social[k];if(v){try{if(!['https:','http:'].includes(new URL(v).protocol))throw Error()}catch(e){status.textContent=k+' লিংক সঠিক নয়';return}}}if(d.photo_url){try{if(!['https:','http:'].includes(new URL(d.photo_url).protocol))throw Error()}catch(e){status.textContent='ছবির URL সঠিক নয়';return}}const c=await client();if(!c){status.textContent='সার্ভার সংযোগ নেই; পরিবর্তন প্রকাশ করা যায়নি';return}status.textContent='সেভ হচ্ছে...';try{const {error}=await c.from('site_settings').upsert({key:KEY,value:d},{onConflict:'key'});if(error)throw error;cache(d);dirty=false;status.textContent='সেভ হয়েছে। নির্মাতার পেজে পরিবর্তন দেখা যাবে।'}catch(e){status.textContent='সেভ হয়নি: '+e.message}});
+load();
+})();</script><script id="creator-editor-v22-navigation">(function(){
+window.openCreatorEditor=function(){if(typeof window.showCreatorEditor==='function')window.showCreatorEditor()};
+})();</script><style>.creator-editor-highlight{outline:2px solid #8b4eae;outline-offset:3px;transition:outline .3s}#creatorEditor{scroll-margin-top:18px}</style></body>
 
   </html>
