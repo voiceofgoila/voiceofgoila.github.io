@@ -927,7 +927,7 @@ function openCategory(slug){if(!location.pathname.endsWith("category.html")){loc
 function showSubcategories(main){const c=catInfo(main),list=subcategories[main]||[],area=$("subcategoryArea");area.hidden=false;area.innerHTML=`<div class="panel"><button class="subcat-back" onclick="closeSubcategories()">← সব ক্যাটাগরি</button><h3 style="margin:0 0 11px;font-size:17px">${c[0]} ${c[1]}</h3><div class="subcategory-grid">${list.map(s=>{const n=data.filter(x=>itemMatchesSubcategory(x,main,s[0])).length;return `<div class="subcat" onclick="filterSub('${main}','${s[0]}')"><b>${s[1]}</b><small>${n?n+'টি তথ্য':'তথ্য দেখুন'} →</small></div>`}).join("")}</div></div>`;area.scrollIntoView({behavior:"smooth",block:"nearest"})}
 function closeSubcategories(){const a=$("subcategoryArea");a.hidden=true;a.innerHTML=""}
 function filterSub(main,sub){const list=data.filter(x=>itemMatchesSubcategory(x,main,sub));renderCards(list,subName(sub));$("resultsSection").scrollIntoView({behavior:"smooth",block:"start"})}
-function renderCards(list,title="সাম্প্রতিক তথ্য"){$("listTitle").textContent=title;$('resultCount').textContent=list.length?list.length+"টি ফলাফল":"";$('cards').innerHTML=list.length?(title==="সাম্প্রতিক তথ্য"?list.slice(0,1):list).map(cardHTML).join(""):`<div class="empty">এখনও কোনো তথ্য যোগ করা হয়নি।<br><button onclick="openSubmission()">➕ তথ্য যোগ করুন</button></div>`}
+function renderCards(list,title="সাম্প্রতিক তথ্য"){$("listTitle").textContent=title;$('resultCount').textContent=list.length?(title==="সাম্প্রতিক তথ্য"?"১টি ফলাফল":list.length+"টি ফলাফল"):"";$('cards').innerHTML=list.length?(title==="সাম্প্রতিক তথ্য"?list.slice(0,1):list).map(cardHTML).join(""):`<div class="empty">এখনও কোনো তথ্য যোগ করা হয়নি।<br><button onclick="openSubmission()">➕ তথ্য যোগ করুন</button></div>`}
 function cardHTML(x){const c=catInfo(x.cat);return `<article class="item">${x.featured?`<span class="featured-tag">⭐ Featured</span>`:""}<div class="item-top"><div class="item-icon">${c[0]}</div><div><h4>${escapeHtml(x.name)}</h4><p>📍 ${escapeHtml(x.address||"ঠিকানা যোগ করা হয়নি")}</p><p>${escapeHtml(x.desc||"")}</p><span class="meta">${escapeHtml(c[1])}${x.subcat?" • "+escapeHtml(subName(x.subcat)):""}</span></div></div><div class="actions">${x.id!=null?`<button class="btn details" onclick="openItemDetails(${Number(x.id)})">বিস্তারিত</button>`:""}${x.phone?`<a class="btn call" href="tel:${x.phone}">📞 কল করুন</a>`:""}${x.map?`<a class="btn map" target="_blank" rel="noopener" href="${escapeAttr(x.map)}">📍 Maps</a>`:""}${x.id!=null?`<button class="btn share" onclick="shareDirectoryItem(${Number(x.id)})">↗ Share</button>`:""}</div></article>`}
 function showCategoryModal(type,title){const list=data.filter(x=>itemMatchesCategory(x,type));$("categoryModalTitle").textContent=title;$("categoryModalContent").innerHTML=list.length?`<div class="category-result-list">${list.map(x=>`<div class="category-result-card"><h4>${escapeHtml(x.name)}</h4><p>📍 ${escapeHtml(x.address||"ঠিকানা যোগ করা হয়নি")}</p>${x.phone?`<p>📞 ${escapeHtml(x.phone)}</p>`:""}${x.desc?`<p>${escapeHtml(x.desc)}</p>`:""}<div class="category-actions">${x.phone?`<a class="call" href="tel:${x.phone}">📞 কল করুন</a>`:""}${x.map?`<a class="map" target="_blank" rel="noopener" href="${escapeAttr(x.map)}">📍 Maps</a>`:""}</div></div>`).join("")}</div>`:`<div class="empty">এখনও কোনো তথ্য যোগ করা হয়নি।<br><button onclick="closeModal('categoryModal');openSubmission('${type}')">➕ তথ্য যোগ করুন</button></div>`;openModal("categoryModal")}
 function showEmergencyModal(){$("categoryModalTitle").textContent="🚨 জরুরি সেবা";$("categoryModalContent").innerHTML=`<div class="emergency-list">${emergencyNumbers.map(x=>`<div class="emergency-row"><div class="emergency-info"><b>${x.icon} ${x.name}</b><span>${x.note} • ${x.phone}</span></div><a class="emergency-call" href="tel:${x.phone}">📞 কল</a></div>`).join("")}</div>`;openModal("categoryModal")}
@@ -1029,7 +1029,7 @@ const SUBMISSION_SUB_PROFILES={
 };
 function currentSubmissionProfile(){const main=$("submitCategory").value||"default",sub=$("submitSubcategory").value||"";return{...(FORM_PROFILES.default||{}),...(FORM_PROFILES[main]||{}),...(SUBMISSION_SUB_PROFILES[main+":"+sub]||{})}}
 function updateSubmissionFields(){const p=currentSubmissionProfile(),main=$("submitCategory").value,list=subcategories[main]||[];$("submitSubcategoryField").hidden=!list.length;$("submitNameLabel").textContent=p.label;$("submitName").placeholder=p.placeholder;$("submitNameHelp").textContent=p.help||"";$("submitNameHelp").style.display=p.help?"block":"none";$("submitPhoneLabel").textContent=p.phoneRequired?"ফোন নম্বর *":"ফোন নম্বর";$("submitPhone").required=!!p.phoneRequired;$("submitMapField").hidden=!!p.hideMap;$("submitMap").disabled=!!p.hideMap;if(p.hideMap)$("submitMap").value="";$("submitAddressLabel").textContent=p.addressLabel||"ঠিকানা";$("submitAddress").placeholder=p.addressPlaceholder||"গ্রাম/এলাকা, গৈলা";$("submitDesc").placeholder=p.descPlaceholder||"প্রয়োজনীয় অতিরিক্ত তথ্য লিখুন"}
-function openSubmission(prefill=""){closeSideMenu();const sel=$("submitCategory");sel.innerHTML='<option value="">ক্যাটাগরি নির্বাচন করুন</option>'+visibleCategories().filter(c=>c[2]!=="map"&&c[2]!=="news").map(c=>`<option value="${c[2]}">${c[0]} ${c[1]}</option>`).join("");if(prefill&&categories.some(c=>c[2]===prefill))sel.value=prefill;updateSubmitSubcategories();$("submissionSuccess").style.display="none";openModal("submissionModal")}
+function openSubmission(prefill=""){closeSideMenu();const sel=$("submitCategory");sel.innerHTML='<option value="">ক্যাটাগরি নির্বাচন করুন</option>'+visibleCategories().filter(c=>c[2]!=="map"&&c[2]!=="news").map(c=>`<option value="${c[2]}">${c[0]} ${c[1]}</option>`).join("");const qp=new URLSearchParams(location.search);const contextualCategory=document.body.classList.contains("vog-category-view")?qp.get("section"):"";const selectedCategory=prefill||contextualCategory;if(selectedCategory&&categories.some(c=>c[2]===selectedCategory))sel.value=selectedCategory;updateSubmitSubcategories();const contextualSub=document.body.classList.contains("vog-category-view")?qp.get("sub"):"";if(contextualSub&&$("submitSubcategory")&&Array.from($("submitSubcategory").options).some(o=>o.value===contextualSub)){$("submitSubcategory").value=contextualSub;updateSubmissionFields();}$("submissionSuccess").style.display="none";openModal("submissionModal")}
 function updateSubmitSubcategories(){const main=$("submitCategory").value,list=subcategories[main]||[];$("submitSubcategory").innerHTML='<option value="">প্রযোজ্য নয় / নির্বাচন করুন</option>'+list.map(s=>`<option value="${s[0]}">${s[1]}</option>`).join("");updateSubmissionFields()}
 async function submitInformation(e){
     e.preventDefault();
@@ -1327,23 +1327,38 @@ $("count").textContent=visibleCategories().length+"+";renderCats();renderMenu();
         if(error){console.warn("Homepage CMS unavailable; fallback text kept.",error.message);return;}
         if(data && data.value)applyHomepage(data.value);
     }
-    async function loadAnnouncements(){
-        if(!window.supabaseClient)return;
-        const {data,error}=await window.supabaseClient.from("announcements")
-            .select("id,date_label,title,body,link_url,active,sort_order,created_at")
-            .eq("active",true).order("sort_order",{ascending:true}).order("created_at",{ascending:false});
-        if(error){console.warn("Announcements unavailable; section remains hidden.",error.message);return;}
-        if(Array.isArray(window.importantAnnouncements)){
-            // kept for compatibility if global exposure changes later
-        }
-        if(typeof importantAnnouncements!=="undefined" && Array.isArray(importantAnnouncements)){
-            importantAnnouncements.splice(0,importantAnnouncements.length,...(data||[]).map(a=>({date:a.date_label||"Voice of Goila",title:a.title||"",text:a.body||"",link:a.link_url||""})));
-            if(typeof renderAnnouncements==="function")renderAnnouncements();
-            window.dispatchEvent(new CustomEvent("vog:announcements-ready"));
-            if(typeof renderCats==="function")renderCats();
-            if(typeof renderMenu==="function")renderMenu();
-        }
+    const NOTICE_CACHE_KEY="vog_active_announcements_v15";
+    let noticeRequest=null,noticeLastSuccess=0;
+    function applyNotices(rows){
+      if(typeof importantAnnouncements==="undefined"||!Array.isArray(importantAnnouncements))return;
+      importantAnnouncements.splice(0,importantAnnouncements.length,...rows.map(a=>({date:a.date_label||"Voice of Goila",title:a.title||"",text:a.body||"",link:a.link_url||""})));
+      if(typeof renderAnnouncements==="function")renderAnnouncements();
+      window.dispatchEvent(new CustomEvent("vog:announcements-ready"));
+      if(typeof renderCats==="function")renderCats();
+      if(typeof renderMenu==="function")renderMenu();
     }
+    try{const cached=JSON.parse(sessionStorage.getItem(NOTICE_CACHE_KEY)||"null");if(cached&&Array.isArray(cached.rows)&&Date.now()-cached.time<300000)applyNotices(cached.rows)}catch(e){}
+    async function loadAnnouncements(){
+      if(!window.supabaseClient)return;
+      if(noticeRequest)return noticeRequest;
+      noticeRequest=(async()=>{
+        for(let attempt=0;attempt<3;attempt++){
+          try{
+            const {data,error}=await window.supabaseClient.from("announcements")
+              .select("id,date_label,title,body,link_url,active,sort_order,created_at")
+              .eq("active",true).order("sort_order",{ascending:true}).order("created_at",{ascending:false});
+            if(error)throw error;
+            const rows=data||[];
+            applyNotices(rows);
+            noticeLastSuccess=Date.now();
+            try{sessionStorage.setItem(NOTICE_CACHE_KEY,JSON.stringify({time:noticeLastSuccess,rows}))}catch(e){}
+            return;
+          }catch(error){console.warn("Announcement request failed",attempt+1,error);if(attempt<2)await new Promise(resolve=>setTimeout(resolve,450*(attempt+1)));}
+        }
+      })().finally(()=>{noticeRequest=null});
+      return noticeRequest;
+    }
+    document.addEventListener("visibilitychange",()=>{if(!document.hidden&&Date.now()-noticeLastSuccess>60000)loadAnnouncements()});
     Promise.all([loadHomepage(),loadAnnouncements()]).finally(()=>{window.__vogBootReady=window.__vogBootReady||{};window.__vogBootReady.cms=true;});
 })();
 </script>
@@ -1989,4 +2004,4 @@ searchData=function(q){const rows=Array.isArray(data)?data:[];return rows.map((x
 getSuggestions=function(q){if(!norm(q))return[];const pool=[];visibleCategories().forEach(c=>pool.push({label:c[1],icon:c[0],type:'category',slug:c[2]}));for(const main in subcategories)(subcategories[main]||[]).forEach(s=>pool.push({label:s[1],icon:catInfo(main)[0],type:'subcategory',slug:s[0],main}));(Array.isArray(data)?data:[]).forEach(x=>pool.push({label:x.name,icon:catInfo(x.cat)[0],type:'item'}));const seen=new Set();return pool.map((x,i)=>({...x,i,s:score(x.label,q)})).filter(x=>x.s>=0).sort((a,b)=>b.s-a.s||a.i-b.i).filter(x=>{const key=x.type+':'+x.label;if(seen.has(key))return false;seen.add(key);return true}).slice(0,8)};
 })();
 </script>
-<script id="v11-home-map-category">document.addEventListener('click',function(e){const el=e.target.closest('[onclick*="map"],a[href*="section=map"]');if(!el)return;const attr=el.getAttribute('onclick')||'';const href=el.getAttribute('href')||'';if(/(?:openCategory|openSection|showCategory)\s*\(\s*['"]map['"]|section=map/.test(attr+' '+href)){e.preventDefault();e.stopImmediatePropagation();location.href='./goila-map.html'}},true);</script><script id="vog-v12-scroll-map">(function(){var section=document.getElementById('vogMapTeaser');if(!section)return;var frame=section.querySelector('iframe[data-v12-src]');if(!frame)return;var played=false;function start(){if(played)return;played=true;frame.src=frame.getAttribute('data-v12-src');}if('IntersectionObserver' in window){var obs=new IntersectionObserver(function(entries){if(entries.some(function(e){return e.isIntersecting})){start();obs.disconnect();}},{threshold:.28,rootMargin:'0px 0px -5% 0px'});obs.observe(section.querySelector('.vog-map-preview')||section);}else{function check(){var r=section.getBoundingClientRect();if(r.top<innerHeight*.85&&r.bottom>0){start();removeEventListener('scroll',check);}}addEventListener('scroll',check,{passive:true});check();}})();</script></body></html>
+<script id="v11-home-map-category">document.addEventListener('click',function(e){const el=e.target.closest('[onclick*="map"],a[href*="section=map"]');if(!el)return;const attr=el.getAttribute('onclick')||'';const href=el.getAttribute('href')||'';if(/(?:openCategory|openSection|showCategory)\s*\(\s*['"]map['"]|section=map/.test(attr+' '+href)){e.preventDefault();e.stopImmediatePropagation();location.href='./goila-map.html'}},true);</script><script id="vog-v12-scroll-map">(function(){var section=document.getElementById('vogMapTeaser');if(!section)return;var frame=section.querySelector('iframe[data-v12-src]');if(!frame)return;var played=false;function start(){if(played)return;played=true;frame.src=frame.getAttribute('data-v12-src');}if('IntersectionObserver' in window){var obs=new IntersectionObserver(function(entries){if(entries.some(function(e){return e.isIntersecting})){start();obs.disconnect();}},{threshold:.28,rootMargin:'0px 0px -5% 0px'});obs.observe(section.querySelector('.vog-map-preview')||section);}else{function check(){var r=section.getBoundingClientRect();if(r.top<innerHeight*.85&&r.bottom>0){start();removeEventListener('scroll',check);}}addEventListener('scroll',check,{passive:true});check();}})();</script><script id="vog-v15-home-recent-guard">(function(){const cards=document.getElementById('cards'),section=document.getElementById('resultsSection');if(!cards||!section)return;let pending=false;const fix=()=>{pending=false;if(document.getElementById('listTitle')?.textContent.trim()!=='সাম্প্রতিক তথ্য')return;const items=[...cards.children].filter(e=>e.matches('.item,.card,article'));if(items.length>1)items.slice(1).forEach(e=>e.remove());const count=document.getElementById('resultCount');if(count&&items.length)count.textContent='১টি ফলাফল';};const observer=new MutationObserver(()=>{if(!pending){pending=true;queueMicrotask(fix)}});observer.observe(cards,{childList:true});fix();})();</script></body></html>
