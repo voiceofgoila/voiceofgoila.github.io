@@ -1726,7 +1726,7 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
 
  function render(force=false){
   if(typeof catInfo!=='function'||typeof subcategories==='undefined'||typeof renderCards!=='function')return;
-  const info=section==='news'?['📢','গুরুত্বপূর্ণ ঘোষণা']:catInfo(section),subs=['police','post','emergency'].includes(section)?[]:(subcategories[section]||[]),chosen=sub==='__other'?['__other','অন্যান্য তথ্য']:subs.find(e=>e[0]===sub);
+  const info=section==='news'?['📢','গুরুত্বপূর্ণ ঘোষণা']:catInfo(section),subs=['police','post','emergency','places'].includes(section)?[]:(subcategories[section]||[]),chosen=section==='places'?null:(sub==='__other'?['__other','অন্যান্য তথ্য']:subs.find(e=>e[0]===sub));
   const label=chosen?chosen[1]:info[1],all=rows();
   const matches=x=>typeof itemMatchesCategory==='function'&&itemMatchesCategory(x,section) && (section!=='police'|| !/ফায়ার|fire\s*service|fire\s*station/i.test([x.name,x.description,x.subcat].join(' ')));
   const matchesSub=(x,e)=>typeof itemMatchesSubcategory==='function'&&itemMatchesSubcategory(x,section,e[0]);
