@@ -620,6 +620,25 @@ const categories=[
 const coachingPosition=categories.findIndex(c=>c[2]==="coaching");
 if(coachingPosition>=0)categories.push(...categories.splice(coachingPosition,1));
 const subcategories={government:[["union","ইউনিয়ন পরিষদ"],["upazila","উপজেলা সরকারি কর্মকর্তা"],["govt-office","অন্যান্য সরকারি অফিস"],["public-service","সরকারি সেবা"]],education:[["primary","প্রাথমিক বিদ্যালয়"],["secondary","মাধ্যমিক বিদ্যালয়"],["college","কলেজ"],["madrasa","মাদ্রাসা"],["teachers","শিক্ষক ও কর্মচারী"],["other","অন্যান্য শিক্ষা প্রতিষ্ঠান"]],coaching:[["coaching-center","কোচিং সেন্টার"],["home-tutor","হোম টিউটর"],["subject-tutor","বিষয়ভিত্তিক শিক্ষক"],["admission","ভর্তি / এডমিশন কোচিং"],["other","অন্যান্য"]],health:[["hospital","হাসপাতাল/ক্লিনিক"],["doctor","ডাক্তার"],["diagnostic","ডায়াগনস্টিক/ল্যাব"],["ambulance","অ্যাম্বুলেন্স"]],business:[["grocery","মুদি দোকান"],["restaurant","হোটেল/রেস্টুরেন্ট"],["pharmacy","ফার্মেসি"],["sweets","মিষ্টান্ন ভান্ডার/বেকারি"],["library","লাইব্রেরি/স্টেশনারি"],["mfs","বিকাশ/নগদ/রকেট এজেন্ট"],["fashion","কাপড় ও ফ্যাশন"],["tailor","টেইলার্স"],["cosmetics","কসমেটিকস"],["mobile","মোবাইল/ইলেকট্রনিক্স"],["mobile-service","মোবাইল সার্ভিসিং"],["computer","কম্পিউটার/ফটোকপি/অনলাইন সেবা"],["hardware","হার্ডওয়্যার/নির্মাণ সামগ্রী"],["raw-material","কাঁচামাল/পাইকারি"],["furniture","ফার্নিচার"],["salon","সেলুন/পার্লার"],["agri","কৃষি উপকরণ"],["service","অন্যান্য ব্যবসা/সেবা"]],banking:[["bank","ব্যাংক শাখা"],["atm","ATM"],["agent","ব্যাংক এজেন্ট"],["mfs","বিকাশ/নগদ/রকেট"]],religion:[["mosque","মসজিদ"],["madrasa","ধর্মীয় শিক্ষা"],["other","অন্যান্য ধর্মীয় প্রতিষ্ঠান"]],blood:[["all","সব ব্লাড ডোনার"],["a+","A+"],["a-","A-"],["b+","B+"],["b-","B-"],["o+","O+"],["o-","O-"],["ab+","AB+"],["ab-","AB-"]],people:[["entrepreneur","উদ্যোক্তা"],["notable","বিশিষ্ট ব্যক্তিবর্গ"],["university-student","দেশ-বিদেশে বিশ্ববিদ্যালয়ের শিক্ষার্থী"],["innovator","উদ্ভাবক"],["social-worker","সমাজসেবক"],["professional","অন্যান্য কৃতী/পেশাজীবী"]],post:[["post-office","ডাকঘর"]],transport:[["bus","বাস/গণপরিবহন"],["courier","ডাক/কুরিয়ার"],["garage","গ্যারেজ/মেরামত"],["other","অন্যান্য যোগাযোগ সেবা"]],social:[["social-org","সামাজিক সংগঠন"],["club","ক্লাব/যুব সংগঠন"],["ngo","এনজিও/স্বেচ্ছাসেবী সংগঠন"]],news:[]};
+
+// V27: Human-readable category URLs; old section/sub links remain supported.
+function vogResolveCategory(params){
+ const raw=params.get('category')||params.get('section')||params.get('cat')||'';
+ const entry=categories.find(c=>c[2]===raw||c[1]===raw);
+ return entry?entry[2]:raw;
+}
+function vogResolveSubcategory(params,section){
+ const raw=params.get('subcategory')||params.get('sub')||'';
+ if(raw==='__other'||raw==='অন্যান্য তথ্য')return '__other';
+ const entry=(subcategories[section]||[]).find(s=>s[0]===raw||s[1]===raw);
+ return entry?entry[0]:raw;
+}
+function vogCategoryUrl(section,sub){
+ const category=categories.find(c=>c[2]===section);
+ const p=new URLSearchParams();p.set('category',category?category[1]:section);
+ if(sub){const entry=(subcategories[section]||[]).find(s=>s[0]===sub);p.set('subcategory',entry?entry[1]:(sub==='__other'?'অন্যান্য তথ্য':sub));}
+ return 'category.html?'+p.toString().replace(/\+/g,'%20');
+}
 let data=[];
 let homeRecentData=[];
 const emergencyNumbers=[{icon:"🚔",name:"জাতীয় জরুরি সেবা",note:"পুলিশ • ফায়ার • অ্যাম্বুলেন্স",phone:"999"},{icon:"🏥",name:"স্বাস্থ্য বাতায়ন",note:"সরকারি স্বাস্থ্য সহায়তা",phone:"16263"},{icon:"⚡",name:"বিদ্যুৎ সহায়তা",note:"বিদ্যুৎ সংক্রান্ত সহায়তা",phone:"16123"}];
@@ -649,7 +668,7 @@ function categoryCount(slug){return slug==="news"?importantAnnouncements.length:
 function renderCats(){$("categories").innerHTML=visibleCategories().map(c=>`<div class="cat" onclick="openCategory('${c[2]}')"><div class="ico">${c[0]}</div><b>${c[1]}</b><small>${categoryCount(c[2])?categoryCount(c[2])+"টি তথ্য":"বিভাগ দেখুন"} →</small></div>`).join("")}
 function renderMenu(){const cw=$("menuCategories"),ew=$("menuEmergency");cw.innerHTML=visibleCategories().map(c=>`<button class="menu-cat" onclick="openCategory('${c[2]}')"><i>${c[0]}</i><span>${c[1]}</span></button>`).join("");ew.innerHTML=emergencyNumbers.map(x=>`<div class="menu-em-item"><b>${escapeHtml(x.icon||"☎️")} ${escapeHtml(x.name||"")}</b><small>${escapeHtml(x.note||"")}</small><div class="vog-em-actions"><span class="vog-em-number">📞 ${escapeHtml(x.phone||"")}</span><button type="button" class="vog-em-share" onclick="shareEmergencyNumber(${JSON.stringify(x.name||"")},${JSON.stringify(x.phone||"")})">↗ শেয়ার</button><a class="vog-em-call" href="tel:${String(x.phone||"").replace(/[^0-9+]/g,"")}">📞 কল করুন</a></div></div>`).join("")}
 function renderEmergency(){ $("emergencyGrid").innerHTML=emergencyNumbers.map(x=>`<div class="em"><b>${x.icon} ${x.name}</b><small>${x.note}</small><a href="tel:${x.phone}">📞 ${x.phone}</a></div>`).join("") }
-function openCategory(slug){if(slug!=="map"&&slug!=="emergency"&&slug!=="news"){location.href="category.html?section="+encodeURIComponent(slug);return;}closeSideMenu();if(slug==="news"){if(importantAnnouncements.length)$("announcementSection").scrollIntoView({behavior:"smooth",block:"start"});return}if(slug==="map"){window.open("https://www.google.com/maps/search/Goila+Union,+Agailjhara,+Barishal","_blank","noopener");return}if(slug==="emergency"){showEmergencyModal();return}const direct=["police","fire","ambulance","doctor","electricity","places"];if(direct.includes(slug)){showCategoryModal(slug,catInfo(slug)[0]+" "+catInfo(slug)[1]);return}const list=subcategories[slug]||[];if(list.length){showSubcategories(slug);return}showCategoryModal(slug,catInfo(slug)[0]+" "+catInfo(slug)[1])}
+function openCategory(slug){if(slug!=="map"&&slug!=="emergency"&&slug!=="news"){location.href=vogCategoryUrl(slug);return;}closeSideMenu();if(slug==="news"){if(importantAnnouncements.length)$("announcementSection").scrollIntoView({behavior:"smooth",block:"start"});return}if(slug==="map"){window.open("https://www.google.com/maps/search/Goila+Union,+Agailjhara,+Barishal","_blank","noopener");return}if(slug==="emergency"){showEmergencyModal();return}const direct=["police","fire","ambulance","doctor","electricity","places"];if(direct.includes(slug)){showCategoryModal(slug,catInfo(slug)[0]+" "+catInfo(slug)[1]);return}const list=subcategories[slug]||[];if(list.length){showSubcategories(slug);return}showCategoryModal(slug,catInfo(slug)[0]+" "+catInfo(slug)[1])}
 function showSubcategories(main){const c=catInfo(main),list=subcategories[main]||[],area=$("subcategoryArea");area.hidden=false;area.innerHTML=`<div class="panel"><button class="subcat-back" onclick="closeSubcategories()">← সব ক্যাটাগরি</button><h3 style="margin:0 0 11px;font-size:17px">${c[0]} ${c[1]}</h3><div class="subcategory-grid">${list.map(s=>{const n=data.filter(x=>itemMatchesSubcategory(x,main,s[0])).length;return `<div class="subcat" onclick="filterSub('${main}','${s[0]}')"><b>${s[1]}</b><small>${n?n+'টি তথ্য':'তথ্য দেখুন'} →</small></div>`}).join("")}</div></div>`;area.scrollIntoView({behavior:"smooth",block:"nearest"})}
 function closeSubcategories(){const a=$("subcategoryArea");a.hidden=true;a.innerHTML=""}
 function filterSub(main,sub){const list=data.filter(x=>itemMatchesSubcategory(x,main,sub));renderCards(list,subName(sub));$("resultsSection").scrollIntoView({behavior:"smooth",block:"start"})}
@@ -657,7 +676,7 @@ function renderCards(list,title="সাম্প্রতিক তথ্য"){
  // Category pages must NEVER render the homepage's two recent items.
  // Always derive the displayed records from the complete public directory.
  if(document.body.classList.contains("vog-category-view") || /(?:^|\/)category\.html$/.test(location.pathname)){
-   const qp=new URLSearchParams(location.search), section=qp.get("section"), sub=qp.get("sub");
+   const qp=new URLSearchParams(location.search), section=vogResolveCategory(qp), sub=vogResolveSubcategory(qp,vogResolveCategory(qp));
    const full=Array.isArray(window.allDirectory)&&window.allDirectory.length?window.allDirectory:(Array.isArray(data)?data:[]);
    if(section && typeof itemMatchesCategory==="function" && typeof itemMatchesSubcategory==="function"){
      const subs=(typeof subcategories!=="undefined"&&subcategories[section])||[];
@@ -774,7 +793,7 @@ const SUBMISSION_SUB_PROFILES={
 };
 function currentSubmissionProfile(){const main=$("submitCategory").value||"default",sub=$("submitSubcategory").value||"";return{...(FORM_PROFILES.default||{}),...(FORM_PROFILES[main]||{}),...(SUBMISSION_SUB_PROFILES[main+":"+sub]||{})}}
 function updateSubmissionFields(){const p=currentSubmissionProfile(),main=$("submitCategory").value,list=subcategories[main]||[];$("submitSubcategoryField").hidden=!list.length;$("submitNameLabel").textContent=p.label;$("submitName").placeholder=p.placeholder;$("submitNameHelp").textContent=p.help||"";$("submitNameHelp").style.display=p.help?"block":"none";$("submitPhoneLabel").textContent=p.phoneRequired?"ফোন নম্বর *":"ফোন নম্বর";$("submitPhone").required=!!p.phoneRequired;$("submitMapField").hidden=!!p.hideMap;$("submitMap").disabled=!!p.hideMap;if(p.hideMap)$("submitMap").value="";$("submitAddressLabel").textContent=p.addressLabel||"ঠিকানা";$("submitAddress").placeholder=p.addressPlaceholder||"গ্রাম/এলাকা, গৈলা";$("submitDesc").placeholder=p.descPlaceholder||"প্রয়োজনীয় অতিরিক্ত তথ্য লিখুন"}
-function openSubmission(prefill=""){closeSideMenu();const sel=$("submitCategory");sel.innerHTML='<option value="">ক্যাটাগরি নির্বাচন করুন</option>'+visibleCategories().filter(c=>c[2]!=="map"&&c[2]!=="news").map(c=>`<option value="${c[2]}">${c[0]} ${c[1]}</option>`).join("");const qp=new URLSearchParams(location.search);const contextualCategory=document.body.classList.contains("vog-category-view")?qp.get("section"):"";const selectedCategory=prefill||contextualCategory;if(selectedCategory&&categories.some(c=>c[2]===selectedCategory))sel.value=selectedCategory;updateSubmitSubcategories();const contextualSub=document.body.classList.contains("vog-category-view")?qp.get("sub"):"";if(contextualSub&&$("submitSubcategory")&&Array.from($("submitSubcategory").options).some(o=>o.value===contextualSub)){$("submitSubcategory").value=contextualSub;updateSubmissionFields();}$("submissionSuccess").style.display="none";openModal("submissionModal")}
+function openSubmission(prefill=""){closeSideMenu();const sel=$("submitCategory");sel.innerHTML='<option value="">ক্যাটাগরি নির্বাচন করুন</option>'+visibleCategories().filter(c=>c[2]!=="map"&&c[2]!=="news").map(c=>`<option value="${c[2]}">${c[0]} ${c[1]}</option>`).join("");const qp=new URLSearchParams(location.search);const contextualCategory=document.body.classList.contains("vog-category-view")?vogResolveCategory(qp):"";const selectedCategory=prefill||contextualCategory;if(selectedCategory&&categories.some(c=>c[2]===selectedCategory))sel.value=selectedCategory;updateSubmitSubcategories();const contextualSub=document.body.classList.contains("vog-category-view")?vogResolveSubcategory(qp,vogResolveCategory(qp)):"";if(contextualSub&&$("submitSubcategory")&&Array.from($("submitSubcategory").options).some(o=>o.value===contextualSub)){$("submitSubcategory").value=contextualSub;updateSubmissionFields();}$("submissionSuccess").style.display="none";openModal("submissionModal")}
 function updateSubmitSubcategories(){const main=$("submitCategory").value,list=subcategories[main]||[];$("submitSubcategory").innerHTML='<option value="">প্রযোজ্য নয় / নির্বাচন করুন</option>'+list.map(s=>`<option value="${s[0]}">${s[1]}</option>`).join("");updateSubmissionFields()}
 async function submitInformation(e){
     e.preventDefault();
@@ -1661,7 +1680,7 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
 </style>
 <script id="vog49-category-renderer">
 (function(){
- const params=new URLSearchParams(location.search), section=params.get('section'), sub=params.get('sub');
+ const params=new URLSearchParams(location.search), section=vogResolveCategory(params), sub=vogResolveSubcategory(params,vogResolveCategory(params));
  if(!section){location.replace('index.html');return;}
  document.body.classList.add('vog-category-view');
  const root=document.querySelector('main'),hero=document.createElement('div');hero.className='vog-category-hero';
@@ -1671,7 +1690,7 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
  const area=document.getElementById('subcategoryArea'),results=document.getElementById('resultsSection');
  const heading=document.getElementById('vogCategoryHeading'),count=document.getElementById('vog42Counter');
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const url='category.html?section='+encodeURIComponent(section);
+ const url=vogCategoryUrl(section);
  const rows=()=>Array.isArray(window.allDirectory)&&window.allDirectory.length?window.allDirectory:(typeof data!=='undefined'&&Array.isArray(data)?data:[]);
  const hasRows=()=>rows().length>0 || window.__vogDirectoryLoaded===true;
  let emergencyConfigured=[], emergencyFetched=false, announcementConfigured=[], announcementFetched=false;
@@ -1717,7 +1736,7 @@ body.vog-category-view #resultsSection{padding-top:14px}body.vog-category-view #
   if(hasRows()||section==='emergency'||isNews)animateVogCount(isNews?newsRows.length:(section==='emergency'?Math.max(emergencyRows.length,relevant.length):relevant.length));else count.textContent='—';
   area.hidden=false;area.removeAttribute('hidden');
   if(!chosen&&subs.length){
-   area.innerHTML='<div class="panel"><div class="subcategory-grid">'+subs.map((e,i)=>'<a class="subcat" style="--vog-order:'+i+'" href="'+url+'&sub='+encodeURIComponent(e[0])+'"><b>'+esc(e[1])+'</b><small>'+(hasRows()?all.filter(x=>matchesSub(x,e)).length+'টি তথ্য':'তথ্য লোড হচ্ছে…')+' →</small></a>').join('')+(other.length?'<a class="subcat" href="'+url+'&sub=__other"><b>অন্যান্য তথ্য</b><small>'+other.length+'টি তথ্য →</small></a>':'')+'</div></div>';
+   area.innerHTML='<div class="panel"><div class="subcategory-grid">'+subs.map((e,i)=>'<a class="subcat" style="--vog-order:'+i+'" href="'+url+'&subcategory='+encodeURIComponent(e[1])+'"><b>'+esc(e[1])+'</b><small>'+(hasRows()?all.filter(x=>matchesSub(x,e)).length+'টি তথ্য':'তথ্য লোড হচ্ছে…')+' →</small></a>').join('')+(other.length?'<a class="subcat" href="'+url+'&sub=__other"><b>অন্যান্য তথ্য</b><small>'+other.length+'টি তথ্য →</small></a>':'')+'</div></div>';
    results.hidden=true;
   }else{
    area.innerHTML='';results.hidden=!(hasRows()||section==='emergency'||isNews);
@@ -1811,7 +1830,7 @@ body.vog-category-view.vog-emergency-page #resultsSection,body.vog-category-view
 <script id="vog-emergency-reliable-v2-script">
 (function(){
  'use strict';
- const section=new URLSearchParams(location.search).get('section');
+ const section=vogResolveCategory(new URLSearchParams(location.search));
  if(section!=='emergency')return;
  document.body.classList.add('vog-emergency-page','vog-category-view');
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
