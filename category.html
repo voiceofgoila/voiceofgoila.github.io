@@ -832,6 +832,9 @@ const REVIEW_KEY="voiceOfGoilaSingleReview";const LEGACY_REVIEW_KEY="voiceOfGoil
 function paintStarPicker(){document.querySelectorAll("#starPicker button").forEach(b=>b.classList.toggle("active",Number(b.dataset.rating)<=selectedRating))}function renderReview(){const r=getReview(),btn=$("reviewSubmitBtn"),list=$("reviewList");if(!r){$("avgRating").textContent="0.0";$("avgStars").textContent="☆☆☆☆☆";$("ratingMeta").textContent="এখনও কোনো রেটিং নেই";list.innerHTML="";btn.disabled=false;return}const rating=Number(r.rating||0);$("avgRating").textContent=rating.toFixed(1);$("avgStars").textContent="★".repeat(rating)+"☆".repeat(5-rating);$("ratingMeta").textContent="এই browser/device-এর রেটিং";list.innerHTML=`<article class="review-card"><div class="review-card-top"><b>${escapeHtml(r.name||"একজন ব্যবহারকারী")}</b><span class="stars">${"★".repeat(rating)}${"☆".repeat(5-rating)}</span></div>${r.text?`<p>${escapeHtml(r.text)}</p>`:""}</article>`;btn.disabled=true;btn.textContent="রিভিউ দেওয়া হয়েছে";$("reviewName").disabled=true;$("reviewText").disabled=true;document.querySelectorAll("#starPicker button").forEach(b=>b.disabled=true)}function submitReview(){if(getReview()){showReviewMessage("আপনি ইতোমধ্যে একটি রিভিউ দিয়েছেন।");return}if(!selectedRating){alert("অনুগ্রহ করে ১ থেকে ৫ স্টারের মধ্যে একটি রেটিং নির্বাচন করুন।");return}saveReview({rating:selectedRating,name:$("reviewName").value.trim(),text:$("reviewText").value.trim(),time:Date.now()});renderReview()}function showReviewMessage(t){const m=$("reviewMessage");m.textContent=t;m.style.display="block"}function scrollToReview(){closeSideMenu();if(document.body.classList.contains("vog-category-view")){location.href="index.html#reviewSection";return;}const section=$("reviewSection");if(section){section.scrollIntoView({behavior:"smooth",block:"start"});}else{location.href="index.html#reviewSection";}}
 function setupContactLinks(){const f=$("facebookLink"),e=$("emailLink");if(SITE_CONFIG.facebook){f.href=SITE_CONFIG.facebook;f.target="_blank";f.rel="noopener"}else f.addEventListener("click",ev=>{ev.preventDefault();alert("Facebook Page link এখনো সেট করা হয়নি।")});if(SITE_CONFIG.email){e.href="mailto:"+SITE_CONFIG.email}else e.addEventListener("click",ev=>{ev.preventDefault();alert("Email address এখনো সেট করা হয়নি।")})}
 function escapeHtml(text){return String(text||"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]||ch))}function escapeAttr(text){return escapeHtml(text).replace(/`/g,"&#96;")}
+// Shared popup cooldown across homepage and category pages (30 minutes).
+const VOG_POPUP_COOLDOWN_KEY="voiceOfGoilaPopupLastShownV1";
+const VOG_POPUP_COOLDOWN_MS=30*60*1000;
 const AD_HISTORY_PREFIX="voiceOfGoilaAdHistoryV2:";let adTimerHandle=null;let inlineAdTimerHandle=null;let ADS_CONFIG={enabled:false,popup:{enabled:false,id:null,image:"",link:"",alt:"Sponsored advertisement",views24h:1,durationSeconds:8},inline:{enabled:false,id:null,image:"",link:"",alt:"Sponsored advertisement",views24h:1,durationSeconds:8}};
 async function loadAdsConfig(){
   try{
@@ -853,8 +856,24 @@ function adHistoryKey(ad){return AD_HISTORY_PREFIX+String(ad?.position||"ad")+":
 function adLimit(ad){return Math.max(1,Math.min(100,Math.round(Number(ad?.views24h)||1)))}
 function adDuration(ad){return Math.max(3,Math.min(300,Math.round(Number(ad?.durationSeconds)||8)))}
 function recentAdHistory(ad){try{const now=Date.now(),cut=now-86400000;const raw=JSON.parse(localStorage.getItem(adHistoryKey(ad))||"[]");const arr=Array.isArray(raw)?raw.map(Number).filter(t=>Number.isFinite(t)&&t>=cut&&t<=now):[];localStorage.setItem(adHistoryKey(ad),JSON.stringify(arr));return arr}catch(e){return []}}
-function canShowAd(ad){return recentAdHistory(ad).length<adLimit(ad)}
-function markAdShown(ad){try{const arr=recentAdHistory(ad);arr.push(Date.now());localStorage.setItem(adHistoryKey(ad),JSON.stringify(arr))}catch(e){}}
+function canShowAd(ad){
+  if(recentAdHistory(ad).length>=adLimit(ad))return false;
+  if(ad?.position!=="popup")return true; // Inline banners keep their existing limits.
+  try{
+    const last=Number(localStorage.getItem(VOG_POPUP_COOLDOWN_KEY)||0);
+    if(Number.isFinite(last)&&last>0&&Date.now()-last<VOG_POPUP_COOLDOWN_MS&&Date.now()>=last)return false;
+  }catch(e){
+    try{const last=Number(sessionStorage.getItem(VOG_POPUP_COOLDOWN_KEY)||0);if(last>0&&Date.now()-last<VOG_POPUP_COOLDOWN_MS)return false}catch(_){}
+  }
+  return true;
+}
+function markAdShown(ad){
+  const now=Date.now();
+  try{const arr=recentAdHistory(ad);arr.push(now);localStorage.setItem(adHistoryKey(ad),JSON.stringify(arr))}catch(e){}
+  if(ad?.position==="popup"){
+    try{localStorage.setItem(VOG_POPUP_COOLDOWN_KEY,String(now))}catch(e){try{sessionStorage.setItem(VOG_POPUP_COOLDOWN_KEY,String(now))}catch(_){}}
+  }
+}
 function closeAdPopup(){clearInterval(adTimerHandle);const o=$("adOverlay");if(o)o.classList.remove("show")}
 function openAdLink(url){if(!url)return;try{window.open(url,"_blank","noopener") }catch(e){location.href=url}}
 function showAdPopupFromConfig(cfg){const ad={...(cfg.popup||{}),position:"popup"};if(!cfg.enabled||!ad.enabled||!ad.image||!canShowAd(ad))return;const img=$("adImage");img.src=ad.image;img.alt=ad.alt||"Sponsored advertisement";img.style.display="block";$("adPlaceholder").style.display="none";if(ad.link){img.classList.add("ad-clickable");img.onclick=()=>openAdLink(ad.link)}else{img.classList.remove("ad-clickable");img.onclick=null}$("adOverlay").classList.add("show");markAdShown(ad);let sec=adDuration(ad);$("adTimer").textContent=`${sec} সেকেন্ড পর বন্ধ হবে`;clearInterval(adTimerHandle);adTimerHandle=setInterval(()=>{sec--;if(sec>0)$("adTimer").textContent=`${sec} সেকেন্ড পর বন্ধ হবে`;else closeAdPopup()},1000)}
