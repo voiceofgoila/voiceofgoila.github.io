@@ -853,7 +853,7 @@ function setupContactLinks(){const f=$("facebookLink"),e=$("emailLink");if(SITE_
 function escapeHtml(text){return String(text||"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]||ch))}function escapeAttr(text){return escapeHtml(text).replace(/`/g,"&#96;")}
 // Shared popup cooldown across homepage and category pages (30 minutes).
 const VOG_POPUP_COOLDOWN_KEY="voiceOfGoilaPopupLastShownV1";
-const VOG_POPUP_COOLDOWN_MS=30*60*1000;
+const VOG_POPUP_COOLDOWN_MS=0; // V30: respect admin 24h count without a separate fixed cooldown
 const AD_HISTORY_PREFIX="voiceOfGoilaAdHistoryV2:";let adTimerHandle=null;let inlineAdTimerHandle=null;let ADS_CONFIG={enabled:false,popup:{enabled:false,id:null,image:"",link:"",alt:"Sponsored advertisement",views24h:1,durationSeconds:8},inline:{enabled:false,id:null,image:"",link:"",alt:"Sponsored advertisement",views24h:1,durationSeconds:8}};
 async function loadAdsConfig(){
   try{
