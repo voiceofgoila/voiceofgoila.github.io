@@ -894,7 +894,8 @@ const coachingPosition=categories.findIndex(c=>c[2]==="coaching");
 if(coachingPosition>=0)categories.push(...categories.splice(coachingPosition,1));
 const subcategories={government:[["union","ইউনিয়ন পরিষদ"],["upazila","উপজেলা সরকারি কর্মকর্তা"],["govt-office","অন্যান্য সরকারি অফিস"],["public-service","সরকারি সেবা"]],education:[["primary","প্রাথমিক বিদ্যালয়"],["secondary","মাধ্যমিক বিদ্যালয়"],["college","কলেজ"],["madrasa","মাদ্রাসা"],["teachers","শিক্ষক ও কর্মচারী"],["other","অন্যান্য শিক্ষা প্রতিষ্ঠান"]],coaching:[["coaching-center","কোচিং সেন্টার"],["home-tutor","হোম টিউটর"],["subject-tutor","বিষয়ভিত্তিক শিক্ষক"],["admission","ভর্তি / এডমিশন কোচিং"],["other","অন্যান্য"]],health:[["hospital","হাসপাতাল/ক্লিনিক"],["doctor","ডাক্তার"],["diagnostic","ডায়াগনস্টিক/ল্যাব"],["ambulance","অ্যাম্বুলেন্স"]],business:[["grocery","মুদি দোকান"],["restaurant","হোটেল/রেস্টুরেন্ট"],["pharmacy","ফার্মেসি"],["sweets","মিষ্টান্ন ভান্ডার/বেকারি"],["library","লাইব্রেরি/স্টেশনারি"],["mfs","বিকাশ/নগদ/রকেট এজেন্ট"],["fashion","কাপড় ও ফ্যাশন"],["tailor","টেইলার্স"],["cosmetics","কসমেটিকস"],["mobile","মোবাইল/ইলেকট্রনিক্স"],["mobile-service","মোবাইল সার্ভিসিং"],["computer","কম্পিউটার/ফটোকপি/অনলাইন সেবা"],["hardware","হার্ডওয়্যার/নির্মাণ সামগ্রী"],["raw-material","কাঁচামাল/পাইকারি"],["furniture","ফার্নিচার"],["salon","সেলুন/পার্লার"],["agri","কৃষি উপকরণ"],["service","অন্যান্য ব্যবসা/সেবা"]],banking:[["bank","ব্যাংক শাখা"],["atm","ATM"],["agent","ব্যাংক এজেন্ট"],["mfs","বিকাশ/নগদ/রকেট"]],religion:[["mosque","মসজিদ"],["madrasa","ধর্মীয় শিক্ষা"],["other","অন্যান্য ধর্মীয় প্রতিষ্ঠান"]],blood:[["all","সব ব্লাড ডোনার"],["a+","A+"],["a-","A-"],["b+","B+"],["b-","B-"],["o+","O+"],["o-","O-"],["ab+","AB+"],["ab-","AB-"]],people:[["entrepreneur","উদ্যোক্তা"],["notable","বিশিষ্ট ব্যক্তিবর্গ"],["university-student","দেশ-বিদেশে বিশ্ববিদ্যালয়ের শিক্ষার্থী"],["innovator","উদ্ভাবক"],["social-worker","সমাজসেবক"],["professional","অন্যান্য কৃতী/পেশাজীবী"]],post:[],transport:[["bus","বাস/গণপরিবহন"],["courier","ডাক/কুরিয়ার"],["garage","গ্যারেজ/মেরামত"],["other","অন্যান্য যোগাযোগ সেবা"]],social:[["social-org","সামাজিক সংগঠন"],["club","ক্লাব/যুব সংগঠন"],["ngo","এনজিও/স্বেচ্ছাসেবী সংগঠন"]],news:[]};
 
-// V27: Human-readable category URLs; old section/sub links remain supported.
+// V28: ASCII-readable share links; retain all previous Bangla and ID links.
+const vogPublicSubSlug={"a+":"a-positive","a-":"a-negative","b+":"b-positive","b-":"b-negative","o+":"o-positive","o-":"o-negative","ab+":"ab-positive","ab-":"ab-negative"};
 function vogResolveCategory(params){
  const raw=params.get('category')||params.get('section')||params.get('cat')||'';
  const entry=categories.find(c=>c[2]===raw||c[1]===raw);
@@ -903,14 +904,13 @@ function vogResolveCategory(params){
 function vogResolveSubcategory(params,section){
  const raw=params.get('subcategory')||params.get('sub')||'';
  if(raw==='__other'||raw==='অন্যান্য তথ্য')return '__other';
- const entry=(subcategories[section]||[]).find(s=>s[0]===raw||s[1]===raw);
+ const entry=(subcategories[section]||[]).find(s=>s[0]===raw||s[1]===raw||vogPublicSubSlug[s[0]]===raw);
  return entry?entry[0]:raw;
 }
 function vogCategoryUrl(section,sub){
- const category=categories.find(c=>c[2]===section);
- const p=new URLSearchParams();p.set('category',category?category[1]:section);
- if(sub){const entry=(subcategories[section]||[]).find(s=>s[0]===sub);p.set('subcategory',entry?entry[1]:(sub==='__other'?'অন্যান্য তথ্য':sub));}
- return 'category.html?'+p.toString().replace(/\+/g,'%20');
+ const p=new URLSearchParams();p.set('category',section);
+ if(sub)p.set('subcategory',vogPublicSubSlug[sub]||sub);
+ return 'category.html?'+p.toString();
 }
 let data=[];
 let homeRecentData=[];
