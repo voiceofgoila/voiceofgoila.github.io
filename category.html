@@ -875,22 +875,21 @@ function adHistoryKey(ad){return AD_HISTORY_PREFIX+String(ad?.position||"ad")+":
 function adLimit(ad){return Math.max(1,Math.min(100,Math.round(Number(ad?.views24h)||1)))}
 function adDuration(ad){return Math.max(3,Math.min(300,Math.round(Number(ad?.durationSeconds)||8)))}
 function recentAdHistory(ad){try{const now=Date.now(),cut=now-86400000;const raw=JSON.parse(localStorage.getItem(adHistoryKey(ad))||"[]");const arr=Array.isArray(raw)?raw.map(Number).filter(t=>Number.isFinite(t)&&t>=cut&&t<=now):[];localStorage.setItem(adHistoryKey(ad),JSON.stringify(arr));return arr}catch(e){return []}}
+// V33: Popup ads appear once per browser tab visit, even when navigating pages.
+// Inline advertisements continue to use their independent admin 24-hour limits.
+const VOG_POPUP_SESSION_KEY="voiceOfGoilaPopupShownThisVisitV33";
 function canShowAd(ad){
-  if(recentAdHistory(ad).length>=adLimit(ad))return false;
-  if(ad?.position!=="popup")return true; // Inline banners keep their existing limits.
-  try{
-    const last=Number(localStorage.getItem(VOG_POPUP_COOLDOWN_KEY)||0);
-    if(Number.isFinite(last)&&last>0&&Date.now()-last<VOG_POPUP_COOLDOWN_MS&&Date.now()>=last)return false;
-  }catch(e){
-    try{const last=Number(sessionStorage.getItem(VOG_POPUP_COOLDOWN_KEY)||0);if(last>0&&Date.now()-last<VOG_POPUP_COOLDOWN_MS)return false}catch(_){}
+  if(ad?.position==="popup"){
+    try{if(sessionStorage.getItem(VOG_POPUP_SESSION_KEY)==="1")return false}catch(e){}
   }
-  return true;
+  return recentAdHistory(ad).length<adLimit(ad);
 }
 function markAdShown(ad){
   const now=Date.now();
   try{const arr=recentAdHistory(ad);arr.push(now);localStorage.setItem(adHistoryKey(ad),JSON.stringify(arr))}catch(e){}
   if(ad?.position==="popup"){
-    try{localStorage.setItem(VOG_POPUP_COOLDOWN_KEY,String(now))}catch(e){try{sessionStorage.setItem(VOG_POPUP_COOLDOWN_KEY,String(now))}catch(_){}}
+    try{sessionStorage.setItem(VOG_POPUP_SESSION_KEY,"1")}catch(e){}
+    try{localStorage.setItem(VOG_POPUP_COOLDOWN_KEY,String(now))}catch(e){}
   }
 }
 function closeAdPopup(){clearInterval(adTimerHandle);const o=$("adOverlay");if(o)o.classList.remove("show")}
